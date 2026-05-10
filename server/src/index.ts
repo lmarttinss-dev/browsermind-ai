@@ -285,9 +285,59 @@ app.post("/api/analyze", async (req, res) => {
       try {
         const status = await playwrightManager.getStatus();
         if (status.active) {
-          // Wait for extensions to inject their content into the DOM
-          const page = await playwrightManager.getPage();
-          await page.waitForTimeout(2000);
+          // Aguarda dados do AvantPro carregarem (se extensão presente)
+          let avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
+
+          // Se extensão não está autenticada, tenta re-autenticar automaticamente
+          if (avantproResult === "not_authenticated") {
+            console.log("🔄 AvantPro: tentando re-autenticação automática...")
+            try {
+              // Busca email salvo no chrome.storage da extensão
+              const storedAuth = await playwrightManager.evaluateInServiceWorker(
+                AVANTPRO_CONFIG.extensionId,
+                `chrome.storage.local.get("avantpro_auth").then(d => JSON.stringify(d.avantpro_auth || null))`
+              )
+              const authData = JSON.parse(storedAuth)
+              const email = authData?.email
+
+              if (email) {
+                // Re-autentica com o email salvo
+                const loginRes = await axios.post(`${AVANTPRO_CONFIG.apiBase}/auth/login`, { email })
+                const { token, user } = loginRes.data as {
+                  token: string
+                  user: { planCode: string; productCode: string; email: string; globalUserId: string }
+                }
+
+                if (token) {
+                  const newAuthData = JSON.stringify({
+                    version: 2,
+                    accessToken: token,
+                    loginAt: Date.now(),
+                    productCode: user.productCode || AVANTPRO_CONFIG.productCode,
+                    plan: user.planCode,
+                    email: user.email,
+                    globalUserId: user.globalUserId,
+                  })
+
+                  await playwrightManager.evaluateInServiceWorker(
+                    AVANTPRO_CONFIG.extensionId,
+                    `chrome.storage.local.set({ avantpro_auth: ${newAuthData} }).then(() => "ok")`
+                  )
+
+                  console.log(`✅ AvantPro: re-autenticado como ${user.email}`)
+
+                  // Recarrega a página para a extensão buscar dados com o novo token
+                  const page = await playwrightManager.getPage()
+                  await page.reload({ waitUntil: "domcontentloaded", timeout: 15000 })
+
+                  // Tenta novamente aguardar os dados
+                  avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
+                }
+              }
+            } catch (authErr) {
+              console.log("⚠️ AvantPro: falha na re-autenticação:", authErr instanceof Error ? authErr.message : authErr)
+            }
+          }
 
           const extracted = await playwrightManager.extractPageContent();
           content = [

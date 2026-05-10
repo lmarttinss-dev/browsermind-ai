@@ -55,7 +55,7 @@ export function NavigationBar() {
       {/* Browser control */}
       {!browserActive ? (
         <button
-          onClick={() => launchBrowser(false)}
+          onClick={() => launchBrowser(true)}
           disabled={isLoading}
           className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors"
         >
