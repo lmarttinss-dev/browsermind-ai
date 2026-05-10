@@ -349,7 +349,7 @@ app.post("/api/analyze", async (req, res) => {
             `Title: ${extracted.title}`,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
             extracted.links.length > 0
-              ? `\nLinks:\n${extracted.links.slice(0, 50).map((l) => `- [${l.text}](${l.href})`).join("\n")}`
+              ? `\nLinks:\n${extracted.links.slice(0, 80).map((l) => `- [${l.text}](${l.href})`).join("\n")}`
               : "",
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`

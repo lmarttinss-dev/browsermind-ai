@@ -328,14 +328,22 @@ export class PlaywrightManager {
 
         const links = [];
         const seen = new Set();
+        const contentLinks = [];
+        const navLinks = [];
         document.querySelectorAll("a[href]").forEach((a) => {
           const href = a.href || "";
-          const text = (a.textContent || "").trim();
-          if (text && href && !href.startsWith("javascript:") && !seen.has(href)) {
-            seen.add(href);
-            links.push({ text: text.slice(0, 100), href });
+          const text = (a.textContent || "").trim().replace(/\\s+/g, " ");
+          if (!text || !href || href.startsWith("javascript:") || seen.has(href)) return;
+          seen.add(href);
+          const entry = { text: text.slice(0, 120), href };
+          const isNav = a.closest("nav, header, footer, [role=navigation], [role=banner]");
+          if (isNav) {
+            navLinks.push(entry);
+          } else {
+            contentLinks.push(entry);
           }
         });
+        links.push(...contentLinks, ...navLinks);
 
         const metaTags = {};
         document.querySelectorAll("meta[name], meta[property]").forEach((tag) => {
