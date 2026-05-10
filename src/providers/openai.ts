@@ -39,7 +39,7 @@ export class OpenAIProvider extends BaseProvider {
       {
         model: this.model,
         messages,
-        max_tokens: 8192,
+        max_tokens: 16384,
         temperature: 0.7,
       },
       {

@@ -32,7 +32,7 @@ export class ClaudeProvider extends BaseProvider {
       "https://api.anthropic.com/v1/messages",
       {
         model: this.model,
-        max_tokens: 8192,
+        max_tokens: 16384,
         system: this.buildSystemPrompt(),
         messages: [{ role: "user", content }],
       },
