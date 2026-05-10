@@ -1,6 +1,6 @@
 import { useStore } from "@/store/useStore";
 import { MODELS } from "@/lib/api";
-import { Send, Play, Loader2, ChevronDown, Settings, Trash2 } from "lucide-react";
+import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -101,6 +101,24 @@ export function ChatPanel() {
 
         {response && (
           <div className="p-3">
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => {
+                  const blob = new Blob([response], { type: "text/markdown;charset=utf-8" })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement("a")
+                  a.href = url
+                  a.download = `browsermind-${new Date().toISOString().slice(0, 10)}.md`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary-600 transition-colors"
+                title="Baixar resposta como .md"
+              >
+                <Download className="w-3.5 h-3.5" />
+                .md
+              </button>
+            </div>
             <div className="text-sm text-gray-700 leading-relaxed [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-gray-800 [&_h1]:mt-3 [&_h1]:mb-1 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-gray-800 [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:mb-2 [&_li]:mb-0.5 [&_a]:text-primary-600 [&_a]:underline [&_code]:bg-gray-100 [&_code]:text-primary-700 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-gray-900 [&_pre]:text-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-2 [&_pre_code]:bg-transparent [&_pre_code]:text-gray-100 [&_pre_code]:p-0 [&_blockquote]:border-l-4 [&_blockquote]:border-primary-300 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-gray-500 [&_strong]:font-semibold [&_strong]:text-gray-800">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{response}</ReactMarkdown>
             </div>

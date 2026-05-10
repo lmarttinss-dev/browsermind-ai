@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAppStore } from "@/store/useAppStore";
-import { AlertCircle, Loader2, Sparkles } from "lucide-react";
+import { AlertCircle, Download, Loader2, Sparkles } from "lucide-react";
 
 export function ResponseArea() {
   const { response, isLoading, error } = useAppStore();
@@ -38,8 +38,28 @@ export function ResponseArea() {
     );
   }
 
+  const downloadMd = () => {
+    const blob = new Blob([response], { type: "text/markdown;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `browsermind-${new Date().toISOString().slice(0, 10)}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={downloadMd}
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary-600 transition-colors"
+          title="Baixar resposta como .md"
+        >
+          <Download className="w-3.5 h-3.5" />
+          .md
+        </button>
+      </div>
       <div className="prose prose-sm prose-gray max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-primary-600 prose-code:text-primary-700 prose-code:bg-primary-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-td:border prose-td:border-gray-200 prose-td:px-2 prose-td:py-1 prose-th:border prose-th:border-gray-300 prose-th:px-2 prose-th:py-1 prose-th:bg-gray-50">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{response}</ReactMarkdown>
       </div>
