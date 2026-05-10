@@ -252,16 +252,20 @@ IMPORTANTE sobre o conteúdo recebido:
 - Extensões adicionam elementos ao DOM da página, e esses elementos SÃO capturados na extração
 - Portanto, se o conteúdo contiver dados de extensões (métricas, vendas, estoque, conversão, etc.), você DEVE usá-los para responder ao usuário
 - NUNCA diga que não pode acessar dados de extensões — os dados já estão incluídos no conteúdo extraído
+- O conteúdo inclui uma seção "Links:" com os links da página no formato "- [texto](url)". Use esses links DIRETAMENTE na sua resposta quando o usuário pedir links de produtos
 
 Diretrizes:
 - Responda de forma clara, objetiva e em Markdown
 - Extraia e organize TODAS as informações relevantes do conteúdo fornecido, incluindo dados de extensões
-- Quando solicitado a executar ações, responda com um JSON de ações no formato:
+- Quando o usuário pedir links de produtos, use os links já fornecidos na seção "Links:" do conteúdo. Inclua-os diretamente na resposta em Markdown — NUNCA gere ações JSON para extrair links que já estão disponíveis
+- Só gere ações JSON quando o usuário explicitamente pedir para EXECUTAR algo (clicar, navegar, digitar, etc.)
+- Formato de ações (APENAS quando necessário executar algo):
   {"actions": [{"type": "click|type|scroll|navigate|select|wait|extract|screenshot|hover|goBack|goForward|evaluate", "selector": "CSS selector", "value": "valor opcional", "description": "descrição da ação"}]}
-- Use seletores CSS padrão para Playwright (ex: "h1", ".class", "#id", "a[href*='text']")
-- Para clicar por texto, use o texto visível como selector
+- Use APENAS seletores CSS válidos (ex: "h1", ".class", "#id", "a[href*='text']")
+- NUNCA use :has-text(), :text(), ou qualquer pseudo-seletor não-CSS — eles NÃO funcionam
+- Para clicar por texto, use o texto visível como selector (sem aspas nem pseudo-seletores)
 - Para extrair texto de um elemento, use "extract" com selector CSS (ex: selector: "h1", selector: ".price", selector: "#title")
-- Para obter a URL atual, título ou executar JavaScript, use "evaluate" com value contendo a expressão JS (ex: value: "document.URL", value: "document.title")
+- Para obter a URL atual, título ou executar JavaScript, use "evaluate" com value contendo a expressão JS
 - NUNCA use expressões JavaScript como document.URL, window.location etc. como selector — use "evaluate" em vez disso
 - Se não puder executar uma ação, explique o motivo`;
 
@@ -344,13 +348,13 @@ app.post("/api/analyze", async (req, res) => {
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
-            `\nContent:\n${extracted.visibleText}`,
             extracted.links.length > 0
-              ? `\nLinks:\n${extracted.links.slice(0, 30).map((l) => `- [${l.text}](${l.href})`).join("\n")}`
+              ? `\nLinks:\n${extracted.links.slice(0, 50).map((l) => `- [${l.text}](${l.href})`).join("\n")}`
               : "",
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
               : "",
+            `\nContent:\n${extracted.visibleText}`,
           ].filter(Boolean).join("\n");
         }
       } catch { /* ignore */ }
