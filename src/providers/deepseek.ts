@@ -21,7 +21,7 @@ export class DeepSeekProvider extends BaseProvider {
             content: `Conteúdo da página:\n${this.truncateContent(params.pageContent)}\n\nPrompt: ${params.prompt}`,
           },
         ],
-        max_tokens: 8192,
+        max_tokens: 16384,
         temperature: 0.7,
       },
       {

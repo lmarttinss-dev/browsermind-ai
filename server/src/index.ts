@@ -377,7 +377,7 @@ app.post("/api/analyze", async (req, res) => {
 
       const r = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${key}`,
-        { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: 8192 } }
+        { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: 16384 } }
       );
       aiResponse = r.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
@@ -396,7 +396,7 @@ app.post("/api/analyze", async (req, res) => {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: msgContent },
         ],
-        max_tokens: 8192,
+        max_tokens: 16384,
         temperature: 0.7,
       }, { headers: { Authorization: `Bearer ${key}` } });
       aiResponse = r.data.choices?.[0]?.message?.content || "";
@@ -413,7 +413,7 @@ app.post("/api/analyze", async (req, res) => {
 
       const r = await axios.post("https://api.anthropic.com/v1/messages", {
         model: "claude-sonnet-4-20250514",
-        max_tokens: 8192,
+        max_tokens: 16384,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: msgContent }],
       }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } });
@@ -429,7 +429,7 @@ app.post("/api/analyze", async (req, res) => {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userMessage },
         ],
-        max_tokens: 8192,
+        max_tokens: 16384,
         temperature: 0.7,
       }, { headers: { Authorization: `Bearer ${key}` } });
       aiResponse = r.data.choices?.[0]?.message?.content || "";
