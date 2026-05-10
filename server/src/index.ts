@@ -252,12 +252,10 @@ IMPORTANTE sobre o conteúdo recebido:
 - Extensões adicionam elementos ao DOM da página, e esses elementos SÃO capturados na extração
 - Portanto, se o conteúdo contiver dados de extensões (métricas, vendas, estoque, conversão, etc.), você DEVE usá-los para responder ao usuário
 - NUNCA diga que não pode acessar dados de extensões — os dados já estão incluídos no conteúdo extraído
-- O conteúdo inclui uma seção "Links de Produtos:" com os links diretos dos produtos encontrados na página no formato "- [texto](url)". Use esses links DIRETAMENTE na sua resposta quando o usuário pedir links de produtos
 
 Diretrizes:
 - Responda de forma clara, objetiva e em Markdown
 - Extraia e organize TODAS as informações relevantes do conteúdo fornecido, incluindo dados de extensões
-- Quando o usuário pedir links de produtos, use os links já fornecidos na seção "Links de Produtos:" do conteúdo. Inclua-os diretamente na resposta em Markdown — NUNCA gere ações JSON para extrair links que já estão disponíveis
 - Só gere ações JSON quando o usuário explicitamente pedir para EXECUTAR algo (clicar, navegar, digitar, etc.)
 - Formato de ações (APENAS quando necessário executar algo):
   {"actions": [{"type": "click|type|scroll|navigate|select|wait|extract|screenshot|hover|goBack|goForward|evaluate", "selector": "CSS selector", "value": "valor opcional", "description": "descrição da ação"}]}
@@ -348,12 +346,6 @@ app.post("/api/analyze", async (req, res) => {
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
-            extracted.productLinks.length > 0
-              ? `\nLinks de Produtos:\n${extracted.productLinks.map((l) => `- [${l.text}](${l.href})`).join("\n")}`
-              : "",
-            extracted.links.length > 0
-              ? `\nOutros Links:\n${extracted.links.slice(0, 30).map((l) => `- [${l.text}](${l.href})`).join("\n")}`
-              : "",
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
               : "",
