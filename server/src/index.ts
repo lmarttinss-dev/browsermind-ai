@@ -285,26 +285,39 @@ app.post("/api/analyze", async (req, res) => {
       try {
         const status = await playwrightManager.getStatus();
         if (status.active) {
-          // Aguarda dados do AvantPro carregarem no DOM
+          // Aguarda e abre painel do AvantPro automaticamente
           const page = await playwrightManager.getPage();
           try {
             // Espera a extensão injetar elementos no DOM
             await page.waitForSelector("[class*=avantpro]", { timeout: 5000 });
-            // Espera estabilizar: "Carregando" pode aparecer depois dos elementos iniciais
-            // Polling a cada 500ms — espera até "Carregando" aparecer E desaparecer,
-            // ou até ter dados numéricos (vendas/visitas/faturamento), ou timeout
-            await page.waitForFunction(
-              `(() => {
-                const els = document.querySelectorAll("[class*=avantpro]");
-                const text = Array.from(els).map(e => e.textContent || "").join(" ");
-                if (text.includes("Carregando")) return false;
-                if (/\\d{1,3}(\\.\\d{3})+|R\\$|vendas|visitas|faturamento|conversão/i.test(text)) return true;
-                return false;
-              })()`,
-              { timeout: 12000, polling: 500 }
-            );
+
+            // Verifica se estamos em página de produto ML (onde AvantPro tem dados)
+            const url = page.url();
+            const isProductPage = /mercadolivre\.com\.br\/.+\/p\/MLB|produto\.mercadolivre\.com\.br\/MLB/.test(url);
+
+            if (isProductPage) {
+              // Clica em "Informações Avantpro" para abrir o painel de dados
+              try {
+                const infoBtn = page.getByText("Informações Avantpro").first();
+                if (await infoBtn.isVisible({ timeout: 3000 })) {
+                  await infoBtn.click();
+                  // Espera dados carregarem (sair de "Carregando" e ter métricas)
+                  await page.waitForFunction(
+                    `(() => {
+                      const els = document.querySelectorAll("[class*=avantpro]");
+                      const text = Array.from(els).map(e => e.textContent || "").join(" ");
+                      if (text.includes("Carregando")) return false;
+                      return /\\d{1,3}(\\.\\d{3})+|R\\$|vendas|visitas|faturamento|conversão/i.test(text);
+                    })()`,
+                    { timeout: 12000, polling: 500 }
+                  );
+                }
+              } catch {
+                // Botão não encontrado ou dados não carregaram — segue com o que tiver
+              }
+            }
           } catch {
-            // Se timeout, extrai mesmo assim com o que tiver disponível
+            // Extensão não presente — segue sem dados do AvantPro
           }
 
           const extracted = await playwrightManager.extractPageContent();
