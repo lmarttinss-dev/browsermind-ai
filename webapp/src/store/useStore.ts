@@ -125,7 +125,7 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  launchBrowser: async (headless = false) => {
+  launchBrowser: async (headless = true) => {
     set({ isLoading: true, error: null });
     try {
       const { extensionPaths, userDataDir } = get();

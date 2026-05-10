@@ -285,39 +285,58 @@ app.post("/api/analyze", async (req, res) => {
       try {
         const status = await playwrightManager.getStatus();
         if (status.active) {
-          // Aguarda e abre painel do AvantPro automaticamente
-          const page = await playwrightManager.getPage();
-          try {
-            // Espera a extensão injetar elementos no DOM
-            await page.waitForSelector("[class*=avantpro]", { timeout: 5000 });
+          // Aguarda dados do AvantPro carregarem (se extensão presente)
+          let avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
 
-            // Verifica se estamos em página de produto ML (onde AvantPro tem dados)
-            const url = page.url();
-            const isProductPage = /mercadolivre\.com\.br\/.+\/p\/MLB|produto\.mercadolivre\.com\.br\/MLB/.test(url);
+          // Se extensão não está autenticada, tenta re-autenticar automaticamente
+          if (avantproResult === "not_authenticated") {
+            console.log("🔄 AvantPro: tentando re-autenticação automática...")
+            try {
+              // Busca email salvo no chrome.storage da extensão
+              const storedAuth = await playwrightManager.evaluateInServiceWorker(
+                AVANTPRO_CONFIG.extensionId,
+                `chrome.storage.local.get("avantpro_auth").then(d => JSON.stringify(d.avantpro_auth || null))`
+              )
+              const authData = JSON.parse(storedAuth)
+              const email = authData?.email
 
-            if (isProductPage) {
-              // Clica em "Informações Avantpro" para abrir o painel de dados
-              try {
-                const infoBtn = page.getByText("Informações Avantpro").first();
-                if (await infoBtn.isVisible({ timeout: 3000 })) {
-                  await infoBtn.click();
-                  // Espera dados carregarem (sair de "Carregando" e ter métricas)
-                  await page.waitForFunction(
-                    `(() => {
-                      const els = document.querySelectorAll("[class*=avantpro]");
-                      const text = Array.from(els).map(e => e.textContent || "").join(" ");
-                      if (text.includes("Carregando")) return false;
-                      return /\\d{1,3}(\\.\\d{3})+|R\\$|vendas|visitas|faturamento|conversão/i.test(text);
-                    })()`,
-                    { timeout: 12000, polling: 500 }
-                  );
+              if (email) {
+                // Re-autentica com o email salvo
+                const loginRes = await axios.post(`${AVANTPRO_CONFIG.apiBase}/auth/login`, { email })
+                const { token, user } = loginRes.data as {
+                  token: string
+                  user: { planCode: string; productCode: string; email: string; globalUserId: string }
                 }
-              } catch {
-                // Botão não encontrado ou dados não carregaram — segue com o que tiver
+
+                if (token) {
+                  const newAuthData = JSON.stringify({
+                    version: 2,
+                    accessToken: token,
+                    loginAt: Date.now(),
+                    productCode: user.productCode || AVANTPRO_CONFIG.productCode,
+                    plan: user.planCode,
+                    email: user.email,
+                    globalUserId: user.globalUserId,
+                  })
+
+                  await playwrightManager.evaluateInServiceWorker(
+                    AVANTPRO_CONFIG.extensionId,
+                    `chrome.storage.local.set({ avantpro_auth: ${newAuthData} }).then(() => "ok")`
+                  )
+
+                  console.log(`✅ AvantPro: re-autenticado como ${user.email}`)
+
+                  // Recarrega a página para a extensão buscar dados com o novo token
+                  const page = await playwrightManager.getPage()
+                  await page.reload({ waitUntil: "domcontentloaded", timeout: 15000 })
+
+                  // Tenta novamente aguardar os dados
+                  avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
+                }
               }
+            } catch (authErr) {
+              console.log("⚠️ AvantPro: falha na re-autenticação:", authErr instanceof Error ? authErr.message : authErr)
             }
-          } catch {
-            // Extensão não presente — segue sem dados do AvantPro
           }
 
           const extracted = await playwrightManager.extractPageContent();

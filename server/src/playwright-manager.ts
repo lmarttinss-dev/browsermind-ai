@@ -60,6 +60,17 @@ export class PlaywrightManager {
         }
       );
       this.persistent = true;
+
+      // Suprime erros de portas desconectadas das extensões Chrome (crx-client-port.js)
+      const suppressExtensionErrors = (page: Page) => {
+        page.on("pageerror", (err) => {
+          if (err.message.includes("disconnected port")) return
+          console.error("Page error:", err.message)
+        })
+      }
+      this.context.pages().forEach(suppressExtensionErrors)
+      this.context.on("page", suppressExtensionErrors)
+
       this.page = this.context.pages()[0] || await this.context.newPage();
     } else {
       this.browser = await chromium.launch({
@@ -151,6 +162,124 @@ export class PlaywrightManager {
     const page = await this.getPage();
     const buffer = await page.screenshot({ type: "png", fullPage: false });
     return buffer.toString("base64");
+  }
+
+  // Aguarda dados do AvantPro carregarem no DOM (se a extensão estiver presente)
+  // Retorna: "loaded" se dados carregaram, "not_authenticated" se extensão precisa de login, false se timeout/ausente
+  async waitForAvantproData(options?: { timeout?: number }): Promise<"loaded" | "not_authenticated" | false> {
+    const page = await this.getPage()
+    const timeout = options?.timeout ?? 25000
+
+    // Verifica se estamos em página de produto/anúncio do Mercado Livre
+    const url = page.url()
+    const isMlPage = /mercadolivre\.com\.br\/(.*\/p\/MLB|MLB[-\d])/.test(url)
+      || /produto\.mercadolivre\.com\.br\/MLB/.test(url)
+    if (!isMlPage) return false
+
+    // Espera a extensão injetar qualquer elemento no DOM (classe, id, ou data attribute)
+    const avantproSelector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro]"
+    try {
+      await page.waitForSelector(avantproSelector, { timeout: 10000 })
+    } catch {
+      console.log("⏳ AvantPro: extensão não detectada no DOM")
+      return false
+    }
+
+    console.log("✅ AvantPro: elementos detectados no DOM")
+
+    // Verifica se a extensão está pedindo login/cadastro — busca no BODY inteiro
+    const notAuthCheck = `(() => {
+      const body = document.body.innerText || "";
+      return /comece a usar o avantpro|faça login.*avantpro|cadastre-se.*avantpro|avantpro.*faça login|avantpro.*cadastre-se|avantpro.*sign in|avantpro.*log in|avantpro.*criar conta/i.test(body);
+    })()`
+    try {
+      const notAuth = await page.evaluate(notAuthCheck)
+      if (notAuth) {
+        console.log("⚠️ AvantPro: extensão não autenticada (pedindo login/cadastro)")
+        return "not_authenticated"
+      }
+    } catch { /* ignore */ }
+
+    // Tenta abrir o painel de dados clicando no botão
+    const buttonTexts = ["Informações Avantpro", "Informações AvantPro", "Dados Avantpro", "Dados AvantPro"]
+    let clicked = false
+    for (const text of buttonTexts) {
+      try {
+        const btn = page.getByText(text, { exact: false }).first()
+        if (await btn.isVisible()) {
+          await btn.click({ timeout: 5000 })
+          console.log(`✅ AvantPro: clicou em "${text}"`)
+          clicked = true
+          break
+        }
+      } catch {
+        // Tenta próximo texto
+      }
+    }
+
+    // Após clicar, aguarda as requisições de rede da extensão terminarem
+    if (clicked) {
+      try {
+        await page.waitForLoadState("networkidle", { timeout: 10000 })
+        console.log("✅ AvantPro: rede estabilizou após clique")
+      } catch {
+        console.log("⏳ AvantPro: timeout esperando rede estabilizar, continuando...")
+      }
+    }
+
+    // Polling: verifica o BODY INTEIRO para "Carregando dados Avantpro" e métricas
+    // Isso é mais robusto do que verificar apenas elementos com classe avantpro
+    const checkScript = `(() => {
+      const body = document.body.innerText || "";
+      const bodyLower = body.toLowerCase();
+
+      // Verifica se extensão está pedindo login
+      if (/comece a usar o avantpro|avantpro.*faça login|avantpro.*cadastre-se/i.test(body)) return "not_auth";
+
+      // Verifica se ainda está carregando (texto específico do AvantPro)
+      if (/carregando dados avantpro|carregando.*avantpro/i.test(body)) return "loading";
+
+      // Verifica se dados do AvantPro estão presentes (métricas típicas)
+      // Busca nos elementos avantpro especificamente
+      const avantEls = document.querySelectorAll("${avantproSelector}");
+      if (avantEls.length > 0) {
+        const avantText = Array.from(avantEls).map(e => e.textContent || "").join(" ");
+        if (/carregando/i.test(avantText)) return "loading";
+        if (/\\d+[.,]\\d+|R\\$|vendas|visitas|faturamento|conversão|estoque|receita|lucro|margem/i.test(avantText)) return "ready";
+      }
+
+      // Fallback: verifica no body se existem padrões de dados AvantPro
+      // (ex: tabelas de métricas, dados de vendas injetados pela extensão)
+      if (/avantpro/i.test(body) && /vendas.*\\d|faturamento.*\\d|estoque.*\\d|visitas.*\\d|conversão.*\\d|receita.*\\d/i.test(body)) return "ready";
+
+      return "waiting";
+    })()`
+
+    const pollInterval = 500
+    const deadline = Date.now() + timeout
+    while (Date.now() < deadline) {
+      try {
+        const status = await page.evaluate(checkScript) as string
+        if (status === "ready") {
+          // Espera extra de 500ms para garantir que a renderização completou
+          await page.waitForTimeout(500)
+          console.log("✅ AvantPro: dados carregados com sucesso")
+          return "loaded"
+        }
+        if (status === "not_auth") {
+          console.log("⚠️ AvantPro: extensão não autenticada (detectado durante polling)")
+          return "not_authenticated"
+        }
+      } catch {
+        // Página pode estar navegando, tenta novamente
+      }
+      const remaining = deadline - Date.now()
+      if (remaining <= 0) break
+      await page.waitForTimeout(Math.min(pollInterval, remaining))
+    }
+
+    console.log("⚠️ AvantPro: timeout aguardando dados carregarem")
+    return false
   }
 
   async extractPageContent(): Promise<{
