@@ -329,9 +329,9 @@ export class PlaywrightManager {
         const links = [];
         const seen = new Set();
         document.querySelectorAll("a[href]").forEach((a) => {
-          const href = a.getAttribute("href") || "";
+          const href = a.href || "";
           const text = (a.textContent || "").trim();
-          if (text && href && !seen.has(href)) {
+          if (text && href && !href.startsWith("javascript:") && !seen.has(href)) {
             seen.add(href);
             links.push({ text: text.slice(0, 100), href });
           }
