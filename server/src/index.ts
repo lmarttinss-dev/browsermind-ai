@@ -288,16 +288,20 @@ app.post("/api/analyze", async (req, res) => {
           // Aguarda dados do AvantPro carregarem no DOM
           const page = await playwrightManager.getPage();
           try {
-            // Primeiro espera os elementos do AvantPro aparecerem (extensão injetando no DOM)
+            // Espera a extensão injetar elementos no DOM
             await page.waitForSelector("[class*=avantpro]", { timeout: 5000 });
-            // Depois espera o "Carregando" desaparecer (dados sendo buscados da API)
+            // Espera estabilizar: "Carregando" pode aparecer depois dos elementos iniciais
+            // Polling a cada 500ms — espera até "Carregando" aparecer E desaparecer,
+            // ou até ter dados numéricos (vendas/visitas/faturamento), ou timeout
             await page.waitForFunction(
               `(() => {
                 const els = document.querySelectorAll("[class*=avantpro]");
-                const text = Array.from(els).map(e => e.textContent).join(" ");
-                return !text.includes("Carregando");
+                const text = Array.from(els).map(e => e.textContent || "").join(" ");
+                if (text.includes("Carregando")) return false;
+                if (/\\d{1,3}(\\.\\d{3})+|R\\$|vendas|visitas|faturamento|conversão/i.test(text)) return true;
+                return false;
               })()`,
-              { timeout: 10000 }
+              { timeout: 12000, polling: 500 }
             );
           } catch {
             // Se timeout, extrai mesmo assim com o que tiver disponível
