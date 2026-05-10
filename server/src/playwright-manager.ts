@@ -479,10 +479,29 @@ export class PlaywrightManager {
               try { return String(eval(expr)); } catch (e) { return String(e); }
             }, action.selector);
           } else {
-            try {
-              text = await page.locator(action.selector).first().innerText({ timeout: 5000 });
-            } catch {
-              text = await page.getByText(action.selector, { exact: false }).first().innerText({ timeout: 5000 });
+            // Detecta pseudo-seletores inválidos e converte para busca por texto
+            const hasInvalidPseudo = /:has-text\(|:text\(|:text-is\(|:text-matches\(/.test(action.selector);
+            if (hasInvalidPseudo) {
+              // Extrai o texto do pseudo-seletor inválido e busca via getByText
+              const textMatch = action.selector.match(/:has-text\(['"]?(.+?)['"]?\)/);
+              const searchText = textMatch ? textMatch[1] : action.selector;
+              try {
+                const el = page.getByText(searchText, { exact: false }).first();
+                // Se o seletor original buscava um link, tenta pegar o href
+                if (action.selector.startsWith("a") || action.selector.includes(" a")) {
+                  text = await el.locator("xpath=ancestor-or-self::a").first().getAttribute("href", { timeout: 5000 }) || "";
+                } else {
+                  text = await el.innerText({ timeout: 5000 });
+                }
+              } catch {
+                text = await page.getByText(searchText, { exact: false }).first().innerText({ timeout: 5000 });
+              }
+            } else {
+              try {
+                text = await page.locator(action.selector).first().innerText({ timeout: 5000 });
+              } catch {
+                text = await page.getByText(action.selector, { exact: false }).first().innerText({ timeout: 5000 });
+              }
             }
           }
           return { success: true, action, detail: `Extraído de ${action.selector}`, extractedData: text.trim() };

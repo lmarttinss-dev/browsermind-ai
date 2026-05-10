@@ -258,10 +258,14 @@ Diretrizes:
 - Extraia e organize TODAS as informações relevantes do conteúdo fornecido, incluindo dados de extensões
 - Quando solicitado a executar ações, responda com um JSON de ações no formato:
   {"actions": [{"type": "click|type|scroll|navigate|select|wait|extract|screenshot|hover|goBack|goForward|evaluate", "selector": "CSS selector", "value": "valor opcional", "description": "descrição da ação"}]}
-- Use seletores CSS padrão para Playwright (ex: "h1", ".class", "#id", "a[href*='text']")
-- Para clicar por texto, use o texto visível como selector
+- Use APENAS seletores CSS válidos (ex: "h1", ".class", "#id", "a[href*='text']")
+- NUNCA use :has-text(), :text(), ou qualquer pseudo-seletor não-CSS — eles NÃO funcionam
+- Para clicar por texto, use o texto visível como selector (sem aspas nem pseudo-seletores)
 - Para extrair texto de um elemento, use "extract" com selector CSS (ex: selector: "h1", selector: ".price", selector: "#title")
 - Para obter a URL atual, título ou executar JavaScript, use "evaluate" com value contendo a expressão JS (ex: value: "document.URL", value: "document.title")
+- Para extrair links/URLs de produtos, use "evaluate" com value contendo JS — exemplos:
+  {"type": "evaluate", "value": "Array.from(document.querySelectorAll('a[href]')).filter(a => a.textContent.includes('Nome do Produto')).map(a => a.href)[0]", "description": "Extrair link do produto"}
+  {"type": "evaluate", "value": "JSON.stringify(Array.from(document.querySelectorAll('.product a')).map(a => ({text: a.textContent.trim(), href: a.href})))", "description": "Listar links dos produtos"}
 - NUNCA use expressões JavaScript como document.URL, window.location etc. como selector — use "evaluate" em vez disso
 - Se não puder executar uma ação, explique o motivo`;
 
