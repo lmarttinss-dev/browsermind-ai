@@ -288,6 +288,7 @@ export class PlaywrightManager {
     visibleText: string;
     headings: string[];
     links: { text: string; href: string }[];
+    productLinks: { text: string; href: string }[];
     metaTags: Record<string, string>;
   }> {
     const page = await this.getPage();
@@ -327,7 +328,20 @@ export class PlaywrightManager {
         });
 
         const links = [];
+        const productLinks = [];
         const seen = new Set();
+        const productPatterns = [
+          /\/MLB-\d/i,
+          /\/p\/MLB/i,
+          /\/MLA-\d/i,
+          /\/p\/MLA/i,
+          /\/MLM-\d/i,
+          /\/p\/MLM/i,
+          /produto\.mercadolivre/i,
+          /articulo\.mercadolibre/i,
+          /\/ip\//i,
+        ];
+        const isProductUrl = (url) => productPatterns.some((p) => p.test(url));
         const contentLinks = [];
         const navLinks = [];
         document.querySelectorAll("a[href]").forEach((a) => {
@@ -336,11 +350,15 @@ export class PlaywrightManager {
           if (!text || !href || href.startsWith("javascript:") || seen.has(href)) return;
           seen.add(href);
           const entry = { text: text.slice(0, 120), href };
-          const isNav = a.closest("nav, header, footer, [role=navigation], [role=banner]");
-          if (isNav) {
-            navLinks.push(entry);
+          if (isProductUrl(href)) {
+            productLinks.push(entry);
           } else {
-            contentLinks.push(entry);
+            const isNav = a.closest("nav, header, footer, [role=navigation], [role=banner]");
+            if (isNav) {
+              navLinks.push(entry);
+            } else {
+              contentLinks.push(entry);
+            }
           }
         });
         links.push(...contentLinks, ...navLinks);
@@ -358,6 +376,7 @@ export class PlaywrightManager {
           visibleText: visibleText.slice(0, 50000),
           headings: headings.slice(0, 50),
           links: links.slice(0, 100),
+          productLinks: productLinks.slice(0, 60),
           metaTags,
         };
       })()
@@ -369,6 +388,7 @@ export class PlaywrightManager {
       visibleText: string;
       headings: string[];
       links: { text: string; href: string }[];
+      productLinks: { text: string; href: string }[];
       metaTags: Record<string, string>;
     }>;
   }
