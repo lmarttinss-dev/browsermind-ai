@@ -93,6 +93,16 @@ app.get("/extract", async (_req, res) => {
   }
 });
 
+// Extract product data for viability calculator
+app.get("/extract/product", async (_req, res) => {
+  try {
+    const data = await playwrightManager.extractProductData();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, error: String(error) });
+  }
+});
+
 // Execute single action
 app.post("/action", async (req, res) => {
   try {

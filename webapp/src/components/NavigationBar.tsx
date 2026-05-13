@@ -8,10 +8,11 @@ import {
   Power,
   PowerOff,
   Loader2,
+  Calculator,
 } from "lucide-react";
 
 export function NavigationBar() {
-  const { browserActive, browserUrl, isLoading, launchBrowser, closeBrowser, navigateTo, takeScreenshot, checkStatus, extensionPaths } = useStore();
+  const { browserActive, browserUrl, isLoading, launchBrowser, closeBrowser, navigateTo, takeScreenshot, checkStatus, extensionPaths, setShowCalculator } = useStore();
   const [urlInput, setUrlInput] = useState("");
   const [editing, setEditing] = useState(false);
 
@@ -89,6 +90,14 @@ export function NavigationBar() {
               className="flex-1 bg-transparent text-sm text-gray-200 placeholder:text-gray-500 px-2 py-1.5 focus:outline-none"
             />
           </div>
+
+          <button
+            onClick={() => setShowCalculator(true)}
+            className="p-1.5 text-gray-400 hover:text-white rounded transition-colors"
+            title="Calculadora de Viabilidade"
+          >
+            <Calculator className="w-4 h-4" />
+          </button>
 
           <button
             onClick={closeBrowser}

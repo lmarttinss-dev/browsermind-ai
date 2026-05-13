@@ -44,6 +44,10 @@ interface AppState {
   pendingActions: BrowserAction[];
   configuredKeys: string[];
 
+  // Calculator
+  showCalculator: boolean;
+  setShowCalculator: (show: boolean) => void;
+
   // AvantPro
   avantproEmail: string;
   avantproPlan: string | null;
@@ -98,6 +102,8 @@ export const useStore = create<AppState>((set, get) => ({
   pendingActions: [],
   configuredKeys: [],
 
+  showCalculator: false,
+
   avantproEmail: "",
   avantproPlan: null,
   avantproAuthenticated: false,
@@ -107,6 +113,7 @@ export const useStore = create<AppState>((set, get) => ({
   setSelectedModel: (selectedModel) => set({ selectedModel }),
   setShowSettings: (showSettings) => set({ showSettings }),
   setAutoRefreshScreenshot: (autoRefreshScreenshot) => set({ autoRefreshScreenshot }),
+  setShowCalculator: (showCalculator) => set({ showCalculator }),
   setExtensionPaths: (extensionPaths) => set({ extensionPaths }),
   setUserDataDir: (userDataDir) => set({ userDataDir }),
 

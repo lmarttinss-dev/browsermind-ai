@@ -351,6 +351,90 @@ export class PlaywrightManager {
     }>;
   }
 
+  async extractProductData(): Promise<{
+    salePrice: number | null;
+    commissionPercent: number | null;
+    taxPercent: number | null;
+    monthlySales: number | null;
+    productName: string | null;
+  }> {
+    const page = await this.getPage();
+
+    const script = `
+      (() => {
+        const result = {
+          salePrice: null,
+          commissionPercent: null,
+          taxPercent: null,
+          monthlySales: null,
+          productName: null,
+        };
+
+        // Nome do produto
+        const titleEl = document.querySelector("h1.ui-pdp-title");
+        if (titleEl) result.productName = titleEl.textContent.trim();
+
+        // Preço de venda — tenta múltiplas estratégias
+        // 1) Meta tag do ML
+        const priceMeta = document.querySelector('meta[itemprop="price"]');
+        if (priceMeta) {
+          const v = parseFloat(priceMeta.getAttribute("content"));
+          if (!isNaN(v) && v > 0) result.salePrice = v;
+        }
+        // 2) Elemento do preço na página do ML
+        if (!result.salePrice) {
+          const priceEl = document.querySelector(".andes-money-amount__fraction");
+          if (priceEl) {
+            const cents = document.querySelector(".andes-money-amount__cents");
+            const intPart = priceEl.textContent.replace(/\\D/g, "");
+            const centPart = cents ? cents.textContent.replace(/\\D/g, "") : "00";
+            const v = parseFloat(intPart + "." + centPart);
+            if (!isNaN(v) && v > 0) result.salePrice = v;
+          }
+        }
+        // 3) og:price:amount
+        if (!result.salePrice) {
+          const ogPrice = document.querySelector('meta[property="og:price:amount"], meta[property="product:price:amount"]');
+          if (ogPrice) {
+            const v = parseFloat(ogPrice.getAttribute("content"));
+            if (!isNaN(v) && v > 0) result.salePrice = v;
+          }
+        }
+
+        // Dados do AvantPro — busca no texto visível
+        const bodyText = document.body.innerText || "";
+
+        // Comissão: "Comissão ML R$ 12,96 (26,07%)" ou "26,07%"
+        const commMatch = bodyText.match(/[Cc]omiss[aã]o[^\\n]*?(\\d+[.,]\\d+)\\s*%/);
+        if (commMatch) {
+          result.commissionPercent = parseFloat(commMatch[1].replace(",", "."));
+        }
+
+        // Imposto: "Imposto R$ 3,48 (7,00%)"
+        const taxMatch = bodyText.match(/[Ii]mposto[^\\n]*?(\\d+[.,]\\d+)\\s*%/);
+        if (taxMatch) {
+          result.taxPercent = parseFloat(taxMatch[1].replace(",", "."));
+        }
+
+        // Vendas mensais: "1.363/Mês"
+        const salesMatch = bodyText.match(/(\\d[\\d.]+)\\s*\\/\\s*[Mm][eê]s/);
+        if (salesMatch) {
+          result.monthlySales = parseInt(salesMatch[1].replace(/\\./g, ""));
+        }
+
+        return result;
+      })()
+    `;
+
+    return page.evaluate(script) as Promise<{
+      salePrice: number | null;
+      commissionPercent: number | null;
+      taxPercent: number | null;
+      monthlySales: number | null;
+      productName: string | null;
+    }>;
+  }
+
   async executeAction(action: BrowserAction): Promise<ActionResult> {
     const page = await this.getPage();
 

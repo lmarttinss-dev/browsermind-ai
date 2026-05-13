@@ -24,6 +24,7 @@ export const api = {
   navigate: (url: string) => request<{ success: boolean; url: string; title: string }>("/navigate", { method: "POST", body: JSON.stringify({ url }) }),
   screenshot: () => request<{ success: boolean; screenshot: string }>("/screenshot"),
   extract: () => request<{ success: boolean; data: { url: string; title: string; visibleText: string; headings: string[]; links: { text: string; href: string }[]; metaTags: Record<string, string> } }>("/extract"),
+  extractProduct: () => request<{ success: boolean; data: { salePrice: number | null; commissionPercent: number | null; taxPercent: number | null; monthlySales: number | null; productName: string | null } }>("/extract/product"),
 
   // Actions
   executeAction: (action: BrowserAction) => request<ActionResult>("/action", { method: "POST", body: JSON.stringify(action) }),

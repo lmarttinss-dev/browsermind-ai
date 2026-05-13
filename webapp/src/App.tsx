@@ -5,6 +5,7 @@ import { BrowserViewport } from "@/components/BrowserViewport";
 import { ChatPanel } from "@/components/ChatPanel";
 import { ActionConsole } from "@/components/ActionConsole";
 import { SettingsModal } from "@/components/SettingsModal";
+import { ViabilityCalculator } from "@/components/ViabilityCalculator";
 
 export default function App() {
   const { checkStatus, serverOnline } = useStore();
@@ -35,6 +36,9 @@ export default function App() {
 
       {/* Settings modal */}
       <SettingsModal />
+
+      {/* Viability calculator */}
+      <ViabilityCalculator />
 
       {/* Server status indicator */}
       <div className="absolute bottom-2 left-2">
