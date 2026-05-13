@@ -5,10 +5,16 @@ export class GeminiProvider extends BaseProvider {
   name: string;
   model: string;
 
-  constructor(apiKey: string, model: "gemini-2.5-flash" | "gemini-2.0-pro" = "gemini-2.5-flash") {
+  constructor(apiKey: string, model: "gemini-2.5-flash" | "gemini-2.5-pro" | "gemini-3-flash-preview" | "gemini-3.1-pro-preview" = "gemini-2.5-flash") {
     super(apiKey);
     this.model = model;
-    this.name = model === "gemini-2.5-flash" ? "Gemini Flash 2.5" : "Gemini Pro";
+    const nameMap: Record<string, string> = {
+      "gemini-2.5-flash": "Gemini 2.5 Flash",
+      "gemini-2.5-pro": "Gemini 2.5 Pro",
+      "gemini-3-flash-preview": "Gemini 3 Flash",
+      "gemini-3.1-pro-preview": "Gemini 3.1 Pro",
+    };
+    this.name = nameMap[model] || model;
   }
 
   async analyze(params: {

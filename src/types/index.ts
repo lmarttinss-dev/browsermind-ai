@@ -24,7 +24,9 @@ export interface AIProvider {
 
 export type ModelId =
   | "gemini-flash-2.5"
-  | "gemini-pro"
+  | "gemini-pro-2.5"
+  | "gemini-flash-3"
+  | "gemini-pro-3.1"
   | "gpt-4.1"
   | "claude-sonnet"
   | "deepseek";
@@ -36,8 +38,10 @@ export interface ModelOption {
 }
 
 export const MODELS: ModelOption[] = [
-  { id: "gemini-flash-2.5", name: "Gemini Flash 2.5", provider: "google" },
-  { id: "gemini-pro", name: "Gemini Pro", provider: "google" },
+  { id: "gemini-flash-2.5", name: "Gemini 2.5 Flash", provider: "google" },
+  { id: "gemini-pro-2.5", name: "Gemini 2.5 Pro", provider: "google" },
+  { id: "gemini-flash-3", name: "Gemini 3 Flash", provider: "google" },
+  { id: "gemini-pro-3.1", name: "Gemini 3.1 Pro", provider: "google" },
   { id: "gpt-4.1", name: "GPT-4.1", provider: "openai" },
   { id: "claude-sonnet", name: "Claude Sonnet", provider: "anthropic" },
   { id: "deepseek", name: "DeepSeek", provider: "deepseek" },

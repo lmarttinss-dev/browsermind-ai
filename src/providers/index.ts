@@ -8,8 +8,12 @@ export function createProvider(modelId: ModelId, apiKeys: Record<string, string>
   switch (modelId) {
     case "gemini-flash-2.5":
       return new GeminiProvider(apiKeys.google || "", "gemini-2.5-flash");
-    case "gemini-pro":
-      return new GeminiProvider(apiKeys.google || "", "gemini-2.0-pro");
+    case "gemini-pro-2.5":
+      return new GeminiProvider(apiKeys.google || "", "gemini-2.5-pro");
+    case "gemini-flash-3":
+      return new GeminiProvider(apiKeys.google || "", "gemini-3-flash-preview");
+    case "gemini-pro-3.1":
+      return new GeminiProvider(apiKeys.google || "", "gemini-3.1-pro-preview");
     case "gpt-4.1":
       return new OpenAIProvider(apiKeys.openai || "");
     case "claude-sonnet":

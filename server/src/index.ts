@@ -361,8 +361,14 @@ app.post("/api/analyze", async (req, res) => {
 
     let aiResponse: string;
 
-    if (model === "gemini-flash-2.5" || model === "gemini-pro") {
-      const geminiModel = model === "gemini-flash-2.5" ? "gemini-2.5-flash" : "gemini-2.0-pro";
+    if (model === "gemini-flash-2.5" || model === "gemini-pro-2.5" || model === "gemini-flash-3" || model === "gemini-pro-3.1") {
+      const geminiModelMap: Record<string, string> = {
+        "gemini-flash-2.5": "gemini-2.5-flash",
+        "gemini-pro-2.5": "gemini-2.5-pro",
+        "gemini-flash-3": "gemini-3-flash-preview",
+        "gemini-pro-3.1": "gemini-3.1-pro-preview",
+      };
+      const geminiModel = geminiModelMap[model];
       const key = apiKeys.gemini;
       if (!key) throw new Error("Chave Gemini não configurada. Configure em Settings.");
 
