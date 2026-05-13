@@ -5,8 +5,10 @@ import { X, Key, CheckCircle, AlertCircle, Loader2, Puzzle, Plus, Trash2, Shield
 
 // Map model IDs to their provider key names
 const MODEL_KEY_MAP: Record<string, string> = {
-  "gemini-flash": "gemini",
-  "gemini-pro": "gemini",
+  "gemini-flash-2.5": "gemini",
+  "gemini-pro-2.5": "gemini",
+  "gemini-flash-3": "gemini",
+  "gemini-pro-3.1": "gemini",
   "gpt-4.1": "openai",
   "claude-sonnet": "anthropic",
   "deepseek-chat": "deepseek",

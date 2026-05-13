@@ -84,6 +84,99 @@ function createStuckServer(): http.Server {
   })
 }
 
+// Simula página onde dados aparecem após clicar no botão
+function createButtonClickServer(loadDelayMs = 2000): http.Server {
+  return http.createServer((_req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Produto Teste - Mercado Livre</title></head>
+      <body>
+        <h1>Produto Teste MLB456789</h1>
+        <div class="avantpro-panel" id="avantpro-panel">
+          <button id="avantpro-btn">Informações Avantpro</button>
+          <div id="avantpro-data" style="display:none;">
+            <span>Carregando dados Avantpro...</span>
+          </div>
+        </div>
+        <script>
+          document.getElementById("avantpro-btn").addEventListener("click", () => {
+            document.getElementById("avantpro-data").style.display = "block";
+            setTimeout(() => {
+              document.getElementById("avantpro-data").innerHTML =
+                '<div class="avantpro-metrics">' +
+                '<span>Vendas: 800</span>' +
+                '<span>Faturamento: R$ 32.000,00</span>' +
+                '<span>Estoque: 50</span>' +
+                '</div>';
+            }, ${loadDelayMs});
+          });
+        </script>
+      </body>
+      </html>
+    `)
+  })
+}
+
+// Simula página que começa carregando e depois mostra tela de login
+function createDelayedNotAuthServer(loadDelayMs = 2000): http.Server {
+  return http.createServer((_req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Produto Teste - Mercado Livre</title></head>
+      <body>
+        <h1>Produto Teste MLB333333</h1>
+        <div class="avantpro-panel" id="avantpro-metrics">
+          <span>Carregando dados Avantpro...</span>
+        </div>
+        <script>
+          setTimeout(() => {
+            document.getElementById("avantpro-metrics").innerHTML =
+              '<div class="avantpro-cta">' +
+              '<h3>Comece a usar o Avantpro!</h3>' +
+              '<p>Faça login para ver métricas.</p>' +
+              '<button>Cadastre-se</button>' +
+              '</div>';
+          }, ${loadDelayMs});
+        </script>
+      </body>
+      </html>
+    `)
+  })
+}
+
+// Simula página com case diferente nos seletores (AvantPro com PascalCase)
+function createPascalCaseServer(loadDelayMs = 1500): http.Server {
+  return http.createServer((_req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
+    res.end(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Produto Teste - Mercado Livre</title></head>
+      <body>
+        <h1>Produto Teste MLB222222</h1>
+        <div class="AvantPro-container" id="AvantPro-data">
+          <span>Carregando dados Avantpro...</span>
+        </div>
+        <script>
+          setTimeout(() => {
+            document.getElementById("AvantPro-data").innerHTML =
+              '<div class="AvantPro-metrics">' +
+              '<span>Receita: R$ 120.000,00</span>' +
+              '<span>Margem: 15%</span>' +
+              '<span>Lucro: R$ 18.000,00</span>' +
+              '</div>';
+          }, ${loadDelayMs});
+        </script>
+      </body>
+      </html>
+    `)
+  })
+}
+
 // Simula página sem AvantPro
 function createNoAvantproServer(): http.Server {
   return http.createServer((_req, res) => {
@@ -358,4 +451,59 @@ describe("AvantPro - Aguarda dados carregarem", () => {
 
     await browser.close()
   }, 30000)
+
+  it("deve carregar dados após clicar no botão Informações Avantpro", async () => {
+    const server = createButtonClickServer(1500)
+    const port = await startServer(server)
+    const browser = await chromium.launch({ headless: true })
+    const page = await (await browser.newContext()).newPage()
+
+    await page.goto(`http://localhost:${port}/produto-teste/p/MLB456789`)
+
+    const loaded = await waitForAvantproData(page, { timeout: 10000 })
+    expect(loaded).toBe("loaded")
+
+    const bodyText = await page.locator("body").textContent()
+    expect(bodyText).toContain("Vendas")
+    expect(bodyText).toContain("R$")
+
+    await browser.close()
+  }, 30000)
+
+  it("deve retornar not_authenticated quando login aparece durante polling", async () => {
+    const server = createDelayedNotAuthServer(1500)
+    const port = await startServer(server)
+    const browser = await chromium.launch({ headless: true })
+    const page = await (await browser.newContext()).newPage()
+
+    await page.goto(`http://localhost:${port}/produto-teste/p/MLB333333`)
+
+    // Inicialmente está "Carregando"
+    const initialText = await page.locator(".avantpro-panel").textContent()
+    expect(initialText).toContain("Carregando")
+
+    const result = await waitForAvantproData(page, { timeout: 10000 })
+    expect(result).toBe("not_authenticated")
+
+    await browser.close()
+  }, 20000)
+
+  it("deve detectar elementos com PascalCase e métricas alternativas (receita, margem, lucro)", async () => {
+    const server = createPascalCaseServer(1000)
+    const port = await startServer(server)
+    const browser = await chromium.launch({ headless: true })
+    const page = await (await browser.newContext()).newPage()
+
+    await page.goto(`http://localhost:${port}/produto-teste/p/MLB222222`)
+
+    const loaded = await waitForAvantproData(page, { timeout: 10000 })
+    expect(loaded).toBe("loaded")
+
+    const bodyText = await page.locator("body").textContent()
+    expect(bodyText).toContain("Receita")
+    expect(bodyText).toContain("Margem")
+    expect(bodyText).toContain("Lucro")
+
+    await browser.close()
+  }, 20000)
 })
