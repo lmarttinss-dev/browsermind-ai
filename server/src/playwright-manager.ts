@@ -155,6 +155,15 @@ export class PlaywrightManager {
 
   async getTitle(): Promise<string> {
     const page = await this.getPage();
+    return this.extractProductTitle(page);
+  }
+
+  // Extrai o título do anúncio do ML (h1.ui-pdp-title) ou fallback para document.title
+  private async extractProductTitle(page: Page): Promise<string> {
+    try {
+      const productTitle = await page.locator("h1.ui-pdp-title").textContent({ timeout: 1000 });
+      if (productTitle?.trim()) return productTitle.trim();
+    } catch { /* fallback */ }
     return page.title();
   }
 
@@ -569,7 +578,7 @@ export class PlaywrightManager {
       return {
         active: true,
         url: page.url(),
-        title: await page.title(),
+        title: await this.extractProductTitle(page),
       };
     } catch {
       return { active: false, url: null, title: null };

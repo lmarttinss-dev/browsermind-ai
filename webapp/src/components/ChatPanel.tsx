@@ -1,5 +1,6 @@
 import { useStore } from "@/store/useStore";
 import { MODELS } from "@/lib/api";
+import { sanitizeFilename } from "@/lib/utils";
 import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -12,6 +13,7 @@ export function ChatPanel() {
     pendingActions, analyzePage, executeActions,
     history, restoreEntry, clearHistory,
     setShowSettings,
+    browserTitle,
   } = useStore();
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -108,7 +110,7 @@ export function ChatPanel() {
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement("a")
                   a.href = url
-                  a.download = `browsermind-${new Date().toISOString().slice(0, 10)}.md`
+                  a.download = `${sanitizeFilename(browserTitle)}.md`
                   a.click()
                   URL.revokeObjectURL(url)
                 }}
