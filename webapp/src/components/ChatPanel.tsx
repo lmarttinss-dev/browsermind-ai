@@ -1,5 +1,6 @@
 import { useStore } from "@/store/useStore";
 import { MODELS } from "@/lib/api";
+import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
 import { sanitizeFilename } from "@/lib/utils";
 import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -20,6 +21,14 @@ export function ChatPanel() {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       analyzePage();
+    }
+  };
+
+  const applyTemplate = (templateId: string) => {
+    if (!templateId) return;
+    const template = PROMPT_TEMPLATES.find((t) => t.id === templateId);
+    if (template) {
+      setPrompt(template.content);
     }
   };
 
@@ -50,6 +59,21 @@ export function ChatPanel() {
           >
             {MODELS.map((m) => (
               <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        </div>
+
+        {/* Template selector */}
+        <div className="relative">
+          <select
+            value=""
+            onChange={(e) => applyTemplate(e.target.value)}
+            className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 pr-8 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+          >
+            <option value="">Selecionar template de prompt...</option>
+            {PROMPT_TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
