@@ -2,7 +2,7 @@ import { useStore } from "@/store/useStore";
 import { MODELS } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
 import { sanitizeFilename } from "@/lib/utils";
-import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download } from "lucide-react";
+import { Send, Play, Loader2, ChevronDown, Trash2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -13,7 +13,6 @@ export function ChatPanel() {
     response, isLoading, error,
     pendingActions, analyzePage, executeActions,
     history, restoreEntry, clearHistory,
-    setShowSettings,
     browserTitle,
   } = useStore();
 
@@ -33,22 +32,7 @@ export function ChatPanel() {
   };
 
   return (
-    <div className="w-[420px] min-w-[380px] flex flex-col bg-white border-l border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🧠</span>
-          <h1 className="text-sm font-bold tracking-tight">BrowserMind AI</h1>
-        </div>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
-          title="Configurações"
-        >
-          <Settings className="w-4 h-4" />
-        </button>
-      </div>
-
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Model selector + prompt */}
       <div className="p-3 space-y-2 border-b border-gray-100">
         <div className="relative">

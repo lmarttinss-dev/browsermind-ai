@@ -466,6 +466,147 @@ app.post("/api/analyze", async (req, res) => {
   }
 });
 
+// ==================== SUPPLIER SEARCH ====================
+
+type SupplierResult = {
+  name: string
+  url: string
+  country: string | null
+  yearsInBusiness: number | null
+  isTradeAssurance: boolean
+  isVerified: boolean
+  mainProducts: string[]
+  rating: number | null
+  responseRate: string | null
+  image: string | null
+}
+
+app.post("/suppliers/search", async (req, res) => {
+  try {
+    const { query, filters = {} } = req.body || {};
+    if (!query || typeof query !== "string") {
+      res.status(400).json({ success: false, error: "query is required" });
+      return;
+    }
+
+    const { tradeAssurance = false, verified = false } = filters;
+
+    // Monta URL de busca no Alibaba
+    const params = new URLSearchParams({
+      searchText: query,
+      tab: "supplier",
+    });
+    if (tradeAssurance) params.set("tradeAssurance", "true");
+    if (verified) params.set("isVerified", "true");
+
+    const searchUrl = `https://www.alibaba.com/trade/search?${params.toString()}`;
+
+    const page = await playwrightManager.getPage();
+    await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+
+    // Aguarda os cards de fornecedores carregarem
+    await page.waitForSelector('[class*="supplier"], [class*="card"], .organic-list', {
+      timeout: 15000,
+    }).catch(() => {});
+
+    // Aguarda um pouco para conteúdo dinâmico carregar
+    await page.waitForTimeout(3000);
+
+    // Extrai os dados dos fornecedores
+    const suppliers: SupplierResult[] = await page.evaluate(`
+      (() => {
+        const results = [];
+        // Tenta diferentes seletores para os cards de fornecedores
+        const cards = document.querySelectorAll(
+          '.organic-list .list-item, [class*="SupplierCard"], [class*="supplier-card"], .app-organic-search__content .card'
+        );
+
+        // Se não encontrou com seletores específicos, tenta uma abordagem mais genérica
+        const elements = cards.length > 0 ? cards : document.querySelectorAll('[data-content="supplierCard"], .organic-list-offer-outter');
+
+        elements.forEach((card) => {
+          try {
+            // Nome do fornecedor
+            const nameEl = card.querySelector('a[class*="name"], [class*="company-name"], [class*="supplier-name"], h2 a, .title a');
+            const name = nameEl ? nameEl.textContent.trim() : null;
+            if (!name) return;
+
+            // URL do fornecedor
+            const linkEl = card.querySelector('a[href*="alibaba.com"]') || nameEl;
+            let url = linkEl ? linkEl.getAttribute("href") : null;
+            if (url && !url.startsWith("http")) url = "https:" + url;
+
+            // País
+            const countryEl = card.querySelector('[class*="country"], [class*="location"], [class*="flag"]');
+            const country = countryEl ? countryEl.textContent.trim() : null;
+
+            // Anos de negócio
+            const yearsEl = card.querySelector('[class*="year"], [class*="experience"]');
+            const yearsText = yearsEl ? yearsEl.textContent : "";
+            const yearsMatch = yearsText.match(/(\\d+)\\s*yr/i);
+            const yearsInBusiness = yearsMatch ? parseInt(yearsMatch[1]) : null;
+
+            // Trade Assurance
+            const isTradeAssurance = !!card.querySelector('[class*="trade-assurance"], [class*="tradeAssurance"], [title*="Trade Assurance"]')
+              || card.textContent.includes("Trade Assurance");
+
+            // Verified
+            const isVerified = !!card.querySelector('[class*="verified"], [class*="Verified"], [title*="Verified"]')
+              || card.textContent.includes("Verified");
+
+            // Produtos principais
+            const productEls = card.querySelectorAll('[class*="product"], [class*="main-product"] span, [class*="tag"]');
+            const mainProducts = [...productEls].map(el => el.textContent.trim()).filter(t => t.length > 0 && t.length < 100).slice(0, 5);
+
+            // Rating
+            const ratingEl = card.querySelector('[class*="rating"], [class*="score"], [class*="star"]');
+            const ratingText = ratingEl ? ratingEl.textContent : "";
+            const ratingMatch = ratingText.match(/(\\d+\\.?\\d*)/);
+            const rating = ratingMatch ? parseFloat(ratingMatch[1]) : null;
+
+            // Response rate
+            const responseEl = card.querySelector('[class*="response"], [class*="reply"]');
+            const responseRate = responseEl ? responseEl.textContent.trim() : null;
+
+            // Imagem
+            const imgEl = card.querySelector('img[src*="alicdn"], img[src*="alibaba"]');
+            const image = imgEl ? imgEl.getAttribute("src") : null;
+
+            results.push({
+              name,
+              url,
+              country,
+              yearsInBusiness,
+              isTradeAssurance,
+              isVerified,
+              mainProducts,
+              rating,
+              responseRate,
+              image,
+            });
+          } catch (e) {
+            // Ignora cards com erro de parsing
+          }
+        });
+
+        return results;
+      })()
+    `);
+
+    res.json({
+      success: true,
+      suppliers,
+      totalFound: suppliers.length,
+      searchUrl,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
+
 // Graceful shutdown
 process.on("SIGINT", async () => {
   console.log("\n🔌 Shutting down...");
@@ -493,4 +634,5 @@ app.listen(PORT, () => {
   console.log(`   POST /api/keys    - Set API keys`);
   console.log(`   GET  /api/keys    - Get configured keys`);
   console.log(`   POST /api/analyze - AI analyze (proxied)`);
+  console.log(`   POST /suppliers/search - Search suppliers on Alibaba`);
 });

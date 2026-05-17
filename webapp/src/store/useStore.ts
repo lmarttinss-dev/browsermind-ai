@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { api, type BrowserAction, type ModelId, type ActionResult } from "@/lib/api";
+import { api, type BrowserAction, type ModelId, type ActionResult, type SupplierResult, type SupplierFilters } from "@/lib/api";
 
 export interface ActionLog {
   id: string;
@@ -27,6 +27,7 @@ interface AppState {
   isLoading: boolean;
   error: string | null;
   showSettings: boolean;
+  rightPanelTab: "chat" | "suppliers";
 
   // Browser
   serverOnline: boolean;
@@ -50,10 +51,19 @@ interface AppState {
   avantproAuthenticated: boolean;
   avantproLoading: boolean;
 
+  // Suppliers
+  supplierQuery: string;
+  supplierFilters: SupplierFilters;
+  supplierResults: SupplierResult[];
+  supplierLoading: boolean;
+  supplierError: string | null;
+  supplierSearchUrl: string | null;
+
   // Setters
   setPrompt: (prompt: string) => void;
   setSelectedModel: (model: ModelId) => void;
   setShowSettings: (show: boolean) => void;
+  setRightPanelTab: (tab: "chat" | "suppliers") => void;
   setAutoRefreshScreenshot: (v: boolean) => void;
   setExtensionPaths: (paths: string[]) => void;
   setUserDataDir: (dir: string) => void;
@@ -74,6 +84,11 @@ interface AppState {
   setAvantproEmail: (email: string) => void;
   authenticateAvantpro: () => Promise<void>;
   checkAvantproStatus: () => Promise<void>;
+
+  // Supplier actions
+  setSupplierQuery: (query: string) => void;
+  setSupplierFilters: (filters: SupplierFilters) => void;
+  searchSuppliers: () => Promise<void>;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -83,6 +98,7 @@ export const useStore = create<AppState>((set, get) => ({
   isLoading: false,
   error: null,
   showSettings: false,
+  rightPanelTab: "chat",
 
   serverOnline: false,
   browserActive: false,
@@ -103,9 +119,17 @@ export const useStore = create<AppState>((set, get) => ({
   avantproAuthenticated: false,
   avantproLoading: false,
 
+  supplierQuery: "",
+  supplierFilters: { tradeAssurance: true, verified: true },
+  supplierResults: [],
+  supplierLoading: false,
+  supplierError: null,
+  supplierSearchUrl: null,
+
   setPrompt: (prompt) => set({ prompt }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
   setShowSettings: (showSettings) => set({ showSettings }),
+  setRightPanelTab: (rightPanelTab) => set({ rightPanelTab }),
   setAutoRefreshScreenshot: (autoRefreshScreenshot) => set({ autoRefreshScreenshot }),
   setExtensionPaths: (extensionPaths) => set({ extensionPaths }),
   setUserDataDir: (userDataDir) => set({ userDataDir }),
@@ -312,6 +336,31 @@ export const useStore = create<AppState>((set, get) => ({
       }
     } catch {
       set({ avantproAuthenticated: false });
+    }
+  },
+
+  setSupplierQuery: (supplierQuery) => set({ supplierQuery }),
+  setSupplierFilters: (supplierFilters) => set({ supplierFilters }),
+
+  searchSuppliers: async () => {
+    const { supplierQuery, supplierFilters } = get();
+    if (!supplierQuery.trim()) {
+      set({ supplierError: "Digite um termo de busca" });
+      return;
+    }
+
+    set({ supplierLoading: true, supplierError: null, supplierResults: [], supplierSearchUrl: null });
+
+    try {
+      const res = await api.searchSuppliers(supplierQuery.trim(), supplierFilters);
+      set({
+        supplierResults: res.suppliers,
+        supplierSearchUrl: res.searchUrl,
+      });
+    } catch (err) {
+      set({ supplierError: err instanceof Error ? err.message : "Erro ao buscar fornecedores" });
+    } finally {
+      set({ supplierLoading: false });
     }
   },
 }));

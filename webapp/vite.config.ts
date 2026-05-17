@@ -25,6 +25,7 @@ export default defineConfig({
       "/pages": "http://localhost:3210",
       "/extension": "http://localhost:3210",
       "/avantpro": "http://localhost:3210",
+      "/suppliers": "http://localhost:3210",
     },
   },
 });

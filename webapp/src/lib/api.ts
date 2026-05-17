@@ -40,6 +40,10 @@ export const api = {
     request<{ success: boolean; user?: { email: string; plan: string }; message?: string; error?: string }>("/avantpro/auth", { method: "POST", body: JSON.stringify({ email }) }),
   avantproStatus: () =>
     request<{ success: boolean; authenticated: boolean; email?: string; plan?: string }>("/avantpro/status"),
+
+  // Suppliers
+  searchSuppliers: (query: string, filters: SupplierFilters = {}) =>
+    request<SupplierSearchResponse>("/suppliers/search", { method: "POST", body: JSON.stringify({ query, filters }) }),
 };
 
 export interface BrowserAction {
@@ -55,6 +59,31 @@ export interface ActionResult {
   detail?: string;
   extractedData?: string;
   screenshot?: string;
+}
+
+export interface SupplierResult {
+  name: string;
+  url: string;
+  country: string | null;
+  yearsInBusiness: number | null;
+  isTradeAssurance: boolean;
+  isVerified: boolean;
+  mainProducts: string[];
+  rating: number | null;
+  responseRate: string | null;
+  image: string | null;
+}
+
+export interface SupplierFilters {
+  tradeAssurance?: boolean;
+  verified?: boolean;
+}
+
+export interface SupplierSearchResponse {
+  success: boolean;
+  suppliers: SupplierResult[];
+  totalFound: number;
+  searchUrl: string;
 }
 
 export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek";
