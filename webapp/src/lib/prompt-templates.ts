@@ -102,4 +102,63 @@ Forneça uma conclusão objetiva informando:
 - Melhor estratégia de venda
 - Recomendação final`,
   },
+  {
+    id: "analise-fornecedores-alibaba",
+    name: "Análise de Fornecedores (Alibaba)",
+    description: "Extrai e compara fornecedores listados na página de resultados do Alibaba",
+    content: `Analise os fornecedores listados nesta página do Alibaba e gere um relatório comparativo em Markdown.
+
+# Template do Relatório
+
+## 🔍 Resumo da Busca
+
+- Termo pesquisado:
+- Total de fornecedores na página:
+- Filtros ativos (Trade Assurance, Verified, etc.):
+
+## 🏭 Fornecedores Encontrados
+
+Para CADA fornecedor listado, extraia:
+
+### Fornecedor [N]: [Nome]
+
+- **Nome da empresa:**
+- **País/Região:**
+- **Anos de operação:**
+- **Trade Assurance:** Sim/Não
+- **Verified Supplier:** Sim/Não
+- **Produtos principais:**
+- **Preço indicado (se disponível):**
+- **MOQ (pedido mínimo):**
+- **Rating/Avaliação:**
+- **Taxa de resposta:**
+- **Capacidades:** OEM / ODM / Customização
+- **Certificações visíveis:** (ISO, CE, ROHS, etc.)
+- **Link do fornecedor:**
+
+## 📊 Ranking Comparativo
+
+Ordene os fornecedores por confiabilidade considerando:
+1. Verified + Trade Assurance
+2. Anos de mercado
+3. Rating e taxa de resposta
+4. Certificações relevantes
+
+| # | Fornecedor | País | Anos | TA | Verified | Rating | MOQ | Preço |
+|---|-----------|------|------|----|----------|--------|-----|-------|
+
+## ⚠️ Análise de Risco
+
+Para cada fornecedor, identifique:
+- Sinais positivos (certificações, tempo de mercado, rating alto)
+- Sinais de alerta (rating baixo, pouco tempo, sem Trade Assurance)
+- Nível de risco: Baixo / Médio / Alto
+
+## 💡 Recomendação
+
+- Top 3 fornecedores recomendados para contato
+- Justificativa para cada escolha
+- Próximos passos sugeridos (solicitar cotação, pedir amostras, etc.)
+- Perguntas-chave para fazer ao fornecedor`,
+  },
 ]
