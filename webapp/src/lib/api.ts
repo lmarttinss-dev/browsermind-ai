@@ -42,8 +42,8 @@ export const api = {
     request<{ success: boolean; authenticated: boolean; email?: string; plan?: string }>("/avantpro/status"),
 
   // Suppliers
-  searchSuppliers: (query: string, filters: SupplierFilters = {}) =>
-    request<SupplierSearchResponse>("/suppliers/search", { method: "POST", body: JSON.stringify({ query, filters }) }),
+  searchSuppliers: (query: string, filters: SupplierFilters = {}, generateKeyword = false) =>
+    request<SupplierSearchResponse>("/suppliers/search", { method: "POST", body: JSON.stringify({ query, filters, generateKeyword }) }),
 };
 
 export interface BrowserAction {
@@ -84,6 +84,7 @@ export interface SupplierSearchResponse {
   suppliers: SupplierResult[];
   totalFound: number;
   searchUrl: string;
+  keyword: string;
 }
 
 export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek";

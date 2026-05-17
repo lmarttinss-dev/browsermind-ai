@@ -481,9 +481,39 @@ type SupplierResult = {
   image: string | null
 }
 
+const KEYWORD_PROMPT = `You are a sourcing expert. Given the content of a product page from Mercado Livre (Brazilian marketplace), generate the BEST search keyword in English to find this product's manufacturer/supplier on Alibaba.
+
+Rules:
+- Return ONLY the keyword, nothing else (no quotes, no explanation)
+- Use generic product terms that suppliers use (not brand names)
+- Include key technical specs that differentiate the product (material, size, power, etc.)
+- Keep it concise: 3-7 words maximum
+- Use English only`
+
+async function generateSupplierKeyword(pageContent: string): Promise<string | null> {
+  // Usa Gemini Flash (rápido e barato) para gerar a keyword
+  const key = apiKeys.gemini;
+  if (!key) return null;
+
+  try {
+    const r = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      {
+        contents: [{ parts: [{ text: `${KEYWORD_PROMPT}\n\nProduct page content:\n${pageContent.slice(0, 8000)}` }] }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 50 },
+      }
+    );
+    const text = r.data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    return text || null;
+  } catch (err) {
+    console.log("⚠️ Keyword generation failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 app.post("/suppliers/search", async (req, res) => {
   try {
-    const { query, filters = {} } = req.body || {};
+    const { query, filters = {}, generateKeyword = false } = req.body || {};
     if (!query || typeof query !== "string") {
       res.status(400).json({ success: false, error: "query is required" });
       return;
@@ -491,9 +521,37 @@ app.post("/suppliers/search", async (req, res) => {
 
     const { tradeAssurance = false, verified = false } = filters;
 
+    let searchQuery = query;
+
+    // Se solicitado, gera keyword otimizada via LLM usando o conteúdo da página
+    if (generateKeyword) {
+      try {
+        const status = await playwrightManager.getStatus();
+        if (status.active) {
+          const extracted = await playwrightManager.extractPageContent();
+          const pageContent = [
+            `Title: ${extracted.title}`,
+            `Headings: ${extracted.headings.join(", ")}`,
+            Object.keys(extracted.metaTags).length > 0
+              ? `Meta: ${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join(", ")}`
+              : "",
+            `Content: ${extracted.visibleText}`,
+          ].filter(Boolean).join("\n");
+
+          const keyword = await generateSupplierKeyword(pageContent);
+          if (keyword) {
+            searchQuery = keyword;
+            console.log(`🔍 Keyword gerada pela IA: "${keyword}"`);
+          }
+        }
+      } catch (err) {
+        console.log("⚠️ Erro ao gerar keyword, usando query manual:", err instanceof Error ? err.message : err);
+      }
+    }
+
     // Monta URL de busca no Alibaba
     const params = new URLSearchParams({
-      searchText: query,
+      searchText: searchQuery,
       tab: "supplier",
     });
     if (tradeAssurance) params.set("tradeAssurance", "true");
@@ -598,6 +656,7 @@ app.post("/suppliers/search", async (req, res) => {
       suppliers,
       totalFound: suppliers.length,
       searchUrl,
+      keyword: searchQuery,
     });
   } catch (error) {
     res.status(500).json({

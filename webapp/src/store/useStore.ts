@@ -58,6 +58,8 @@ interface AppState {
   supplierLoading: boolean;
   supplierError: string | null;
   supplierSearchUrl: string | null;
+  supplierKeyword: string | null;
+  supplierGenerateKeyword: boolean;
 
   // Setters
   setPrompt: (prompt: string) => void;
@@ -88,6 +90,7 @@ interface AppState {
   // Supplier actions
   setSupplierQuery: (query: string) => void;
   setSupplierFilters: (filters: SupplierFilters) => void;
+  setSupplierGenerateKeyword: (v: boolean) => void;
   searchSuppliers: () => Promise<void>;
 }
 
@@ -125,6 +128,8 @@ export const useStore = create<AppState>((set, get) => ({
   supplierLoading: false,
   supplierError: null,
   supplierSearchUrl: null,
+  supplierKeyword: null,
+  supplierGenerateKeyword: true,
 
   setPrompt: (prompt) => set({ prompt }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
@@ -341,21 +346,23 @@ export const useStore = create<AppState>((set, get) => ({
 
   setSupplierQuery: (supplierQuery) => set({ supplierQuery }),
   setSupplierFilters: (supplierFilters) => set({ supplierFilters }),
+  setSupplierGenerateKeyword: (supplierGenerateKeyword) => set({ supplierGenerateKeyword }),
 
   searchSuppliers: async () => {
-    const { supplierQuery, supplierFilters } = get();
+    const { supplierQuery, supplierFilters, supplierGenerateKeyword } = get();
     if (!supplierQuery.trim()) {
       set({ supplierError: "Digite um termo de busca" });
       return;
     }
 
-    set({ supplierLoading: true, supplierError: null, supplierResults: [], supplierSearchUrl: null });
+    set({ supplierLoading: true, supplierError: null, supplierResults: [], supplierSearchUrl: null, supplierKeyword: null });
 
     try {
-      const res = await api.searchSuppliers(supplierQuery.trim(), supplierFilters);
+      const res = await api.searchSuppliers(supplierQuery.trim(), supplierFilters, supplierGenerateKeyword);
       set({
         supplierResults: res.suppliers,
         supplierSearchUrl: res.searchUrl,
+        supplierKeyword: res.keyword,
       });
     } catch (err) {
       set({ supplierError: err instanceof Error ? err.message : "Erro ao buscar fornecedores" });

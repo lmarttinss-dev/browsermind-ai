@@ -1,14 +1,24 @@
+import { useEffect } from "react";
 import { useStore } from "@/store/useStore";
-import { Search, Loader2, ExternalLink, ShieldCheck, BadgeCheck, MapPin, Clock } from "lucide-react";
+import { Search, Loader2, ExternalLink, ShieldCheck, BadgeCheck, MapPin, Clock, Sparkles } from "lucide-react";
 
 export function SupplierSearch() {
   const {
     supplierQuery, setSupplierQuery,
     supplierFilters, setSupplierFilters,
     supplierResults, supplierLoading, supplierError,
-    supplierSearchUrl, searchSuppliers,
+    supplierSearchUrl, supplierKeyword,
+    supplierGenerateKeyword, setSupplierGenerateKeyword,
+    searchSuppliers,
     browserTitle, navigateTo,
   } = useStore();
+
+  // Pré-popula com o título da página se o campo estiver vazio
+  useEffect(() => {
+    if (!supplierQuery && browserTitle) {
+      setSupplierQuery(browserTitle);
+    }
+  }, [browserTitle]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +43,7 @@ export function SupplierSearch() {
           </div>
 
           {/* Filters */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
               <input
                 type="checkbox"
@@ -54,6 +64,16 @@ export function SupplierSearch() {
               <BadgeCheck className="w-3.5 h-3.5 text-blue-500" />
               Verified
             </label>
+            <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={supplierGenerateKeyword}
+                onChange={(e) => setSupplierGenerateKeyword(e.target.checked)}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5"
+              />
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+              Keyword IA
+            </label>
           </div>
 
           <button
@@ -70,16 +90,27 @@ export function SupplierSearch() {
           </button>
         </form>
 
-        {supplierSearchUrl && (
-          <a
-            href={supplierSearchUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-primary-600 transition-colors"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Ver no Alibaba
-          </a>
+        {/* Keyword gerada + link */}
+        {(supplierKeyword || supplierSearchUrl) && (
+          <div className="flex items-center justify-between text-[10px] text-gray-400">
+            {supplierKeyword && (
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-purple-400" />
+                Keyword: <strong className="text-gray-600">{supplierKeyword}</strong>
+              </span>
+            )}
+            {supplierSearchUrl && (
+              <a
+                href={supplierSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-0.5 hover:text-primary-600 transition-colors"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Alibaba
+              </a>
+            )}
+          </div>
         )}
       </div>
 
