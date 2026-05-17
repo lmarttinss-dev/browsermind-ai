@@ -134,7 +134,7 @@ Para CADA fornecedor listado, extraia:
 - **Taxa de resposta:**
 - **Capacidades:** OEM / ODM / Customização
 - **Certificações visíveis:** (ISO, CE, ROHS, etc.)
-- **Link do fornecedor:**
+- **Link do produto:** (URL da página do produto no Alibaba, não do perfil do fornecedor)
 
 ## 📊 Ranking Comparativo
 
