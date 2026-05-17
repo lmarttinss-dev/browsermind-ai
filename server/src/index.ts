@@ -349,6 +349,9 @@ app.post("/api/analyze", async (req, res) => {
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
               : "",
+            extracted.links.length > 0
+              ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
+              : "",
             `\nContent:\n${extracted.visibleText}`,
           ].filter(Boolean).join("\n");
         }

@@ -296,6 +296,7 @@ export class PlaywrightManager {
     title: string;
     visibleText: string;
     headings: string[];
+    links: { text: string; href: string }[];
     metaTags: Record<string, string>;
   }> {
     const page = await this.getPage();
@@ -334,6 +335,20 @@ export class PlaywrightManager {
           if (t) headings.push(h.tagName + ": " + t);
         });
 
+        const links = [];
+        const seen = new Set();
+        document.querySelectorAll("a[href]").forEach((a) => {
+          const href = a.getAttribute("href") || "";
+          const text = (a.textContent || "").trim().slice(0, 150);
+          if (!text || !href || href === "#" || href.startsWith("javascript:")) return;
+          let fullHref = href;
+          if (href.startsWith("//")) fullHref = "https:" + href;
+          else if (href.startsWith("/")) fullHref = window.location.origin + href;
+          if (seen.has(fullHref)) return;
+          seen.add(fullHref);
+          links.push({ text, href: fullHref });
+        });
+
         const metaTags = {};
         document.querySelectorAll("meta[name], meta[property]").forEach((tag) => {
           const key = tag.getAttribute("name") || tag.getAttribute("property") || "";
@@ -346,6 +361,7 @@ export class PlaywrightManager {
           title: document.title,
           visibleText: visibleText.slice(0, 50000),
           headings: headings.slice(0, 50),
+          links: links.slice(0, 100),
           metaTags,
         };
       })()
@@ -356,6 +372,7 @@ export class PlaywrightManager {
       title: string;
       visibleText: string;
       headings: string[];
+      links: { text: string; href: string }[];
       metaTags: Record<string, string>;
     }>;
   }
