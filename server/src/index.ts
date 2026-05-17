@@ -481,14 +481,16 @@ type SupplierResult = {
   image: string | null
 }
 
-const KEYWORD_PROMPT = `You are a sourcing expert. Given the content of a product page from Mercado Livre (Brazilian marketplace), generate the BEST search keyword in English to find this product's manufacturer/supplier on Alibaba.
+const KEYWORD_PROMPT = `You are a sourcing expert. Given the content of a product page from Mercado Livre (Brazilian marketplace), generate the BEST search keyword in ENGLISH to find this product's manufacturer/supplier on Alibaba.
 
 Rules:
-- Return ONLY the keyword, nothing else (no quotes, no explanation)
-- Use generic product terms that suppliers use (not brand names)
-- Include key technical specs that differentiate the product (material, size, power, etc.)
-- Keep it concise: 3-7 words maximum
-- Use English only`
+- Return ONLY the keyword, nothing else (no quotes, no explanation, no translation notes)
+- MUST be in English. NEVER use Portuguese or any other language.
+- Translate the product name and specs to English
+- Use generic product terms that suppliers/manufacturers use (not brand names or marketing terms)
+- Include 1-2 key technical specs that differentiate the product (material, size, power, etc.)
+- Keep it concise: 3-6 words maximum
+- Example input: "Luminária LED Mesa Articulada Touch USB" → Example output: rechargeable LED desk lamp touch`
 
 async function generateSupplierKeyword(pageContent: string): Promise<string | null> {
   // Usa Gemini Flash (rápido e barato) para gerar a keyword
