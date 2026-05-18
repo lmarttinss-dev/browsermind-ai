@@ -102,4 +102,100 @@ Forneça uma conclusão objetiva informando:
 - Melhor estratégia de venda
 - Recomendação final`,
   },
+  {
+    id: "top3-fornecedores-alibaba",
+    name: "Top 3 Fornecedores (Alibaba)",
+    description: "Seleciona os 3 melhores fornecedores com base em avaliação, certificações e MOQ",
+    content: `Analise os fornecedores/produtos listados nesta página do Alibaba e selecione os TOP 3 melhores fornecedores para importação. Gere um relatório em Markdown.
+
+Critérios de seleção (por ordem de prioridade):
+1. Verified Supplier
+2. Trade Assurance ativo
+3. Rating/avaliação alta (4.5+)
+4. Anos de operação (quanto mais, melhor)
+5. MOQ (pedido mínimo) acessível
+6. Taxa de resposta alta
+7. Capacidade OEM/ODM
+8. Certificações relevantes (ISO, CE, ROHS, FCC, etc.)
+
+# Template do Relatório
+
+## 🔍 Resumo da Busca
+
+- Produto pesquisado:
+- URL da página de resultados:
+- Total de fornecedores analisados:
+
+## 🏆 Top 3 Fornecedores Recomendados
+
+### 🥇 1º — [Nome do Fornecedor]
+
+- **Link do produto:** (URL completa da página do produto no Alibaba)
+- **País/Região:**
+- **Anos de operação:**
+- **Verified Supplier:** Sim/Não
+- **Trade Assurance:** Sim/Não (valor protegido se disponível)
+- **Rating:** X/5 ⭐
+- **Taxa de resposta:**
+- **Preço indicado:**
+- **MOQ (pedido mínimo):**
+- **Capacidades:** OEM / ODM / Customização
+- **Certificações:**
+- **Por que foi escolhido:**
+
+### 🥈 2º — [Nome do Fornecedor]
+
+- **Link do produto:**
+- **País/Região:**
+- **Anos de operação:**
+- **Verified Supplier:** Sim/Não
+- **Trade Assurance:** Sim/Não
+- **Rating:** X/5 ⭐
+- **Taxa de resposta:**
+- **Preço indicado:**
+- **MOQ (pedido mínimo):**
+- **Capacidades:** OEM / ODM / Customização
+- **Certificações:**
+- **Por que foi escolhido:**
+
+### 🥉 3º — [Nome do Fornecedor]
+
+- **Link do produto:**
+- **País/Região:**
+- **Anos de operação:**
+- **Verified Supplier:** Sim/Não
+- **Trade Assurance:** Sim/Não
+- **Rating:** X/5 ⭐
+- **Taxa de resposta:**
+- **Preço indicado:**
+- **MOQ (pedido mínimo):**
+- **Capacidades:** OEM / ODM / Customização
+- **Certificações:**
+- **Por que foi escolhido:**
+
+## 📊 Comparativo Rápido
+
+| Critério | 🥇 1º | 🥈 2º | 🥉 3º |
+|----------|-------|-------|-------|
+| Verified | | | |
+| Trade Assurance | | | |
+| Rating | | | |
+| Anos | | | |
+| MOQ | | | |
+| Preço | | | |
+
+## ⚠️ Alertas e Riscos
+
+Para cada fornecedor, liste:
+- Pontos de atenção
+- Riscos identificados
+- O que verificar antes de fechar pedido
+
+## 💡 Próximos Passos
+
+- Ações recomendadas para contato
+- Perguntas-chave para enviar ao fornecedor
+- Dicas de negociação
+- Sugestão de pedido inicial (quantidade para teste)`,
+  },
 ]
