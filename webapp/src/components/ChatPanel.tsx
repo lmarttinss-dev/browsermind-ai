@@ -1,7 +1,7 @@
 import { useStore } from "@/store/useStore";
 import { MODELS } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
-import { sanitizeFilename } from "@/lib/utils";
+import { sanitizeFilename, extractProductSlugFromResponse } from "@/lib/utils";
 import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -134,7 +134,7 @@ export function ChatPanel() {
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement("a")
                   a.href = url
-                  a.download = `${sanitizeFilename(browserTitle)}.md`
+                  a.download = `${extractProductSlugFromResponse(response) || sanitizeFilename(browserTitle)}.md`
                   a.click()
                   URL.revokeObjectURL(url)
                 }}
