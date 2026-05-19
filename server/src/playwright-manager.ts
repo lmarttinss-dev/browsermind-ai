@@ -297,6 +297,7 @@ export class PlaywrightManager {
     visibleText: string;
     headings: string[];
     metaTags: Record<string, string>;
+    links: { text: string; href: string }[];
   }> {
     const page = await this.getPage();
 
@@ -347,6 +348,25 @@ export class PlaywrightManager {
           visibleText: visibleText.slice(0, 50000),
           headings: headings.slice(0, 50),
           metaTags,
+          links: (() => {
+            const seen = new Set();
+            const result = [];
+            document.querySelectorAll("a[href]").forEach((a) => {
+              let href = a.getAttribute("href") || "";
+              if (!href || href === "#" || href.startsWith("javascript:")) return;
+              if (href.startsWith("//")) href = "https:" + href;
+              else if (href.startsWith("/")) href = window.location.origin + href;
+              // Remover query string para URLs do Alibaba product-detail
+              if (href.includes("/product-detail/")) {
+                href = href.split("?")[0];
+              }
+              const text = (a.textContent || "").trim().slice(0, 200);
+              if (!text || seen.has(href)) return;
+              seen.add(href);
+              result.push({ text, href });
+            });
+            return result.slice(0, 100);
+          })(),
         };
       })()
     `;
@@ -357,6 +377,7 @@ export class PlaywrightManager {
       visibleText: string;
       headings: string[];
       metaTags: Record<string, string>;
+      links: { text: string; href: string }[];
     }>;
   }
 

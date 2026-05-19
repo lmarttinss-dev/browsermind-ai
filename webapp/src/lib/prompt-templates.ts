@@ -127,11 +127,22 @@ Critérios de seleção (por ordem de prioridade):
 7. Capacidade OEM/ODM — possibilidade de customização futura
 8. Certificações relevantes (ISO, CE, ROHS, FCC, etc.)
 
+IMPORTANTE sobre links dos produtos:
+- O link de cada produto está no elemento "h2.searchx-product-e-title > a" (atributo href)
+- O href começa com "//" (sem protocolo). Adicione "https:" na frente para formar a URL completa
+- REMOVA todos os parâmetros de query string (tudo após o "?") — eles causam redirecionamento para "product unavailable"
+- Exemplo: href="//www.alibaba.com/product-detail/Nome-Produto_123456.html?spm=xxx&priceId=yyy"
+  → URL final: https://www.alibaba.com/product-detail/Nome-Produto_123456.html
+- Use SEMPRE a URL limpa (sem parâmetros) no relatório
+
 # Template do Relatório
+
+Use como título do relatório as características principais do produto pesquisado extraídas da página (ex: "# Fone Bluetooth TWS ANC - IP54 - USB-C").
 
 ## 🔍 Resumo da Busca
 
 - Produto pesquisado:
+- Características extraídas: (material, conectividade, certificações, resistência, etc.)
 - URL da página de resultados:
 - Total de fornecedores analisados:
 
