@@ -19,3 +19,9 @@ export function sanitizeFilename(title: string | null): string {
 
   return name || dateFallback
 }
+
+export function extractProductSlugFromResponse(response: string): string | null {
+  const match = response.match(/\/product-detail\/([^_?\s)]+)/)
+  if (!match) return null
+  return match[1].replace(/-+$/, "")
+}
