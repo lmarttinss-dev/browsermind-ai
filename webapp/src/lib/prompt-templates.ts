@@ -108,14 +108,23 @@ Forneça uma conclusão objetiva informando:
     description: "Seleciona os 3 melhores fornecedores com base em avaliação, certificações e MOQ",
     content: `Analise os fornecedores/produtos listados nesta página do Alibaba e selecione os TOP 3 melhores fornecedores para importação. Gere um relatório em Markdown.
 
+IMPORTANTE: Só inclua fornecedores que sejam **Verified Supplier** (auditado pelo Alibaba). Descarte qualquer fornecedor que não tenha esse selo.
+
+Métricas mínimas obrigatórias (eliminar se não atingir):
+- Rating: ≥ 4.5/5 (ideal ≥ 4.7)
+- Trade Assurance: ≥ US$ 10.000 (ideal ≥ US$ 50.000)
+- Anos de operação: ≥ 3 anos (ideal ≥ 5)
+- Taxa de resposta: ≥ 80% (ideal ≥ 90%)
+- On-time delivery: ≥ 85% (ideal ≥ 95%)
+
 Critérios de seleção (por ordem de prioridade):
-1. Verified Supplier
-2. Trade Assurance ativo
-3. Rating/avaliação alta (4.5+)
-4. Anos de operação (quanto mais, melhor)
-5. MOQ (pedido mínimo) acessível
-6. Taxa de resposta alta
-7. Capacidade OEM/ODM
+1. Verified Supplier (obrigatório)
+2. Trade Assurance alto — valor protegido demonstra volume de negócios reais
+3. Rating + reviews reais — avaliações com fotos/detalhes valem mais
+4. Anos de operação — estabilidade e experiência
+5. MOQ flexível — aceita pedidos menores para primeiro pedido
+6. Taxa de resposta alta — comunicação é tudo em importação
+7. Capacidade OEM/ODM — possibilidade de customização futura
 8. Certificações relevantes (ISO, CE, ROHS, FCC, etc.)
 
 # Template do Relatório
