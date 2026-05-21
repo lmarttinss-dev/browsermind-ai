@@ -1,10 +1,33 @@
 import { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { NavigationBar } from "@/components/NavigationBar";
 import { BrowserViewport } from "@/components/BrowserViewport";
 import { ChatPanel } from "@/components/ChatPanel";
 import { ActionConsole } from "@/components/ActionConsole";
 import { SettingsModal } from "@/components/SettingsModal";
+import { PipelinePage } from "@/pages/PipelinePage";
+
+function MainView() {
+  return (
+    <>
+      {/* Main content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left: Browser viewport + action console */}
+        <div className="flex-1 flex flex-col">
+          <BrowserViewport />
+          <ActionConsole />
+        </div>
+
+        {/* Right: Chat panel */}
+        <ChatPanel />
+      </div>
+
+      {/* Settings modal */}
+      <SettingsModal />
+    </>
+  );
+}
 
 export default function App() {
   const { checkStatus, serverOnline } = useStore();
@@ -21,20 +44,10 @@ export default function App() {
       {/* Top bar */}
       <NavigationBar />
 
-      {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left: Browser viewport + action console */}
-        <div className="flex-1 flex flex-col">
-          <BrowserViewport />
-          <ActionConsole />
-        </div>
-
-        {/* Right: Chat panel */}
-        <ChatPanel />
-      </div>
-
-      {/* Settings modal */}
-      <SettingsModal />
+      <Routes>
+        <Route path="/" element={<MainView />} />
+        <Route path="/pipeline" element={<PipelinePage />} />
+      </Routes>
 
       {/* Server status indicator */}
       <div className="absolute bottom-2 left-2">

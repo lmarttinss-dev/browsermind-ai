@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import {
   ArrowLeft,
@@ -8,12 +9,17 @@ import {
   Power,
   PowerOff,
   Loader2,
+  Kanban,
+  Monitor,
 } from "lucide-react";
 
 export function NavigationBar() {
   const { browserActive, browserUrl, isLoading, launchBrowser, closeBrowser, navigateTo, takeScreenshot, checkStatus, extensionPaths } = useStore();
   const [urlInput, setUrlInput] = useState("");
   const [editing, setEditing] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isOnPipeline = location.pathname === "/pipeline";
 
   const displayUrl = editing ? urlInput : (browserUrl || "");
 
@@ -99,6 +105,21 @@ export function NavigationBar() {
           </button>
         </>
       )}
+
+      {/* Separador + Nav toggle */}
+      <div className="w-px h-6 bg-gray-700 mx-1" />
+      <button
+        onClick={() => navigate(isOnPipeline ? "/" : "/pipeline")}
+        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
+          isOnPipeline
+            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
+            : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
+        }`}
+        title={isOnPipeline ? "Voltar ao Browser" : "Esteira de Produtos"}
+      >
+        {isOnPipeline ? <Monitor className="w-3.5 h-3.5" /> : <Kanban className="w-3.5 h-3.5" />}
+        {isOnPipeline ? "Browser" : "Esteira"}
+      </button>
     </div>
   );
 }

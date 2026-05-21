@@ -1,0 +1,35 @@
+2026/05/20-22:19:00.674 110f Creating DB /home/lmarttinss/Workspace/browsermind-ai/server/~/.browsermind-profile/Default/Local Storage/leveldb since it was missing.
+2026/05/20-22:19:00.729 110f Reusing MANIFEST /home/lmarttinss/Workspace/browsermind-ai/server/~/.browsermind-profile/Default/Local Storage/leveldb/MANIFEST-000001
+2026/05/20-22:29:45.511 110f Level-0 table #5: started
+2026/05/20-22:29:45.546 110f Level-0 table #5: 93276 bytes OK
+2026/05/20-22:29:45.552 110f Delete type=0 #3
+2026/05/20-22:29:48.337 1111 Level-0 table #7: started
+2026/05/20-22:29:48.351 1111 Level-0 table #7: 141204 bytes OK
+2026/05/20-22:29:48.357 1111 Delete type=0 #4
+2026/05/20-22:39:20.577 1111 Level-0 table #9: started
+2026/05/20-22:39:20.599 1111 Level-0 table #9: 103204 bytes OK
+2026/05/20-22:39:20.613 1111 Delete type=0 #6
+2026/05/20-23:09:59.451 110f Level-0 table #11: started
+2026/05/20-23:09:59.500 110f Level-0 table #11: 107142 bytes OK
+2026/05/20-23:09:59.519 110f Delete type=0 #8
+2026/05/20-23:10:17.798 110f Level-0 table #13: started
+2026/05/20-23:10:17.819 110f Level-0 table #13: 85501 bytes OK
+2026/05/20-23:10:17.832 110f Delete type=0 #10
+2026/05/20-23:24:14.341 110f Level-0 table #15: started
+2026/05/20-23:24:14.348 110f Level-0 table #15: 21904 bytes OK
+2026/05/20-23:24:14.355 110f Delete type=0 #12
+2026/05/20-23:24:14.358 110f Compacting 4@0 + 1@1 files
+2026/05/20-23:24:14.388 110f Generated table #16@0: 124 keys, 410288 bytes
+2026/05/20-23:24:14.388 110f Compacted 4@0 + 1@1 files => 410288 bytes
+2026/05/20-23:24:14.391 110f compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/20-23:24:14.393 110f Delete type=2 #13
+2026/05/20-23:24:14.393 110f Delete type=2 #7
+2026/05/20-23:24:14.393 110f Delete type=2 #15
+2026/05/20-23:24:14.394 110f Delete type=2 #9
+2026/05/20-23:24:14.394 110f Delete type=2 #11
+2026/05/20-23:32:24.491 110f Level-0 table #18: started
+2026/05/20-23:32:24.536 110f Level-0 table #18: 89171 bytes OK
+2026/05/20-23:32:24.545 110f Delete type=0 #14
+2026/05/20-23:57:58.764 110f Level-0 table #20: started
+2026/05/20-23:57:58.835 110f Level-0 table #20: 27588 bytes OK
+2026/05/20-23:57:58.888 110f Delete type=0 #17
