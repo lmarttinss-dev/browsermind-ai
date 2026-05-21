@@ -62,6 +62,21 @@ webapp/src/components/           # React components (NavigationBar, BrowserViewp
 - Server: `3210`
 - Webapp: `5180`
 
+## Git & Commits
+
+- Sempre criar nova branch antes de iniciar feature/fix/correção
+- Commits devem ter título e descrição separados (linha em branco entre eles)
+- Formato:
+  ```
+  tipo: título curto e descritivo
+
+  Descrição detalhada do que foi feito, por que foi feito,
+  e qualquer contexto relevante para revisão no GitHub.
+  ```
+- Tipos: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`
+- O título deve ser conciso (máx ~72 caracteres)
+- A descrição deve explicar o "o quê" e o "porquê" da mudança
+
 ## Comandos
 
 ```bash
