@@ -229,6 +229,7 @@ Página de exemplo: https://lista.mercadolivre.com.br/celulares-telefones/smartw
 INSTRUÇÕES DE ANÁLISE:
 
 1. Para cada produto listado, colete:
+   - Link do produto (URL completa do anúncio)
    - Título do anúncio
    - Preço
    - Quantidade vendida (se visível)
@@ -275,6 +276,7 @@ Para cada oportunidade:
 ### 🥇 Oportunidade #1 — [Nome do Produto/Nicho]
 
 - **Produto/Nicho:**
+- **Link do produto:**
 - **Faixa de preço:**
 - **Demanda estimada:** (Alta / Muito Alta)
 - **Concorrência atual:** (Baixa / Média-Baixa)
