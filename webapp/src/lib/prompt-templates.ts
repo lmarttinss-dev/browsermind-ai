@@ -218,4 +218,109 @@ Para cada fornecedor, liste:
 - Dicas de negociação
 - Sugestão de pedido inicial (quantidade para teste)`,
   },
+  {
+    id: "tendencias-alta-demanda",
+    name: "Tendências: Alta Demanda e Baixa Concorrência",
+    description: "Identifica produtos com alta demanda e baixa concorrência em categorias do Mercado Livre",
+    content: `Analise os produtos listados nesta página de categoria/tendências do Mercado Livre e identifique oportunidades com ALTA DEMANDA e BAIXA CONCORRÊNCIA. Gere um relatório em Markdown.
+
+Página de exemplo: https://lista.mercadolivre.com.br/celulares-telefones/smartwatches-acessorios/peliculas-protetoras/
+
+INSTRUÇÕES DE ANÁLISE:
+
+1. Para cada produto listado, colete:
+   - Título do anúncio
+   - Preço
+   - Quantidade vendida (se visível)
+   - Avaliações (quantidade e nota)
+   - Tipo de envio (Full, grátis, etc.)
+   - Vendedor (se é loja oficial ou vendedor comum)
+
+2. Critérios para ALTA DEMANDA:
+   - Muitas vendas (>100/mês)
+   - Muitas avaliações positivas
+   - Presença de múltiplos vendedores do mesmo produto
+   - Produtos com frete grátis/Full (indica volume)
+   - Preço acessível para compra por impulso
+
+3. Critérios para BAIXA CONCORRÊNCIA:
+   - Poucos vendedores oferecendo o produto exato
+   - Anúncios mal otimizados (fotos ruins, títulos fracos)
+   - Poucos vendedores com Mercado Líder
+   - Ausência de lojas oficiais dominando
+   - Espaço para diferenciação (kits, variações, qualidade superior)
+
+4. Sinais de OPORTUNIDADE:
+   - Produto com muita venda mas poucos anúncios bem feitos
+   - Nichos dentro da categoria com pouca competição
+   - Produtos complementares pouco explorados
+   - Variações de produto que ninguém oferece
+   - Kits/combos que não existem na categoria
+
+# Template do Relatório
+
+## 🔍 Visão Geral da Categoria
+
+- Categoria analisada:
+- URL:
+- Total de produtos analisados:
+- Faixa de preço predominante:
+- Ticket médio:
+- Nível geral de concorrência: (Baixo / Médio / Alto / Saturado)
+
+## 🏆 Top 5 Oportunidades Identificadas
+
+Para cada oportunidade:
+
+### 🥇 Oportunidade #1 — [Nome do Produto/Nicho]
+
+- **Produto/Nicho:**
+- **Faixa de preço:**
+- **Demanda estimada:** (Alta / Muito Alta)
+- **Concorrência atual:** (Baixa / Média-Baixa)
+- **Por que é oportunidade:**
+- **Evidências de demanda:**
+  - Vendas observadas nos anúncios:
+  - Volume de avaliações:
+  - Posição nos resultados:
+- **Gaps identificados:**
+  - O que falta nos anúncios atuais:
+  - Diferenciação possível:
+- **Estratégia sugerida de entrada:**
+- **Risco:**
+
+(Repetir para #2, #3, #4, #5)
+
+## 📊 Mapa de Concorrência
+
+| Produto/Nicho | Demanda | Concorrência | Oportunidade | Ticket Médio |
+|---------------|---------|--------------|--------------|-------------|
+| | Alta/Média/Baixa | Alta/Média/Baixa | ⭐⭐⭐⭐⭐ | R$ |
+
+## 🚫 Produtos/Nichos a EVITAR
+
+Liste produtos com:
+- Mercado saturado (muitos vendedores fortes)
+- Margens muito baixas
+- Dominados por lojas oficiais
+- Guerra de preço insustentável
+
+## 💡 Estratégias de Diferenciação
+
+Para as oportunidades identificadas, sugira:
+- Melhorias no título e SEO
+- Fotos/vídeos que faltam
+- Kits e combos possíveis
+- Variações inexploradas
+- Descrições otimizadas
+- Estratégias de preço
+
+## 🎯 Plano de Ação
+
+1. Produto prioritário para começar:
+2. Investimento inicial estimado:
+3. Margem potencial:
+4. Tempo estimado para primeiras vendas:
+5. Próximos passos recomendados:`,
+  },
 ]
