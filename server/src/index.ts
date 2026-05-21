@@ -471,14 +471,14 @@ app.post("/api/analyze", async (req, res) => {
     try {
       const hasViabilityData = /score\s*final|demanda|concorr[eê]ncia|margem|vendas\s*(mensais|por\s*dia)/i.test(aiResponse)
       if (hasViabilityData && content) {
-        const titleMatch = aiResponse.match(/(?:Nome|Produto|Título)[:\s]*(.+)/i)
-        const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)[:\s]*R?\$?\s*([\d.,]+)/i)
-        const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)[:\s]*(\d+(?:[.,]\d+)?)/i)
-        const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|vendas\/mês)[:\s]*([\d.,]+)/i)
-        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*concorrência)[:\s]*(Baixa|Média|Alta|Saturado)/i)
-        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*margem)[:\s]*(.+)/i)
-        const categoryMatch = aiResponse.match(/(?:Categoria)[:\s]*(.+)/i)
-        const imageMatch = content.match(/og:image[^"]*"([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
+        const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
+        const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
+        const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
+        const salesMatch = aiResponse.match(/Vendas\s*mensais[^:]*:\s*([\d.,]+)/im)
+        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*concorrência)\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*margem)\s*:\s*(.+)/im)
+        const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
+        const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
         const urlMatch = content.match(/^URL:\s*(.+)/m)
         const pageTitleMatch = content.match(/^Title:\s*(.+)/m)
