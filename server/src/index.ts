@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import axios from "axios";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
+import { connectDatabase } from "./db.js";
+import pipelineRouter from "./routes/pipeline.js";
+import { Product } from "./models/product.js";
 
 const app = express();
 const PORT = 3210;
@@ -18,6 +21,9 @@ const AVANTPRO_CONFIG = {
 
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "10mb" }));
+
+// Pipeline routes
+app.use("/api/pipeline", pipelineRouter);
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -460,7 +466,53 @@ app.post("/api/analyze", async (req, res) => {
       }
     } catch { /* ignore */ }
 
-    res.json({ success: true, response: aiResponse, actions });
+    // Auto-inserir produto na esteira se a análise contém dados de viabilidade
+    let pipelineProductId = null;
+    try {
+      const hasViabilityData = /score\s*final|demanda|concorr[eê]ncia|margem|vendas\s*(mensais|por\s*dia)/i.test(aiResponse)
+      if (hasViabilityData && content) {
+        const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
+        const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
+        const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
+        const salesMatch = aiResponse.match(/Vendas\s*mensais[^:]*:\s*([\d.,]+)/im)
+        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*concorrência)\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*margem)\s*:\s*(.+)/im)
+        const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
+        const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
+
+        const urlMatch = content.match(/^URL:\s*(.+)/m)
+        const pageTitleMatch = content.match(/^Title:\s*(.+)/m)
+
+        const productTitle = titleMatch?.[1]?.trim() || pageTitleMatch?.[1]?.trim() || "Produto analisado"
+        const productUrl = urlMatch?.[1]?.trim() || ""
+
+        if (productUrl) {
+          const lastProduct = await Product.findOne({ stage: "triagem" }).sort({ order: -1 })
+          const order = lastProduct ? lastProduct.order + 1 : 0
+
+          const product = await Product.create({
+            title: productTitle.slice(0, 200),
+            url: productUrl,
+            imageUrl: imageMatch?.[1] || "",
+            price: parseFloat(priceMatch?.[1]?.replace(".", "").replace(",", ".") || "0"),
+            category: categoryMatch?.[1]?.trim().slice(0, 100) || "",
+            stage: "triagem",
+            score: parseFloat(scoreMatch?.[1]?.replace(",", ".") || "0"),
+            monthlySales: parseInt(salesMatch?.[1]?.replace(/\./g, "").replace(",", ".") || "0"),
+            competitionLevel: competitionMatch?.[1] || "Média",
+            potentialMargin: marginMatch?.[1]?.trim().slice(0, 100) || "",
+            analysisReport: aiResponse,
+            analyzedAt: new Date(),
+            order,
+          })
+          pipelineProductId = product._id
+        }
+      }
+    } catch (pipelineErr) {
+      console.log("⚠️ Pipeline: erro ao salvar produto:", pipelineErr instanceof Error ? pipelineErr.message : pipelineErr)
+    }
+
+    res.json({ success: true, response: aiResponse, actions, pipelineProductId });
   } catch (error) {
     const msg = axios.isAxiosError(error)
       ? error.response?.data?.error?.message || error.message
@@ -481,7 +533,8 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  await connectDatabase();
   console.log(`🧠 BrowserMind Playwright Server running at http://localhost:${PORT}`);
   console.log(`📡 Endpoints:`);
   console.log(`   GET  /health      - Health check`);

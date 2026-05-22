@@ -12,7 +12,23 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     description: "Relatório completo de viabilidade do produto para importação simplificada",
     content: `Analise a viabilidade deste produto para importação simplificada e gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
 
+IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatamente no formato abaixo. Esses campos são extraídos automaticamente pelo sistema.
+
 # Template do Relatório
+
+## 📋 Resumo para Esteira
+
+> Este bloco é obrigatório e usado para alimentar o Kanban automaticamente.
+
+- Nome: (nome completo do produto)
+- Categoria: (categoria principal > subcategoria)
+- Preço atual: R$ (valor no formato brasileiro, ex: 49,90)
+- Vendas mensais estimadas: (número inteiro, ex: 1.200)
+- Concorrência: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
+- Potencial de margem: (percentual ou faixa, ex: 35-45%)
+- Score Final: (nota de 0 a 10 representando viabilidade geral)
+
+---
 
 ## 📦 Informações do Produto
 
@@ -83,14 +99,18 @@ Identifique:
 
 ## 📈 Score Final
 
-Atribua notas de 0 a 10 para:
+Atribua notas de 0 a 10 para cada critério:
 
-- Demanda:
-- Margem:
-- Concorrência:
-- Escalabilidade:
-- Facilidade operacional:
-- Potencial de lucro:
+| Critério | Nota |
+|----------|------|
+| Demanda | /10 |
+| Margem | /10 |
+| Concorrência | /10 |
+| Escalabilidade | /10 |
+| Facilidade operacional | /10 |
+| Potencial de lucro | /10 |
+
+**Score Final:** (média ponderada, nota única de 0 a 10 — DEVE ser igual ao valor informado no "Resumo para Esteira")
 
 ## ✅ Conclusão Final
 

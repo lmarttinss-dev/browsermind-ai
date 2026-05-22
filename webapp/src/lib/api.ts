@@ -40,6 +40,20 @@ export const api = {
     request<{ success: boolean; user?: { email: string; plan: string }; message?: string; error?: string }>("/avantpro/auth", { method: "POST", body: JSON.stringify({ email }) }),
   avantproStatus: () =>
     request<{ success: boolean; authenticated: boolean; email?: string; plan?: string }>("/avantpro/status"),
+
+  // Pipeline
+  getPipelineProducts: () =>
+    request<{ success: boolean; products: Record<string, PipelineProduct[]> }>("/api/pipeline"),
+  getPipelineProduct: (id: string) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}`),
+  createPipelineProduct: (data: Partial<PipelineProduct>) =>
+    request<{ success: boolean; product: PipelineProduct }>("/api/pipeline", { method: "POST", body: JSON.stringify(data) }),
+  updatePipelineProduct: (id: string, data: Partial<PipelineProduct>) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  movePipelineProduct: (id: string, stage: string, order: number) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}/move`, { method: "PATCH", body: JSON.stringify({ stage, order }) }),
+  deletePipelineProduct: (id: string) =>
+    request<{ success: boolean }>(`/api/pipeline/${id}`, { method: "DELETE" }),
 };
 
 export interface BrowserAction {
@@ -56,6 +70,28 @@ export interface ActionResult {
   extractedData?: string;
   screenshot?: string;
 }
+
+export type PipelineStage = "triagem" | "analise" | "aprovado" | "importando" | "concluido";
+export type CompetitionLevel = "Baixa" | "Média" | "Alta" | "Saturado";
+
+export type PipelineProduct = {
+  _id: string;
+  title: string;
+  url: string;
+  imageUrl: string;
+  price: number;
+  category: string;
+  stage: PipelineStage;
+  score: number;
+  monthlySales: number;
+  competitionLevel: CompetitionLevel;
+  potentialMargin: string;
+  analysisReport: string;
+  analyzedAt: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek";
 
