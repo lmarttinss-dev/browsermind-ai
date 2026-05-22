@@ -42,9 +42,15 @@ export default {
               paddingBottom: "0.5rem",
               marginBottom: "1rem",
             },
+            h2: {
+              fontSize: "1.2rem",
+              marginTop: "2.5rem",
+            },
+            h3: {
+              fontSize: "1.05rem",
+              marginTop: "2rem",
+            },
             h1: { fontSize: "1.375rem" },
-            h2: { fontSize: "1.2rem" },
-            h3: { fontSize: "1.05rem" },
             a: {
               textDecoration: "none",
               "&:hover": { textDecoration: "underline" },
