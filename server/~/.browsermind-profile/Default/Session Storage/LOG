@@ -1,6 +1,0 @@
-2026/05/21-17:23:27.119 2d5 Reusing MANIFEST /home/lmarttinss/Workspace/browsermind-ai/server/~/.browsermind-profile/Default/Session Storage/MANIFEST-000001
-2026/05/21-17:23:27.123 2d5 Recovering log #3
-2026/05/21-17:23:27.126 2d5 Reusing old log /home/lmarttinss/Workspace/browsermind-ai/server/~/.browsermind-profile/Default/Session Storage/000003.log 
-2026/05/21-17:42:17.157 2db Level-0 table #5: started
-2026/05/21-17:42:17.197 2db Level-0 table #5: 13108 bytes OK
-2026/05/21-17:42:17.212 2db Delete type=0 #3
