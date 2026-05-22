@@ -138,6 +138,105 @@ O container `browsermind-mongo` será criado com volume persistente `mongo_data`
 
 ## Arquitetura
 
+### C4 Container — Visão do Sistema
+
+```mermaid
+C4Container
+    title BrowserMind AI - Esteira de Produtos
+
+    Person(user, "Usuário", "Analisa e triagem de produtos do ML")
+
+    System_Boundary(browsermind, "BrowserMind AI") {
+        Container(webapp, "Webapp", "React, Vite, @dnd-kit", "Interface Kanban + Browser viewport")
+        Container(server, "Server", "Express, Playwright, Mongoose", "Automação, AI proxy, CRUD pipeline")
+        ContainerDb(mongo, "MongoDB", "Mongoose ODM", "Produtos da esteira (collection products)")
+    }
+
+    System_Ext(ml, "Mercado Livre", "Marketplace de produtos")
+    System_Ext(ai, "AI APIs", "Gemini, GPT-4, Claude, DeepSeek")
+
+    Rel(user, webapp, "Navega, arrasta cards", "HTTP :5180")
+    Rel(webapp, server, "REST API", "HTTP :3210")
+    Rel(server, mongo, "CRUD produtos", "TCP :27017")
+    Rel(server, ml, "Extrai dados de páginas", "Playwright + AvantPro")
+    Rel(server, ai, "Análise de viabilidade", "HTTPS")
+```
+
+### C4 Component — Server (Pipeline)
+
+```mermaid
+C4Component
+    title Server - Componentes da Pipeline
+
+    Container_Boundary(server, "Server Express") {
+        Component(index, "index.ts", "Express App", "Registra rotas, inicializa DB, handler /api/analyze com auto-insert")
+        Component(routes, "routes/pipeline.ts", "Express Router", "CRUD: GET, POST, PATCH, PATCH/move, DELETE")
+        Component(model, "models/product.ts", "Mongoose Model", "Schema Product com validações e índices")
+        Component(db, "db.ts", "Database Connection", "Conecta ao MongoDB via URI")
+    }
+
+    ContainerDb(mongo, "MongoDB", "products collection")
+    Container_Ext(ai, "AI APIs", "Retorna análise markdown")
+
+    Rel(index, routes, "Monta em /api/pipeline")
+    Rel(index, db, "connectDatabase() na startup")
+    Rel(index, model, "Auto-insert após análise")
+    Rel(routes, model, "Product.find/create/update/delete")
+    Rel(model, mongo, "Mongoose queries")
+    Rel(index, ai, "POST análise → resposta")
+```
+
+### C4 Component — Webapp (Pipeline)
+
+```mermaid
+C4Component
+    title Webapp - Componentes da Pipeline
+
+    Container_Boundary(webapp, "Webapp React") {
+        Component(page, "PipelinePage", "React Page", "Layout principal, fetch inicial, error handling")
+        Component(board, "KanbanBoard", "React + @dnd-kit", "DndContext, drag events, colunas")
+        Component(column, "KanbanColumn", "React + @dnd-kit", "Droppable area, header com contagem")
+        Component(card, "ProductCard", "React + @dnd-kit", "Sortable/draggable, foto, badges, dados")
+        Component(modal, "ProductDetailModal", "React", "Relatório markdown, ações de delete")
+        Component(store, "usePipelineStore", "Zustand", "Estado global: products, loading, actions")
+        Component(api, "api.ts", "Fetch client", "getPipeline, move, delete, create")
+    }
+
+    Container_Ext(server, "Server", "REST API /api/pipeline")
+
+    Rel(page, board, "Renderiza")
+    Rel(page, store, "fetchProducts()")
+    Rel(board, column, "Renderiza 5 colunas")
+    Rel(column, card, "Renderiza cards")
+    Rel(card, modal, "onClick → setSelectedProduct")
+    Rel(store, api, "Chamadas HTTP")
+    Rel(api, server, "fetch /api/pipeline/*")
+```
+
+### C4 Dynamic — Fluxo de Inserção Automática
+
+```mermaid
+C4Dynamic
+    title Fluxo: Análise → Inserção na Esteira
+
+    ContainerDb(mongo, "MongoDB", "products")
+    Container(server, "Server", "Express")
+    Container(webapp, "Webapp", "React")
+    System_Ext(ai, "AI API", "")
+    System_Ext(ml, "Mercado Livre", "")
+
+    Rel(webapp, server, "1. POST /api/analyze", "{prompt, model}")
+    Rel(server, ml, "2. Extrai conteúdo da página", "Playwright")
+    Rel(server, ai, "3. Envia prompt + conteúdo", "HTTPS")
+    Rel(ai, server, "4. Retorna análise markdown", "")
+    Rel(server, server, "5. Detecta dados de viabilidade (regex)", "")
+    Rel(server, server, "6. Parseia título, preço, score, vendas", "")
+    Rel(server, mongo, "7. Product.create({stage: triagem})", "")
+    Rel(server, webapp, "8. Response {response, pipelineProductId}", "")
+```
+
+### Estrutura de Arquivos
+
 ```
 webapp/src/
 ├── pages/PipelinePage.tsx                    # Página principal da esteira
