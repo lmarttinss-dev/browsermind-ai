@@ -191,7 +191,7 @@ export const ProductDetailPage = () => {
                 <BarChart3 className="w-4 h-4" />
                 Relatório de Análise
               </h3>
-              <div className="prose prose-invert prose-sm max-w-none">
+              <div className="prose prose-invert max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {product.analysisReport}
                 </ReactMarkdown>
