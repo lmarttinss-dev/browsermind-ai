@@ -44,6 +44,8 @@ export const api = {
   // Pipeline
   getPipelineProducts: () =>
     request<{ success: boolean; products: Record<string, PipelineProduct[]> }>("/api/pipeline"),
+  getPipelineProduct: (id: string) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}`),
   createPipelineProduct: (data: Partial<PipelineProduct>) =>
     request<{ success: boolean; product: PipelineProduct }>("/api/pipeline", { method: "POST", body: JSON.stringify(data) }),
   updatePipelineProduct: (id: string, data: Partial<PipelineProduct>) =>

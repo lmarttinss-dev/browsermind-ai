@@ -40,7 +40,6 @@ describe("usePipelineStore", () => {
       products: { triagem: [], analise: [], aprovado: [], importando: [], concluido: [] },
       isLoading: false,
       error: null,
-      selectedProduct: null,
     })
     vi.clearAllMocks()
   })
@@ -61,10 +60,6 @@ describe("usePipelineStore", () => {
 
     it("deve iniciar sem erro", () => {
       expect(usePipelineStore.getState().error).toBeNull()
-    })
-
-    it("deve iniciar sem produto selecionado", () => {
-      expect(usePipelineStore.getState().selectedProduct).toBeNull()
     })
   })
 
@@ -175,53 +170,12 @@ describe("usePipelineStore", () => {
       expect(api.getPipelineProducts).toHaveBeenCalled()
     })
 
-    it("deve limpar selectedProduct se deletar o produto selecionado", async () => {
-      usePipelineStore.setState({ selectedProduct: mockProduct({ _id: "1" }) })
-      vi.mocked(api.deletePipelineProduct).mockResolvedValue({ success: true })
-      vi.mocked(api.getPipelineProducts).mockResolvedValue({
-        success: true,
-        products: { triagem: [], analise: [], aprovado: [], importando: [], concluido: [] },
-      })
-
-      await usePipelineStore.getState().deleteProduct("1")
-
-      expect(usePipelineStore.getState().selectedProduct).toBeNull()
-    })
-
-    it("não deve limpar selectedProduct se deletar outro produto", async () => {
-      const selected = mockProduct({ _id: "2" })
-      usePipelineStore.setState({ selectedProduct: selected })
-      vi.mocked(api.deletePipelineProduct).mockResolvedValue({ success: true })
-      vi.mocked(api.getPipelineProducts).mockResolvedValue({
-        success: true,
-        products: { triagem: [], analise: [selected], aprovado: [], importando: [], concluido: [] },
-      })
-
-      await usePipelineStore.getState().deleteProduct("1")
-
-      expect(usePipelineStore.getState().selectedProduct?._id).toBe("2")
-    })
-
     it("deve setar erro se delete falhar", async () => {
       vi.mocked(api.deletePipelineProduct).mockRejectedValue(new Error("Falha ao remover"))
 
       await usePipelineStore.getState().deleteProduct("1")
 
       expect(usePipelineStore.getState().error).toBe("Falha ao remover")
-    })
-  })
-
-  describe("setSelectedProduct", () => {
-    it("deve setar produto selecionado", () => {
-      const product = mockProduct()
-      usePipelineStore.getState().setSelectedProduct(product)
-      expect(usePipelineStore.getState().selectedProduct).toBe(product)
-    })
-
-    it("deve limpar produto selecionado com null", () => {
-      usePipelineStore.setState({ selectedProduct: mockProduct() })
-      usePipelineStore.getState().setSelectedProduct(null)
-      expect(usePipelineStore.getState().selectedProduct).toBeNull()
     })
   })
 })

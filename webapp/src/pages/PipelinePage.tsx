@@ -1,7 +1,6 @@
 import { useEffect } from "react"
 import { Loader2, RefreshCw } from "lucide-react"
 import { KanbanBoard } from "@/components/pipeline/KanbanBoard"
-import { ProductDetailModal } from "@/components/pipeline/ProductDetailModal"
 import { usePipelineStore } from "@/store/usePipelineStore"
 
 export const PipelinePage = () => {
@@ -40,9 +39,6 @@ export const PipelinePage = () => {
       <div className="flex-1 overflow-hidden">
         <KanbanBoard />
       </div>
-
-      {/* Modal de detalhe */}
-      <ProductDetailModal />
     </div>
   )
 }

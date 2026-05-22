@@ -5,12 +5,10 @@ type PipelineState = {
   products: Record<PipelineStage, PipelineProduct[]>
   isLoading: boolean
   error: string | null
-  selectedProduct: PipelineProduct | null
 
   fetchProducts: () => Promise<void>
   moveProduct: (id: string, stage: PipelineStage, order: number) => Promise<void>
   deleteProduct: (id: string) => Promise<void>
-  setSelectedProduct: (product: PipelineProduct | null) => void
 }
 
 const EMPTY_STAGES: Record<PipelineStage, PipelineProduct[]> = {
@@ -25,7 +23,6 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
   products: { ...EMPTY_STAGES },
   isLoading: false,
   error: null,
-  selectedProduct: null,
 
   fetchProducts: async () => {
     set({ isLoading: true, error: null })
@@ -51,12 +48,8 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     try {
       await api.deletePipelineProduct(id)
       await get().fetchProducts()
-      const selected = get().selectedProduct
-      if (selected && selected._id === id) set({ selectedProduct: null })
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Erro ao remover produto" })
     }
   },
-
-  setSelectedProduct: (product) => set({ selectedProduct: product }),
 }))

@@ -7,6 +7,7 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { ActionConsole } from "@/components/ActionConsole";
 import { SettingsModal } from "@/components/SettingsModal";
 import { PipelinePage } from "@/pages/PipelinePage";
+import { ProductDetailPage } from "@/pages/ProductDetailPage";
 
 function MainView() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainView />} />
         <Route path="/pipeline" element={<PipelinePage />} />
+        <Route path="/pipeline/:id" element={<ProductDetailPage />} />
       </Routes>
 
       {/* Server status indicator */}

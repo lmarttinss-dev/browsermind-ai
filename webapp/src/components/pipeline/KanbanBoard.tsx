@@ -11,6 +11,7 @@ import {
   type DragOverEvent,
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
+import { useNavigate } from "react-router-dom"
 import { KanbanColumn } from "./KanbanColumn"
 import { ProductCard } from "./ProductCard"
 import { usePipelineStore } from "@/store/usePipelineStore"
@@ -19,7 +20,8 @@ import type { PipelineProduct, PipelineStage } from "@/lib/api"
 const STAGES: PipelineStage[] = ["triagem", "analise", "aprovado", "importando", "concluido"]
 
 export const KanbanBoard = () => {
-  const { products, moveProduct, setSelectedProduct } = usePipelineStore()
+  const { products, moveProduct } = usePipelineStore()
+  const navigate = useNavigate()
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
 
   const sensors = useSensors(
@@ -100,7 +102,7 @@ export const KanbanBoard = () => {
             key={stage}
             stage={stage}
             products={products[stage]}
-            onCardClick={setSelectedProduct}
+            onCardClick={(product) => navigate(`/pipeline/${product._id}`)}
           />
         ))}
       </div>
