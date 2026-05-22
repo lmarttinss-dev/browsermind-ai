@@ -3,10 +3,10 @@ import { Product, PIPELINE_STAGES } from "../models/product.js"
 
 const router = Router()
 
-// Listar todos os produtos agrupados por stage
+// Listar todos os produtos agrupados por stage (sem relatório para performance)
 router.get("/", async (_req, res) => {
   try {
-    const products = await Product.find().sort({ stage: 1, order: 1 })
+    const products = await Product.find({}, { analysisReport: 0 }).sort({ stage: 1, order: 1 })
     const grouped = Object.fromEntries(
       PIPELINE_STAGES.map(stage => [stage, products.filter(p => p.stage === stage)])
     )
