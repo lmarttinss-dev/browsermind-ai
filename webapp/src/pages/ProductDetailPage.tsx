@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarCh
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { api, type PipelineProduct, type PipelineStage } from "@/lib/api"
+import { parseReportMetrics } from "@/lib/utils"
 
 const STAGE_LABELS: Record<PipelineStage, { label: string; color: string }> = {
   triagem: { label: "Triagem", color: "bg-gray-600 text-gray-200" },
@@ -70,6 +71,13 @@ export const ProductDetailPage = () => {
   const stageInfo = STAGE_LABELS[product.stage]
   const competitionColor = COMPETITION_COLORS[product.competitionLevel] || "text-gray-400 bg-gray-900/30 border-gray-700"
 
+  // Fallback: extrair métricas do relatório quando campos numéricos estão zerados
+  const metrics = parseReportMetrics(product.analysisReport || "")
+  const price = product.price > 0 ? product.price : metrics.price
+  const score = product.score > 0 ? product.score : metrics.score
+  const monthlySales = product.monthlySales > 0 ? product.monthlySales : metrics.monthlySales
+  const potentialMargin = product.potentialMargin || metrics.potentialMargin
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Top bar */}
@@ -123,12 +131,12 @@ export const ProductDetailPage = () => {
                 {stageInfo.label}
               </span>
             </div>
-            <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title}</h1>
+            <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
             <div className="flex items-center gap-4 text-sm text-gray-400">
               {product.category && (
                 <span className="flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5" />
-                  {product.category}
+                  {product.category.replace(/\*+/g, "")}
                 </span>
               )}
               <span className="flex items-center gap-1">
@@ -144,8 +152,8 @@ export const ProductDetailPage = () => {
           <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
             <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Preço</span>
             <span className="text-xl font-bold text-emerald-400">
-              {product.price > 0
-                ? `R$ ${product.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+              {price > 0
+                ? `R$ ${price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
                 : "—"}
             </span>
           </div>
@@ -153,8 +161,8 @@ export const ProductDetailPage = () => {
             <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1">
               <Star className="w-3 h-3" /> Score
             </span>
-            <span className={`text-xl font-bold ${product.score >= 7 ? "text-emerald-400" : product.score >= 4 ? "text-yellow-400" : "text-red-400"}`}>
-              {product.score > 0 ? `${product.score}/10` : "—"}
+            <span className={`text-xl font-bold ${score >= 7 ? "text-emerald-400" : score >= 4 ? "text-yellow-400" : "text-red-400"}`}>
+              {score > 0 ? `${score}/10` : "—"}
             </span>
           </div>
           <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
@@ -162,7 +170,7 @@ export const ProductDetailPage = () => {
               <TrendingUp className="w-3 h-3" /> Vendas/mês
             </span>
             <span className="text-xl font-bold text-purple-400">
-              {product.monthlySales > 0 ? product.monthlySales.toLocaleString("pt-BR") : "—"}
+              {monthlySales > 0 ? monthlySales.toLocaleString("pt-BR") : "—"}
             </span>
           </div>
           <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
@@ -170,7 +178,7 @@ export const ProductDetailPage = () => {
               <Percent className="w-3 h-3" /> Margem
             </span>
             <span className="text-xl font-bold text-blue-400">
-              {product.potentialMargin || "—"}
+              {potentialMargin?.replace(/\*+/g, "") || "—"}
             </span>
           </div>
           <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
@@ -193,7 +201,7 @@ export const ProductDetailPage = () => {
               </h3>
               <div className="prose prose-invert max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {product.analysisReport}
+                  {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
                 </ReactMarkdown>
               </div>
             </>
