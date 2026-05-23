@@ -6,6 +6,20 @@ export type PipelineStage = typeof PIPELINE_STAGES[number]
 export const COMPETITION_LEVELS = ["Baixa", "Média", "Alta", "Saturado"] as const
 export type CompetitionLevel = typeof COMPETITION_LEVELS[number]
 
+export type Supplier = {
+  name: string
+  url: string
+  unitPrice: string
+  moq: string
+  rating: number
+  tradeAssurance: boolean
+  yearsInBusiness: number
+  responseRate: string
+  capabilities: string
+  certifications: string
+  capturedAt: Date
+}
+
 export type PipelineProduct = Document & {
   title: string
   url: string
@@ -20,9 +34,25 @@ export type PipelineProduct = Document & {
   analysisReport: string
   analyzedAt: Date
   order: number
+  suppliers: Supplier[]
+  supplierReport: string
   createdAt: Date
   updatedAt: Date
 }
+
+const supplierSchema = new Schema({
+  name: { type: String, required: true },
+  url: { type: String, default: "" },
+  unitPrice: { type: String, default: "" },
+  moq: { type: String, default: "" },
+  rating: { type: Number, default: 0 },
+  tradeAssurance: { type: Boolean, default: false },
+  yearsInBusiness: { type: Number, default: 0 },
+  responseRate: { type: String, default: "" },
+  capabilities: { type: String, default: "" },
+  certifications: { type: String, default: "" },
+  capturedAt: { type: Date, default: Date.now },
+}, { _id: false })
 
 const productSchema = new Schema<PipelineProduct>(
   {
@@ -39,6 +69,8 @@ const productSchema = new Schema<PipelineProduct>(
     analysisReport: { type: String, default: "" },
     analyzedAt: { type: Date, default: Date.now },
     order: { type: Number, default: 0 },
+    suppliers: { type: [supplierSchema], default: [] },
+    supplierReport: { type: String, default: "" },
   },
   { timestamps: true }
 )
