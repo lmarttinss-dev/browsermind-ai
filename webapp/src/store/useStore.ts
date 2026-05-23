@@ -90,7 +90,7 @@ export const useStore = create<AppState>((set, get) => ({
   browserTitle: null,
   screenshot: null,
   autoRefreshScreenshot: true,
-  extensionPaths: ["/mnt/c/Users/Leandro Martins/AppData/Local/Google/Chrome/User Data/Default/Extensions/jdefnfmbnchmnjkcknaadaddgjbgephh/7.0.3_0"],
+  extensionPaths: ["/mnt/c/Users/Leandro Martins/AppData/Local/Google/Chrome/User Data/Default/Extensions/jdefnfmbnchmnjkcknaadaddgjbgephh/7.1.0_0"],
   userDataDir: "~/.browsermind-profile",
 
   history: [],
@@ -120,6 +120,15 @@ export const useStore = create<AppState>((set, get) => ({
         browserUrl: status.url,
         browserTitle: status.title,
       });
+      // Carrega modelo padrão do server (apenas na primeira conexão)
+      if (!get().browserActive) {
+        try {
+          const config = await api.getConfig();
+          if (config.defaultModel) {
+            set({ selectedModel: config.defaultModel as ModelId });
+          }
+        } catch { /* ignora se endpoint não disponível */ }
+      }
     } catch {
       set({ serverOnline: false, browserActive: false, browserUrl: null, browserTitle: null });
     }

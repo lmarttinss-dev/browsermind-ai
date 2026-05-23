@@ -16,6 +16,7 @@ server/          → Backend Express + Playwright                    → porta 3
 
 - **Node.js** >= 18 (testado com v22)
 - **npm** >= 8
+- **Docker** e **Docker Compose** (para MongoDB)
 - **WSLg** ou display X11 configurado (necessário para modo headed com extensões)
   - No WSL2, verificar: `echo $DISPLAY` deve retornar `:0` ou similar
 
@@ -26,23 +27,34 @@ server/          → Backend Express + Playwright                    → porta 3
 git clone <repo-url>
 cd browsermind-ai
 
-# 2. Instalar dependências do servidor
+# 2. Subir o MongoDB via Docker Compose
+docker compose up -d
+
+# 3. Instalar dependências do servidor
 cd server
 npm install
 
-# 3. Instalar o Chromium do Playwright
+# 4. Instalar o Chromium do Playwright
 npm run install:browsers
 
-# 4. Instalar dependências do webapp
+# 5. Instalar dependências do webapp
 cd ../webapp
 npm install
 ```
 
 ## Subindo o aplicativo
 
-Abra **dois terminais**:
+### 1. MongoDB (porta 27017)
 
-### Terminal 1 — Servidor (porta 3210)
+Certifique-se de que o container esteja rodando:
+
+```bash
+docker compose up -d
+```
+
+O servidor conecta automaticamente em `mongodb://localhost:27017/browsermind`. Para usar outra URI, defina a variável de ambiente `MONGODB_URI`.
+
+### 2. Servidor (porta 3210)
 
 ```bash
 cd server
@@ -51,10 +63,11 @@ npm run dev
 
 Saída esperada:
 ```
+✅ MongoDB conectado: mongodb://localhost:27017/browsermind
 🧠 BrowserMind Playwright Server running at http://localhost:3210
 ```
 
-### Terminal 2 — Webapp (porta 5180)
+### 3. Webapp (porta 5180)
 
 ```bash
 cd webapp
@@ -68,6 +81,8 @@ VITE v5.4.21  ready in 500 ms
 ```
 
 Acesse **http://localhost:5180** no navegador.
+
+> 💡 O server funciona sem MongoDB, mas as rotas de pipeline (`/api/pipeline`) não estarão disponíveis.
 
 ## Configuração
 
@@ -143,9 +158,29 @@ faturamento, comissão e informações do vendedor. Organize em uma tabela.
 | POST | `/api/keys` | Configurar API keys |
 | GET | `/api/keys` | Listar keys configuradas |
 | POST | `/api/analyze` | Analisar página com IA |
+| GET | `/api/pipeline` | Listar produtos por estágio |
+| POST | `/api/pipeline` | Criar produto na esteira |
+| GET | `/api/pipeline/:id` | Detalhes de um produto |
+| PATCH | `/api/pipeline/:id` | Atualizar produto |
+| PATCH | `/api/pipeline/:id/move` | Mover produto de estágio |
+| DELETE | `/api/pipeline/:id` | Remover produto |
 
 ## Stack
 
-- **Frontend:** React 18, Vite 5, TailwindCSS 3, Zustand 5, Lucide Icons
-- **Backend:** Express 4, Playwright, Axios, tsx
+- **Frontend:** React 18, Vite 5, TailwindCSS 3, Zustand 5, React Router, dnd-kit, Lucide Icons
+- **Backend:** Express 4, Playwright, Mongoose, Axios, tsx
+- **Banco de dados:** MongoDB 7 (via Docker Compose)
+- **Testes:** Vitest
 - **IA:** Gemini Flash 2.5, Gemini Pro, GPT-4.1, Claude Sonnet, DeepSeek
+
+## Testes
+
+```bash
+# Testes do server
+cd server
+npm test
+
+# Testes do webapp
+cd webapp
+npm test
+```

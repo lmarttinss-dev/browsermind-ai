@@ -1,3 +1,10 @@
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
 import express from "express";
 import cors from "cors";
 import axios from "axios";
@@ -8,10 +15,16 @@ import { Product, type Supplier } from "./models/product.js";
 import { parseSuppliersFromReport } from "./parse-suppliers.js";
 
 const app = express();
-const PORT = 3210;
+const PORT = Number(process.env.PORT) || 3210;
 
-// In-memory API keys store (set via /api/keys)
+// In-memory API keys store (loaded from .env, can be overridden via /api/keys)
 const apiKeys: Record<string, string> = {};
+
+// Pré-carrega API keys do .env (se definidas)
+if (process.env.GEMINI_API_KEY) apiKeys.gemini = process.env.GEMINI_API_KEY;
+if (process.env.OPENAI_API_KEY) apiKeys.openai = process.env.OPENAI_API_KEY;
+if (process.env.ANTHROPIC_API_KEY) apiKeys.anthropic = process.env.ANTHROPIC_API_KEY;
+if (process.env.DEEPSEEK_API_KEY) apiKeys.deepseek = process.env.DEEPSEEK_API_KEY;
 
 // AvantPro configuration
 const AVANTPRO_CONFIG = {
@@ -248,6 +261,13 @@ app.get("/api/keys", (_req, res) => {
     .filter(([, v]) => !!v)
     .map(([k]) => k);
   res.json({ configured });
+});
+
+// Retorna configurações públicas do server (modelo padrão, etc.)
+app.get("/api/config", (_req, res) => {
+  res.json({
+    defaultModel: process.env.DEFAULT_MODEL || "gemini-flash-2.5",
+  });
 });
 
 const SYSTEM_PROMPT = `Você é o BrowserMind AI, um assistente inteligente com capacidade de automação via Playwright.
@@ -601,6 +621,10 @@ process.on("SIGTERM", async () => {
 
 app.listen(PORT, async () => {
   await connectDatabase();
+  const loadedKeys = Object.keys(apiKeys).filter(k => apiKeys[k]);
+  if (loadedKeys.length > 0) {
+    console.log(`🔑 API keys carregadas do .env: ${loadedKeys.join(", ")}`);
+  }
   console.log(`🧠 BrowserMind Playwright Server running at http://localhost:${PORT}`);
   console.log(`📡 Endpoints:`);
   console.log(`   GET  /health      - Health check`);
