@@ -29,6 +29,9 @@ export const api = {
   executeAction: (action: BrowserAction) => request<ActionResult>("/action", { method: "POST", body: JSON.stringify(action) }),
   executeActions: (actions: BrowserAction[]) => request<{ success: boolean; results: ActionResult[] }>("/actions", { method: "POST", body: JSON.stringify({ actions }) }),
 
+  // Config
+  getConfig: () => request<{ defaultModel: string }>("/api/config"),
+
   // AI Proxy
   setKeys: (keys: Record<string, string>) => request<{ success: boolean; configured: string[] }>("/api/keys", { method: "POST", body: JSON.stringify({ keys }) }),
   getKeys: () => request<{ configured: string[] }>("/api/keys"),
