@@ -3,8 +3,9 @@ import cors from "cors";
 import axios from "axios";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
-import pipelineRouter from "./routes/pipeline.js";
-import { Product } from "./models/product.js";
+import { router as pipelineRouter } from "./routes/pipeline.js";
+import { Product, type Supplier } from "./models/product.js";
+import { parseSuppliersFromReport } from "./parse-suppliers.js";
 
 const app = express();
 const PORT = 3210;
@@ -520,6 +521,71 @@ app.post("/api/analyze", async (req, res) => {
     res.status(500).json({ success: false, error: msg });
   }
 });
+
+// ==========================================
+// Suppliers — Captura fornecedores da página atual do Playwright
+// ==========================================
+
+const handleCaptureSuppliers: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const { report } = req.body || {}
+
+    if (!report || typeof report !== "string") {
+      res.status(400).json({ error: "Campo 'report' (relatório markdown) é obrigatório" })
+      return
+    }
+
+    // Parsear fornecedores do relatório markdown
+    const parsed = parseSuppliersFromReport(report)
+    const suppliers = parsed.map(s => ({ ...s, capturedAt: new Date() }))
+
+    // Append ao array existente (não sobrescreve)
+    product.suppliers.push(...suppliers)
+    // Salvar relatório de fornecedores
+    product.set("supplierReport", report)
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers, supplierReport: report })
+  } catch (error) {
+    const msg = axios.isAxiosError(error)
+      ? error.response?.data?.error?.message || error.message
+      : error instanceof Error ? error.message : String(error)
+    res.status(500).json({ error: msg })
+  }
+}
+
+const handleDeleteSupplier: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice inválido" })
+      return
+    }
+
+    product.suppliers.splice(index, 1)
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// Registrar rotas de suppliers no pipeline router
+pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
+pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 
 // Graceful shutdown
 process.on("SIGINT", async () => {

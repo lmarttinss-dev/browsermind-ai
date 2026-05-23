@@ -65,6 +65,7 @@ export class PlaywrightManager {
       const suppressExtensionErrors = (page: Page) => {
         page.on("pageerror", (err) => {
           if (err.message.includes("disconnected port")) return
+          if (err.message.includes("#<Object>")) return
           console.error("Page error:", err.message)
         })
       }

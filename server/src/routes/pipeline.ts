@@ -1,7 +1,8 @@
 import { Router } from "express"
 import { Product, PIPELINE_STAGES } from "../models/product.js"
 
-const router = Router()
+export const router = Router()
+export default router
 
 // Listar todos os produtos agrupados por stage (sem relatório para performance)
 router.get("/", async (_req, res) => {
@@ -89,5 +90,3 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "Erro ao remover produto" })
   }
 })
-
-export default router

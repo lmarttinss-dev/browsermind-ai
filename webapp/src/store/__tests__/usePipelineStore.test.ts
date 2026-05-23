@@ -28,6 +28,8 @@ const mockProduct = (overrides: Partial<PipelineProduct> = {}): PipelineProduct 
   analysisReport: "# Relatório",
   analyzedAt: "2026-05-21T00:00:00.000Z",
   order: 0,
+  suppliers: [],
+  supplierReport: "",
   createdAt: "2026-05-21T00:00:00.000Z",
   updatedAt: "2026-05-21T00:00:00.000Z",
   ...overrides,

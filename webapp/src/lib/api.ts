@@ -54,6 +54,17 @@ export const api = {
     request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}/move`, { method: "PATCH", body: JSON.stringify({ stage, order }) }),
   deletePipelineProduct: (id: string) =>
     request<{ success: boolean }>(`/api/pipeline/${id}`, { method: "DELETE" }),
+
+  // Suppliers
+  captureSuppliers: (productId: string, report: string) =>
+    request<{ success: boolean; suppliers: Supplier[]; supplierReport: string }>(`/api/pipeline/${productId}/suppliers`, {
+      method: "POST",
+      body: JSON.stringify({ report }),
+    }),
+  removeSupplier: (productId: string, index: number) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${index}`, {
+      method: "DELETE",
+    }),
 };
 
 export interface BrowserAction {
@@ -74,6 +85,20 @@ export interface ActionResult {
 export type PipelineStage = "triagem" | "analise" | "aprovado" | "importando" | "concluido";
 export type CompetitionLevel = "Baixa" | "Média" | "Alta" | "Saturado";
 
+export type Supplier = {
+  name: string;
+  url: string;
+  unitPrice: string;
+  moq: string;
+  rating: number;
+  tradeAssurance: boolean;
+  yearsInBusiness: number;
+  responseRate: string;
+  capabilities: string;
+  certifications: string;
+  capturedAt: string;
+};
+
 export type PipelineProduct = {
   _id: string;
   title: string;
@@ -89,6 +114,8 @@ export type PipelineProduct = {
   analysisReport: string;
   analyzedAt: string;
   order: number;
+  suppliers: Supplier[];
+  supplierReport: string;
   createdAt: string;
   updatedAt: string;
 };
