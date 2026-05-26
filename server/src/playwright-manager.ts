@@ -1,5 +1,30 @@
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import fs from "fs";
+import path from "path";
+
+// Resolve o path da extensão: se não existir, busca a versão mais recente no diretório pai
+function resolveExtensionPath(extPath: string): string {
+  if (fs.existsSync(extPath)) return extPath
+
+  const parentDir = path.dirname(extPath)
+  if (!fs.existsSync(parentDir)) {
+    console.warn(`⚠️  Diretório da extensão não encontrado: ${parentDir}`)
+    return extPath
+  }
+
+  const versions = fs.readdirSync(parentDir)
+    .filter((d) => fs.statSync(path.join(parentDir, d)).isDirectory())
+    .sort()
+
+  if (versions.length === 0) {
+    console.warn(`⚠️  Nenhuma versão encontrada em: ${parentDir}`)
+    return extPath
+  }
+
+  const resolved = path.join(parentDir, versions[versions.length - 1])
+  console.log(`🔄 Extensão atualizada detectada: ${path.basename(extPath)} → ${versions[versions.length - 1]}`)
+  return resolved
+}
 
 export interface BrowserAction {
   type: "click" | "type" | "scroll" | "navigate" | "select" | "wait" | "extract" | "screenshot" | "goBack" | "goForward" | "hover" | "evaluate";
@@ -31,12 +56,15 @@ export class PlaywrightManager {
     ];
 
     if (extensionPaths.length > 0) {
+      // Resolve versões atualizadas automaticamente
+      const resolvedPaths = extensionPaths.map(resolveExtensionPath)
+
       // Extensions require persistent context and headed mode
       // Use Xvfb/WSLg display (DISPLAY env must be set)
       const extArgs = [
         ...baseArgs,
-        `--disable-extensions-except=${extensionPaths.join(",")}`,
-        ...extensionPaths.map((p) => `--load-extension=${p}`),
+        `--disable-extensions-except=${resolvedPaths.join(",")}`,
+        ...resolvedPaths.map((p) => `--load-extension=${p}`),
       ];
 
       const profileDir = userDataDir || `${process.env.HOME || '/tmp'}/.browsermind-profile`;
@@ -44,7 +72,7 @@ export class PlaywrightManager {
         fs.mkdirSync(profileDir, { recursive: true });
       }
 
-      console.log("🧩 Launching with extensions:", extensionPaths);
+      console.log("🧩 Launching with extensions:", resolvedPaths);
       console.log("📂 Profile:", profileDir);
       console.log("🖥️  DISPLAY:", process.env.DISPLAY || "(not set)");
 
