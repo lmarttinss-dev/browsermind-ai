@@ -1,14 +1,20 @@
 import { create } from "zustand"
-import { api, type PipelineProduct, type PipelineStage } from "@/lib/api"
+import { api, type PipelineProduct, type PipelineStage, type ComparisonResult } from "@/lib/api"
 
 type PipelineState = {
   products: Record<PipelineStage, PipelineProduct[]>
   isLoading: boolean
   error: string | null
+  comparison: ComparisonResult | null
+  isComparing: boolean
+  showComparison: boolean
 
   fetchProducts: () => Promise<void>
   moveProduct: (id: string, stage: PipelineStage, order: number) => Promise<void>
   deleteProduct: (id: string) => Promise<void>
+  compareProducts: (model: string) => Promise<void>
+  clearComparison: () => void
+  confirmTopProducts: (productIds: string[]) => Promise<void>
 }
 
 const EMPTY_STAGES: Record<PipelineStage, PipelineProduct[]> = {
@@ -23,6 +29,9 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
   products: { ...EMPTY_STAGES },
   isLoading: false,
   error: null,
+  comparison: null,
+  isComparing: false,
+  showComparison: false,
 
   fetchProducts: async () => {
     set({ isLoading: true, error: null })
@@ -50,6 +59,35 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
       await get().fetchProducts()
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Erro ao remover produto" })
+    }
+  },
+
+  compareProducts: async (model) => {
+    set({ isComparing: true, error: null, showComparison: true })
+    try {
+      const { comparison } = await api.comparePipelineProducts(model)
+      set({ comparison, isComparing: false })
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Erro ao comparar produtos",
+        isComparing: false,
+      })
+    }
+  },
+
+  clearComparison: () => {
+    set({ comparison: null, showComparison: false })
+  },
+
+  confirmTopProducts: async (productIds) => {
+    try {
+      for (const id of productIds) {
+        await api.movePipelineProduct(id, "analise", 0)
+      }
+      await get().fetchProducts()
+      set({ comparison: null, showComparison: false })
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "Erro ao mover produtos" })
     }
   },
 }))

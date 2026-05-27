@@ -1,10 +1,13 @@
 import { useEffect } from "react"
 import { Loader2, RefreshCw } from "lucide-react"
 import { KanbanBoard } from "@/components/pipeline/KanbanBoard"
+import { ComparisonModal } from "@/components/pipeline/ComparisonModal"
 import { usePipelineStore } from "@/store/usePipelineStore"
 
 export const PipelinePage = () => {
-  const { fetchProducts, isLoading, error } = usePipelineStore()
+  const { fetchProducts, isLoading, error, showComparison } = usePipelineStore()
+  const openComparison = () => usePipelineStore.setState({ showComparison: true })
+  const closeComparison = () => usePipelineStore.getState().clearComparison()
 
   useEffect(() => {
     fetchProducts()
@@ -37,8 +40,11 @@ export const PipelinePage = () => {
 
       {/* Board */}
       <div className="flex-1 overflow-hidden">
-        <KanbanBoard />
+        <KanbanBoard onCompareClick={openComparison} />
       </div>
+
+      {/* Modal de comparação */}
+      {showComparison && <ComparisonModal onClose={closeComparison} />}
     </div>
   )
 }

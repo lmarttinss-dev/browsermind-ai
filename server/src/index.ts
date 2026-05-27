@@ -603,7 +603,176 @@ const handleDeleteSupplier: import("express").RequestHandler = async (req, res) 
   }
 }
 
-// Registrar rotas de suppliers no pipeline router
+// ==========================================
+// Compare — Compara produtos da triagem e sugere top 3
+// ==========================================
+
+const COMPARE_SYSTEM_PROMPT = `Você é um analista especializado em importação simplificada de produtos para revenda no Mercado Livre.
+Sua tarefa é comparar múltiplos produtos e gerar um ranking dos TOP 3 mais promissores para importação.
+
+Critérios de avaliação (use seu julgamento livre com base nos dados fornecidos):
+- Score de demanda (0-10)
+- Volume de vendas mensais
+- Nível de concorrência (menor = melhor)
+- Margem potencial
+- Escalabilidade e facilidade operacional
+- Potencial de diferenciação
+
+IMPORTANTE: Sua resposta DEVE conter um bloco JSON delimitado por \`\`\`json ... \`\`\` com o ranking estruturado.
+O JSON deve ter o formato:
+{
+  "ranking": [
+    { "productId": "ID_DO_PRODUTO", "position": 1, "reason": "Motivo resumido" },
+    { "productId": "ID_DO_PRODUTO", "position": 2, "reason": "Motivo resumido" },
+    { "productId": "ID_DO_PRODUTO", "position": 3, "reason": "Motivo resumido" }
+  ]
+}
+
+Após o bloco JSON, inclua um relatório em Markdown com:
+1. Tabela comparativa de todos os produtos (métricas lado a lado)
+2. Análise detalhada de cada produto do top 3 (pontos fortes e fracos)
+3. Recomendação final explicando por que esses 3 se destacam`
+
+const handleCompareProducts: import("express").RequestHandler = async (req, res) => {
+  try {
+    const { model } = req.body as { model: string }
+
+    if (!model) {
+      res.status(400).json({ error: "Campo 'model' é obrigatório" })
+      return
+    }
+
+    // Busca todos os produtos em triagem
+    const products = await Product.find({ stage: "triagem" }).sort({ order: 1 })
+
+    if (products.length < 3) {
+      res.status(400).json({ error: `É necessário pelo menos 3 produtos na triagem para comparar (encontrados: ${products.length})` })
+      return
+    }
+
+    // Monta prompt com dados dos produtos (limita a 15 para não estourar tokens)
+    const productsToCompare = products.slice(0, 15)
+    const productsList = productsToCompare.map((p, i) => `
+### Produto ${i + 1} (ID: ${p._id})
+- **Título:** ${p.title}
+- **Preço:** R$ ${p.price.toFixed(2).replace(".", ",")}
+- **Score:** ${p.score}/10
+- **Vendas mensais:** ${p.monthlySales}
+- **Concorrência:** ${p.competitionLevel}
+- **Margem potencial:** ${p.potentialMargin || "Não informada"}
+- **Categoria:** ${p.category || "Não informada"}
+`).join("\n")
+
+    const userMessage = `Compare os ${productsToCompare.length} produtos abaixo e selecione os TOP 3 mais promissores para importação simplificada:\n${productsList}`
+
+    // Chama IA usando a mesma lógica do /api/analyze
+    let aiResponse: string
+
+    if (model === "gemini-flash-2.5" || model === "gemini-pro-2.5" || model === "gemini-flash-3" || model === "gemini-pro-3.1") {
+      const geminiModelMap: Record<string, string> = {
+        "gemini-flash-2.5": "gemini-2.5-flash",
+        "gemini-pro-2.5": "gemini-2.5-pro",
+        "gemini-flash-3": "gemini-3-flash-preview",
+        "gemini-pro-3.1": "gemini-3.1-pro-preview",
+      }
+      const geminiModel = geminiModelMap[model]
+      const key = apiKeys.gemini
+      if (!key) throw new Error("Chave Gemini não configurada. Configure em Settings.")
+
+      const r = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${key}`,
+        {
+          contents: [{ parts: [{ text: COMPARE_SYSTEM_PROMPT }, { text: userMessage }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
+        }
+      )
+      aiResponse = r.data.candidates?.[0]?.content?.parts?.[0]?.text || ""
+
+    } else if (model === "gpt-4.1") {
+      const key = apiKeys.openai
+      if (!key) throw new Error("Chave OpenAI não configurada. Configure em Settings.")
+
+      const r = await axios.post("https://api.openai.com/v1/chat/completions", {
+        model: "gpt-4.1",
+        messages: [
+          { role: "system", content: COMPARE_SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 8192,
+        temperature: 0.7,
+      }, { headers: { Authorization: `Bearer ${key}` } })
+      aiResponse = r.data.choices?.[0]?.message?.content || ""
+
+    } else if (model === "claude-sonnet") {
+      const key = apiKeys.anthropic
+      if (!key) throw new Error("Chave Anthropic não configurada. Configure em Settings.")
+
+      const r = await axios.post("https://api.anthropic.com/v1/messages", {
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 8192,
+        system: COMPARE_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userMessage }],
+      }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } })
+      aiResponse = r.data.content?.[0]?.text || ""
+
+    } else if (model === "deepseek") {
+      const key = apiKeys.deepseek
+      if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
+
+      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: COMPARE_SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 8192,
+        temperature: 0.7,
+      }, { headers: { Authorization: `Bearer ${key}` } })
+      aiResponse = r.data.choices?.[0]?.message?.content || ""
+
+    } else {
+      throw new Error(`Modelo não suportado: ${model}`)
+    }
+
+    if (!aiResponse) throw new Error("Resposta vazia da IA")
+
+    // Parsear ranking do JSON na resposta
+    let ranking: Array<{ productId: string; position: number; reason: string }> = []
+    try {
+      const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)```/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[1])
+        if (Array.isArray(parsed.ranking)) {
+          // Validar que os IDs existem nos produtos comparados
+          const validIds = new Set(productsToCompare.map(p => String(p._id)))
+          ranking = parsed.ranking
+            .filter((r: { productId: string }) => validIds.has(r.productId))
+            .slice(0, 3)
+        }
+      }
+    } catch { /* parsing falhou, ranking fica vazio */ }
+
+    // Remover bloco JSON do relatório para exibição limpa
+    const report = aiResponse.replace(/```json\s*[\s\S]*?```\n?/, "").trim()
+
+    res.json({
+      success: true,
+      comparison: {
+        ranking,
+        report,
+        productsCompared: productsToCompare.length,
+      },
+    })
+  } catch (error) {
+    const msg = axios.isAxiosError(error)
+      ? error.response?.data?.error?.message || error.message
+      : error instanceof Error ? error.message : String(error)
+    res.status(500).json({ error: msg })
+  }
+}
+
+// Registrar rotas de suppliers e compare no pipeline router
+pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 

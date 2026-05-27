@@ -68,6 +68,13 @@ export const api = {
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${index}`, {
       method: "DELETE",
     }),
+
+  // Compare
+  comparePipelineProducts: (model: string) =>
+    request<{ success: boolean; comparison: ComparisonResult }>("/api/pipeline/compare", {
+      method: "POST",
+      body: JSON.stringify({ model }),
+    }),
 };
 
 export interface BrowserAction {
@@ -121,6 +128,18 @@ export type PipelineProduct = {
   supplierReport: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ComparisonRanking = {
+  productId: string;
+  position: number;
+  reason: string;
+};
+
+export type ComparisonResult = {
+  ranking: ComparisonRanking[];
+  report: string;
+  productsCompared: number;
 };
 
 export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek";

@@ -345,4 +345,32 @@ Para as oportunidades identificadas, sugira:
 4. Tempo estimado para primeiras vendas:
 5. Próximos passos recomendados:`,
   },
+  {
+    id: "comparacao-produtos",
+    name: "Comparação de Produtos (Top 3)",
+    description: "Compara produtos da triagem e seleciona os 3 mais promissores para importação",
+    content: `Compare os produtos abaixo e selecione os TOP 3 mais promissores para importação simplificada.
+
+Critérios de avaliação (use seu julgamento livre com base nos dados fornecidos):
+- Score de demanda (0-10)
+- Volume de vendas mensais
+- Nível de concorrência (menor = melhor)
+- Margem potencial
+- Escalabilidade e facilidade operacional
+- Potencial de diferenciação
+
+IMPORTANTE: Sua resposta DEVE conter um bloco JSON delimitado por \`\`\`json ... \`\`\` com o ranking estruturado:
+{
+  "ranking": [
+    { "productId": "ID_DO_PRODUTO", "position": 1, "reason": "Motivo resumido" },
+    { "productId": "ID_DO_PRODUTO", "position": 2, "reason": "Motivo resumido" },
+    { "productId": "ID_DO_PRODUTO", "position": 3, "reason": "Motivo resumido" }
+  ]
+}
+
+Após o JSON, inclua um relatório em Markdown com:
+1. Tabela comparativa de todos os produtos
+2. Análise detalhada de cada produto do top 3
+3. Recomendação final`,
+  },
 ]

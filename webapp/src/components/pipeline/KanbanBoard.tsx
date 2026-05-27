@@ -19,7 +19,7 @@ import type { PipelineProduct, PipelineStage } from "@/lib/api"
 
 const STAGES: PipelineStage[] = ["triagem", "analise", "aprovado", "importando", "concluido"]
 
-export const KanbanBoard = () => {
+export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: () => void }) => {
   const { products, moveProduct } = usePipelineStore()
   const navigate = useNavigate()
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
@@ -103,6 +103,7 @@ export const KanbanBoard = () => {
             stage={stage}
             products={products[stage]}
             onCardClick={(product) => navigate(`/pipeline/${product._id}`)}
+            onCompareClick={stage === "triagem" ? onCompareClick : undefined}
           />
         ))}
       </div>
