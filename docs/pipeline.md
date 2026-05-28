@@ -2,6 +2,27 @@
 
 Sistema de triagem e acompanhamento de produtos no estilo Kanban (Trello/Monday) com persistência em MongoDB.
 
+## Índice
+
+- [Visão Geral](#visão-geral)
+- [Colunas](#colunas)
+- [Comparação de Produtos por Coluna](#comparação-de-produtos-por-coluna)
+  - [Triagem → Em Análise](#triagem--em-análise)
+  - [Em Análise → Aprovado](#em-análise--aprovado)
+  - [Aprovado → Importando](#aprovado--importando)
+  - [Importando → Concluído](#importando--concluído)
+  - [Resumo do Fluxo de Decisão](#resumo-do-fluxo-de-decisão)
+  - [Endpoint de Comparação](#endpoint-de-comparação)
+- [Fluxo de Inserção Automática](#fluxo-de-inserção-automática)
+- [Card do Produto](#card-do-produto)
+- [Interações](#interações)
+- [API Endpoints](#api-endpoints)
+- [Schema do Produto (MongoDB)](#schema-do-produto-mongodb)
+- [Pré-requisitos](#pré-requisitos)
+- [Arquitetura](#arquitetura)
+- [Testes](#testes)
+- [Como Acessar](#como-acessar)
+
 ## Visão Geral
 
 Quando a IA analisa um produto e identifica dados de viabilidade (score, vendas, concorrência, margem), o produto é **automaticamente inserido** na esteira de triagem. A partir daí, o usuário pode movê-lo entre as colunas conforme avança no processo de avaliação e importação.
