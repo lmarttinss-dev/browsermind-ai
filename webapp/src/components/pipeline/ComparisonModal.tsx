@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { X, Loader2, ArrowRight, Trophy, Check, RefreshCw, Clock } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -29,13 +29,6 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
   const stage = comparisonStage || "triagem"
   const stageProducts = products[stage]
   const labels = STAGE_LABELS[stage] || STAGE_LABELS.triagem
-
-  // Auto-carregar resultado cacheado ao abrir o modal
-  useEffect(() => {
-    if (!comparison && !isComparing) {
-      compareProducts(model, stage)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sincroniza seleção quando ranking chega
   const rankingIds = comparison?.ranking.map(r => r.productId) || []
