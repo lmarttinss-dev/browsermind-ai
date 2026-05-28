@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { X, Loader2, ArrowRight, Trophy, Check } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, Loader2, ArrowRight, Trophy, Check, RefreshCw, Clock } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { usePipelineStore } from "@/store/usePipelineStore"
@@ -22,13 +22,20 @@ const STAGE_LABELS: Record<string, { title: string; subtitle: string; destLabel:
 }
 
 export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
-  const { products, comparison, isComparing, compareProducts, confirmTopProducts, comparisonStage } = usePipelineStore()
+  const { products, comparison, isComparing, compareProducts, confirmTopProducts, comparisonStage, comparisonCached, comparisonCachedAt } = usePipelineStore()
   const [model, setModel] = useState(MODELS[0].id)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const stage = comparisonStage || "triagem"
   const stageProducts = products[stage]
   const labels = STAGE_LABELS[stage] || STAGE_LABELS.triagem
+
+  // Auto-carregar resultado cacheado ao abrir o modal
+  useEffect(() => {
+    if (!comparison && !isComparing) {
+      compareProducts(model, stage)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sincroniza seleção quando ranking chega
   const rankingIds = comparison?.ranking.map(r => r.productId) || []
@@ -80,7 +87,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
             ))}
           </select>
           <button
-            onClick={() => compareProducts(model, stage)}
+            onClick={() => compareProducts(model, stage, true)}
             disabled={isComparing || stageProducts.length < 3}
             className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-medium rounded-lg transition-colors"
           >
@@ -89,6 +96,11 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Analisando...
               </>
+            ) : comparison ? (
+              <>
+                <RefreshCw className="w-4 h-4" />
+                Re-analisar
+              </>
             ) : (
               <>
                 <Trophy className="w-4 h-4" />
@@ -96,6 +108,12 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
               </>
             )}
           </button>
+          {comparisonCached && comparisonCachedAt && (
+            <span className="flex items-center gap-1 text-xs text-gray-500">
+              <Clock className="w-3 h-3" />
+              Cache de {new Date(comparisonCachedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
         </div>
 
         {/* Conteúdo */}

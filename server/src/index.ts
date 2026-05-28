@@ -12,6 +12,7 @@ import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
 import { Product, type Supplier } from "./models/product.js";
+import { Comparison } from "./models/comparison.js";
 import { parseSuppliersFromReport } from "./parse-suppliers.js";
 
 const app = express();
@@ -660,7 +661,11 @@ Após o bloco JSON, inclua um relatório em Markdown com:
 
 const handleCompareProducts: import("express").RequestHandler = async (req, res) => {
   try {
-    const { model, stage = "triagem" } = req.body as { model: string; stage?: "triagem" | "analise" }
+    const { model, stage = "triagem", forceRefresh = false } = req.body as {
+      model: string
+      stage?: "triagem" | "analise"
+      forceRefresh?: boolean
+    }
 
     if (!model) {
       res.status(400).json({ error: "Campo 'model' é obrigatório" })
@@ -683,6 +688,29 @@ const handleCompareProducts: import("express").RequestHandler = async (req, res)
 
     // Monta prompt com dados dos produtos (limita a 15 para não estourar tokens)
     const productsToCompare = products.slice(0, 15)
+
+    // Gerar hash dos IDs para verificar se a composição mudou
+    const productIds = productsToCompare.map(p => String(p._id)).sort()
+    const crypto = await import("crypto")
+    const productHash = crypto.createHash("md5").update(productIds.join(",")).digest("hex")
+
+    // Verificar cache (se não forçou refresh)
+    if (!forceRefresh) {
+      const cached = await Comparison.findOne({ stage, productHash }).sort({ createdAt: -1 })
+      if (cached) {
+        res.json({
+          success: true,
+          comparison: {
+            ranking: cached.ranking,
+            report: cached.report,
+            productsCompared: cached.productsCompared,
+          },
+          cached: true,
+          cachedAt: cached.createdAt,
+        })
+        return
+      }
+    }
 
     let productsList: string
     if (stage === "analise") {
@@ -815,6 +843,13 @@ ${supplierInfo}
     // Remover bloco JSON do relatório para exibição limpa
     const report = aiResponse.replace(/```json\s*[\s\S]*?```\n?/, "").trim()
 
+    // Salvar no cache (substituir anterior do mesmo stage+hash)
+    await Comparison.findOneAndUpdate(
+      { stage, productHash },
+      { stage, productIds, productHash, ranking, report, productsCompared: productsToCompare.length, model },
+      { upsert: true, new: true }
+    )
+
     res.json({
       success: true,
       comparison: {
@@ -822,6 +857,7 @@ ${supplierInfo}
         report,
         productsCompared: productsToCompare.length,
       },
+      cached: false,
     })
   } catch (error) {
     const msg = axios.isAxiosError(error)

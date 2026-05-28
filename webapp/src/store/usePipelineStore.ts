@@ -9,11 +9,13 @@ type PipelineState = {
   isComparing: boolean
   showComparison: boolean
   comparisonStage: PipelineStage | null
+  comparisonCached: boolean
+  comparisonCachedAt: string | null
 
   fetchProducts: () => Promise<void>
   moveProduct: (id: string, stage: PipelineStage, order: number) => Promise<void>
   deleteProduct: (id: string) => Promise<void>
-  compareProducts: (model: string, stage: PipelineStage) => Promise<void>
+  compareProducts: (model: string, stage: PipelineStage, forceRefresh?: boolean) => Promise<void>
   clearComparison: () => void
   confirmTopProducts: (productIds: string[]) => Promise<void>
 }
@@ -34,6 +36,8 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
   isComparing: false,
   showComparison: false,
   comparisonStage: null,
+  comparisonCached: false,
+  comparisonCachedAt: null,
 
   fetchProducts: async () => {
     set({ isLoading: true, error: null })
@@ -64,11 +68,11 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     }
   },
 
-  compareProducts: async (model, stage) => {
+  compareProducts: async (model, stage, forceRefresh = false) => {
     set({ isComparing: true, error: null, showComparison: true, comparisonStage: stage })
     try {
-      const { comparison } = await api.comparePipelineProducts(model, stage)
-      set({ comparison, isComparing: false })
+      const { comparison, cached, cachedAt } = await api.comparePipelineProducts(model, stage, forceRefresh)
+      set({ comparison, isComparing: false, comparisonCached: cached, comparisonCachedAt: cachedAt || null })
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Erro ao comparar produtos",
@@ -78,7 +82,7 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
   },
 
   clearComparison: () => {
-    set({ comparison: null, showComparison: false, comparisonStage: null })
+    set({ comparison: null, showComparison: false, comparisonStage: null, comparisonCached: false, comparisonCachedAt: null })
   },
 
   confirmTopProducts: async (productIds) => {
@@ -89,7 +93,7 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
         await api.movePipelineProduct(id, destStage, 0)
       }
       await get().fetchProducts()
-      set({ comparison: null, showComparison: false, comparisonStage: null })
+      set({ comparison: null, showComparison: false, comparisonStage: null, comparisonCached: false, comparisonCachedAt: null })
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Erro ao mover produtos" })
     }
