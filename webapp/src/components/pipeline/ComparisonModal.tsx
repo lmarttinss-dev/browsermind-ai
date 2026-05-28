@@ -80,7 +80,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
             ))}
           </select>
           <button
-            onClick={() => compareProducts(model, stage, true)}
+            onClick={() => compareProducts(model, stage, !!comparison)}
             disabled={isComparing || stageProducts.length < 3}
             className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-medium rounded-lg transition-colors"
           >
