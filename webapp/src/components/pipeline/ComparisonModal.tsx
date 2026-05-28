@@ -4,16 +4,31 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { usePipelineStore } from "@/store/usePipelineStore"
 import { MODELS } from "@/lib/api"
-import type { PipelineProduct } from "@/lib/api"
+import type { PipelineProduct, PipelineStage } from "@/lib/api"
 
 const MEDAL = ["🥇", "🥈", "🥉"]
 
+const STAGE_LABELS: Record<string, { title: string; subtitle: string; destLabel: string }> = {
+  triagem: {
+    title: "Comparação de Produtos — Triagem",
+    subtitle: "Selecione os melhores para avançar para análise",
+    destLabel: "Mover para Análise",
+  },
+  analise: {
+    title: "Comparação de Produtos — Em Análise",
+    subtitle: "Selecione os melhores para aprovar para importação",
+    destLabel: "Mover para Aprovado",
+  },
+}
+
 export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
-  const { products, comparison, isComparing, compareProducts, confirmTopProducts } = usePipelineStore()
+  const { products, comparison, isComparing, compareProducts, confirmTopProducts, comparisonStage } = usePipelineStore()
   const [model, setModel] = useState(MODELS[0].id)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-  const triagemProducts = products.triagem
+  const stage = comparisonStage || "triagem"
+  const stageProducts = products[stage]
+  const labels = STAGE_LABELS[stage] || STAGE_LABELS.triagem
 
   // Sincroniza seleção quando ranking chega
   const rankingIds = comparison?.ranking.map(r => r.productId) || []
@@ -32,7 +47,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
   }
 
   const getProductById = (id: string): PipelineProduct | undefined =>
-    triagemProducts.find(p => p._id === id)
+    stageProducts.find(p => p._id === id)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -40,9 +55,9 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
           <div>
-            <h2 className="text-lg font-semibold text-gray-100">Comparação de Produtos</h2>
+            <h2 className="text-lg font-semibold text-gray-100">{labels.title}</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              {triagemProducts.length} produtos na triagem
+              {stageProducts.length} produtos — {labels.subtitle}
             </p>
           </div>
           <button
@@ -65,8 +80,8 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
             ))}
           </select>
           <button
-            onClick={() => compareProducts(model)}
-            disabled={isComparing || triagemProducts.length < 3}
+            onClick={() => compareProducts(model, stage)}
+            disabled={isComparing || stageProducts.length < 3}
             className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-medium rounded-lg transition-colors"
           >
             {isComparing ? (
@@ -88,7 +103,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
           {isComparing && (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <Loader2 className="w-8 h-8 animate-spin mb-3" />
-              <p className="text-sm">A IA está comparando {triagemProducts.length} produtos...</p>
+              <p className="text-sm">A IA está comparando {stageProducts.length} produtos...</p>
               <p className="text-xs text-gray-600 mt-1">Isso pode levar alguns segundos</p>
             </div>
           )}
@@ -98,7 +113,9 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
               <Trophy className="w-10 h-10 mb-3 text-gray-600" />
               <p className="text-sm">Clique em "Analisar Top 3" para a IA comparar os produtos</p>
               <p className="text-xs text-gray-600 mt-1">
-                A IA vai avaliar score, vendas, concorrência e margem de cada produto
+                {stage === "analise"
+                  ? "A IA vai avaliar margem real, fornecedores, MOQ e risco operacional"
+                  : "A IA vai avaliar score, vendas, concorrência e margem de cada produto"}
               </p>
             </div>
           )}
@@ -176,7 +193,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {triagemProducts.slice(0, 15).map(product => {
+                      {stageProducts.slice(0, 15).map(product => {
                         const rankPos = comparison.ranking.findIndex(r => r.productId === product._id)
                         return (
                           <tr
@@ -239,7 +256,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-medium rounded-lg transition-colors"
             >
               <ArrowRight className="w-4 h-4" />
-              Mover para Análise
+              {labels.destLabel}
             </button>
           </div>
         )}

@@ -41,7 +41,7 @@ export const KanbanColumn = ({
             {products.length}
           </span>
         </div>
-        {stage === "triagem" && products.length >= 3 && onCompareClick && (
+        {(stage === "triagem" || stage === "analise") && products.length >= 3 && onCompareClick && (
           <button
             onClick={onCompareClick}
             title="Comparar produtos e selecionar Top 3"

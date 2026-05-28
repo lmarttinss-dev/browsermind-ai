@@ -70,10 +70,10 @@ export const api = {
     }),
 
   // Compare
-  comparePipelineProducts: (model: string) =>
+  comparePipelineProducts: (model: string, stage: PipelineStage = "triagem") =>
     request<{ success: boolean; comparison: ComparisonResult }>("/api/pipeline/compare", {
       method: "POST",
-      body: JSON.stringify({ model }),
+      body: JSON.stringify({ model, stage }),
     }),
 };
 

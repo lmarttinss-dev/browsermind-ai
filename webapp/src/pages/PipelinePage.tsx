@@ -3,10 +3,11 @@ import { Loader2, RefreshCw } from "lucide-react"
 import { KanbanBoard } from "@/components/pipeline/KanbanBoard"
 import { ComparisonModal } from "@/components/pipeline/ComparisonModal"
 import { usePipelineStore } from "@/store/usePipelineStore"
+import type { PipelineStage } from "@/lib/api"
 
 export const PipelinePage = () => {
   const { fetchProducts, isLoading, error, showComparison } = usePipelineStore()
-  const openComparison = () => usePipelineStore.setState({ showComparison: true })
+  const openComparison = (stage: PipelineStage) => usePipelineStore.setState({ showComparison: true, comparisonStage: stage })
   const closeComparison = () => usePipelineStore.getState().clearComparison()
 
   useEffect(() => {
