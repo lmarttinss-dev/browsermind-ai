@@ -1,5 +1,6 @@
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { Scale } from "lucide-react"
 import { ProductCard } from "./ProductCard"
 import type { PipelineProduct, PipelineStage } from "@/lib/api"
 
@@ -15,10 +16,12 @@ export const KanbanColumn = ({
   stage,
   products,
   onCardClick,
+  onCompareClick,
 }: {
   stage: PipelineStage
   products: PipelineProduct[]
   onCardClick: (product: PipelineProduct) => void
+  onCompareClick?: () => void
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: stage })
   const config = STAGE_CONFIG[stage]
@@ -32,10 +35,21 @@ export const KanbanColumn = ({
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-200">{config.label}</h3>
-        <span className="text-xs text-gray-500 bg-gray-700 px-2 py-0.5 rounded-full">
-          {products.length}
-        </span>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-200">{config.label}</h3>
+          <span className="text-xs text-gray-500 bg-gray-700 px-2 py-0.5 rounded-full">
+            {products.length}
+          </span>
+        </div>
+        {(stage === "triagem" || stage === "analise") && products.length >= 3 && onCompareClick && (
+          <button
+            onClick={onCompareClick}
+            title="Comparar produtos e selecionar Top 3"
+            className="p-1 text-gray-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors"
+          >
+            <Scale className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Cards */}

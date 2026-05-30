@@ -2,6 +2,27 @@
 
 Sistema de triagem e acompanhamento de produtos no estilo Kanban (Trello/Monday) com persistência em MongoDB.
 
+## Índice
+
+- [Visão Geral](#visão-geral)
+- [Colunas](#colunas)
+- [Comparação de Produtos por Coluna](#comparação-de-produtos-por-coluna)
+  - [Triagem → Em Análise](#triagem--em-análise)
+  - [Em Análise → Aprovado](#em-análise--aprovado)
+  - [Aprovado → Importando](#aprovado--importando)
+  - [Importando → Concluído](#importando--concluído)
+  - [Resumo do Fluxo de Decisão](#resumo-do-fluxo-de-decisão)
+  - [Endpoint de Comparação](#endpoint-de-comparação)
+- [Fluxo de Inserção Automática](#fluxo-de-inserção-automática)
+- [Card do Produto](#card-do-produto)
+- [Interações](#interações)
+- [API Endpoints](#api-endpoints)
+- [Schema do Produto (MongoDB)](#schema-do-produto-mongodb)
+- [Pré-requisitos](#pré-requisitos)
+- [Arquitetura](#arquitetura)
+- [Testes](#testes)
+- [Como Acessar](#como-acessar)
+
 ## Visão Geral
 
 Quando a IA analisa um produto e identifica dados de viabilidade (score, vendas, concorrência, margem), o produto é **automaticamente inserido** na esteira de triagem. A partir daí, o usuário pode movê-lo entre as colunas conforme avança no processo de avaliação e importação.
@@ -15,6 +36,151 @@ Quando a IA analisa um produto e identifica dados de viabilidade (score, vendas,
 | **Aprovado** | Produto validado como viável para importação/venda |
 | **Importando** | Pedido em andamento com fornecedor |
 | **Concluído** | Produto já em estoque ou processo finalizado |
+
+## Comparação de Produtos por Coluna
+
+O sistema oferece uma **comparação assistida por IA** que avalia todos os produtos de uma coluna e sugere os Top 3 para avançar ao próximo estágio. O botão de comparar (ícone de balança) aparece no header da coluna quando há ≥3 produtos.
+
+### Triagem → Em Análise
+
+**Objetivo:** Filtrar os produtos mais promissores dentre os recém-analisados para investigação aprofundada.
+
+**Dados disponíveis neste estágio:**
+- Score de demanda (0-10) — extraído automaticamente do relatório da IA
+- Vendas mensais estimadas
+- Nível de concorrência (Baixa/Média/Alta/Saturado)
+- Margem potencial estimada (texto)
+- Categoria do Mercado Livre
+- Preço de venda no ML
+
+**Critérios que a IA avalia:**
+| Critério | Peso | Justificativa |
+|----------|------|---------------|
+| Score de demanda | Alto | Indica volume de mercado comprovado |
+| Vendas mensais | Alto | Volume real valida a demanda |
+| Concorrência | Médio-alto | Menor concorrência = mais margem de entrada |
+| Margem potencial | Médio | Indica rentabilidade esperada |
+| Escalabilidade | Médio | Capacidade de crescer após primeiro pedido |
+| Diferenciação | Baixo-médio | Possibilidade de se destacar no mercado |
+
+**O que a IA entrega:**
+1. Ranking dos Top 3 com justificativa individual
+2. Tabela comparativa de todos os produtos (métricas lado a lado)
+3. Análise detalhada de pontos fortes e fracos de cada top 3
+4. Recomendação final
+
+**Ação do usuário:** Revisa o ranking, seleciona/deseleciona produtos via checkbox, e confirma para mover os selecionados para "Em Análise".
+
+---
+
+### Em Análise → Aprovado
+
+**Objetivo:** Decidir quais produtos são viáveis para importação real com base em dados concretos de fornecedores.
+
+**Dados disponíveis neste estágio (adicionais):**
+- Fornecedores capturados do Alibaba (nome, preço unitário, MOQ, rating, Trade Assurance, anos de operação, taxa de resposta, certificações)
+- Relatório de fornecedores (markdown detalhado)
+- Todos os dados da triagem (score, vendas, concorrência, preço ML)
+
+**Critérios que a IA avalia:**
+| Critério | Peso | Justificativa |
+|----------|------|---------------|
+| Margem real estimada | Muito alto | `preço_venda - custo_unitário - frete - taxas_ML - impostos (~60%)` |
+| Viabilidade do MOQ | Alto | Pedido mínimo compatível com teste inicial? |
+| Confiabilidade do fornecedor | Alto | Rating ≥4.5, anos ≥3, Trade Assurance ativo |
+| Risco operacional | Médio-alto | Produto frágil? Certificações obrigatórias? Risco alfandegário? |
+| Taxa de resposta do fornecedor | Médio | Comunicação é crítica em importação |
+| Potencial de escala | Médio | Se funcionar, dá pra crescer? |
+| Capacidade OEM/ODM | Baixo | Customização futura possível? |
+
+**Cálculo simplificado de margem que a IA considera:**
+```
+Custo total estimado = preço_unitário_USD × câmbio × 1.60 (impostos) + frete
+Margem bruta = (preço_venda_ML - custo_total) / preço_venda_ML × 100
+```
+
+**O que a IA entrega:**
+1. Ranking dos Top 3 com foco em viabilidade financeira
+2. Tabela comparativa incluindo custo estimado, margem bruta e nível de risco
+3. Análise detalhada de viabilidade operacional e financeira
+4. Recomendação final com justificativa para aprovação
+
+**Ação do usuário:** Revisa o ranking, valida margens e riscos, confirma para mover os selecionados para "Aprovado".
+
+---
+
+### Aprovado → Importando
+
+**Transição manual.** Neste ponto o usuário já validou tudo e está fazendo o pedido com o fornecedor. Move-se o card quando:
+- Contato com fornecedor estabelecido
+- Pedido de amostra ou lote inicial confirmado
+- Pagamento realizado (Trade Assurance)
+
+**Não há comparação automatizada** — cada produto aprovado avança individualmente conforme o andamento da negociação.
+
+---
+
+### Importando → Concluído
+
+**Transição manual.** Move-se o card quando:
+- Produto recebido e conferido
+- Listado no Mercado Livre (ou estoque recebido)
+- Processo finalizado com sucesso (ou cancelado)
+
+---
+
+### Resumo do Fluxo de Decisão
+
+```mermaid
+flowchart LR
+    A[Triagem<br/>N produtos] -->|IA compara<br/>Top 3| B[Em Análise<br/>Investigação profunda]
+    B -->|IA compara<br/>Top 3 com fornecedores| C[Aprovado<br/>Viável para importar]
+    C -->|Manual<br/>Pedido feito| D[Importando<br/>Aguardando entrega]
+    D -->|Manual<br/>Produto recebido| E[Concluído]
+
+    style A fill:#3b82f6,color:#fff
+    style B fill:#eab308,color:#000
+    style C fill:#10b981,color:#fff
+    style D fill:#8b5cf6,color:#fff
+    style E fill:#6b7280,color:#fff
+```
+
+### Endpoint de Comparação
+
+```
+POST /api/pipeline/compare
+```
+
+**Body:**
+```json
+{
+  "model": "gemini-flash-2.5",
+  "stage": "triagem"
+}
+```
+
+- `model` (obrigatório): modelo de IA a utilizar
+- `stage` (opcional, default: `"triagem"`): coluna a comparar (`"triagem"` ou `"analise"`)
+
+**Response:**
+```json
+{
+  "success": true,
+  "comparison": {
+    "ranking": [
+      { "productId": "...", "position": 1, "reason": "Melhor margem e baixa concorrência" },
+      { "productId": "...", "position": 2, "reason": "Alto volume de vendas" },
+      { "productId": "...", "position": 3, "reason": "Fornecedor confiável e MOQ baixo" }
+    ],
+    "report": "## Tabela Comparativa\n...",
+    "productsCompared": 7
+  }
+}
+```
+
+**Erros:**
+- `400` — Menos de 3 produtos no stage, ou stage inválido
+- `500` — Falha na chamada à IA ou parsing
 
 ## Fluxo de Inserção Automática
 

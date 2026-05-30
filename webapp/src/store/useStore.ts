@@ -90,7 +90,7 @@ export const useStore = create<AppState>((set, get) => ({
   browserTitle: null,
   screenshot: null,
   autoRefreshScreenshot: true,
-  extensionPaths: ["/mnt/c/Users/Leandro Martins/AppData/Local/Google/Chrome/User Data/Default/Extensions/jdefnfmbnchmnjkcknaadaddgjbgephh/7.1.0_0"],
+  extensionPaths: ["/mnt/c/Users/Leandro Martins/AppData/Local/Google/Chrome/User Data/Default/Extensions/jdefnfmbnchmnjkcknaadaddgjbgephh/7.2.1_0"],
   userDataDir: "~/.browsermind-profile",
 
   history: [],

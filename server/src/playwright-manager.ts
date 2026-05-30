@@ -1,5 +1,6 @@
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import fs from "fs";
+import path from "path";
 
 export interface BrowserAction {
   type: "click" | "type" | "scroll" | "navigate" | "select" | "wait" | "extract" | "screenshot" | "goBack" | "goForward" | "hover" | "evaluate";
@@ -25,18 +26,21 @@ export class PlaywrightManager {
   async launch(headless = false, extensionPaths: string[] = [], userDataDir?: string): Promise<void> {
     if (this.browser || this.context) return;
 
+    // Filtrar paths vazios ou inválidos
+    const validExtensionPaths = extensionPaths.filter(p => p && p.trim() !== "" && p !== ".")
+
     const baseArgs = [
       "--disable-blink-features=AutomationControlled",
       "--no-sandbox",
     ];
 
-    if (extensionPaths.length > 0) {
+    if (validExtensionPaths.length > 0) {
       // Extensions require persistent context and headed mode
       // Use Xvfb/WSLg display (DISPLAY env must be set)
       const extArgs = [
         ...baseArgs,
-        `--disable-extensions-except=${extensionPaths.join(",")}`,
-        ...extensionPaths.map((p) => `--load-extension=${p}`),
+        `--disable-extensions-except=${validExtensionPaths.join(",")}`,
+        ...validExtensionPaths.map((p) => `--load-extension=${p}`),
       ];
 
       const profileDir = userDataDir || `${process.env.HOME || '/tmp'}/.browsermind-profile`;
@@ -44,7 +48,7 @@ export class PlaywrightManager {
         fs.mkdirSync(profileDir, { recursive: true });
       }
 
-      console.log("🧩 Launching with extensions:", extensionPaths);
+      console.log("🧩 Launching with extensions:", validExtensionPaths);
       console.log("📂 Profile:", profileDir);
       console.log("🖥️  DISPLAY:", process.env.DISPLAY || "(not set)");
 
