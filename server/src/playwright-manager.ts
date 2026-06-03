@@ -23,11 +23,64 @@ export class PlaywrightManager {
   private page: Page | null = null;
   private persistent = false;
 
+  /**
+   * Resolve path de extensão Chrome: se o manifest.json não existe no path fornecido,
+   * tenta encontrar a versão mais recente no diretório pai (padrão Chrome: extensionId/versão_0/).
+   * Isso torna o sistema resiliente a atualizações da extensão.
+   */
+  private resolveExtensionPath(extPath: string): string | null {
+    const resolvedPath = extPath.replace(/^~/, process.env.HOME || "/tmp")
+
+    // Se o manifest.json existe diretamente, path está correto
+    if (fs.existsSync(path.join(resolvedPath, "manifest.json"))) {
+      return resolvedPath
+    }
+
+    // Tenta encontrar versão mais recente no diretório pai
+    // Estrutura Chrome: .../Extensions/{extensionId}/{version}_0/manifest.json
+    const parentDir = path.dirname(resolvedPath)
+    if (!fs.existsSync(parentDir)) {
+      console.warn(`⚠️ Extensão não encontrada: ${extPath}`)
+      return null
+    }
+
+    try {
+      const entries = fs.readdirSync(parentDir, { withFileTypes: true })
+      const versionDirs = entries
+        .filter(e => e.isDirectory() && fs.existsSync(path.join(parentDir, e.name, "manifest.json")))
+        .map(e => e.name)
+        .sort((a, b) => {
+          // Ordena por versão semver (ex: "7.2.1_0" > "7.1.0_0")
+          const va = a.replace(/_\d+$/, "").split(".").map(Number)
+          const vb = b.replace(/_\d+$/, "").split(".").map(Number)
+          for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+            const diff = (vb[i] || 0) - (va[i] || 0)
+            if (diff !== 0) return diff
+          }
+          return 0
+        })
+
+      if (versionDirs.length > 0) {
+        const resolved = path.join(parentDir, versionDirs[0])
+        console.log(`🔄 Extensão: versão resolvida automaticamente → ${versionDirs[0]}`)
+        return resolved
+      }
+    } catch {
+      // Diretório não legível
+    }
+
+    console.warn(`⚠️ Extensão não encontrada e não foi possível resolver: ${extPath}`)
+    return null
+  }
+
   async launch(headless = false, extensionPaths: string[] = [], userDataDir?: string): Promise<void> {
     if (this.browser || this.context) return;
 
-    // Filtrar paths vazios ou inválidos
-    const validExtensionPaths = extensionPaths.filter(p => p && p.trim() !== "" && p !== ".")
+    // Filtrar paths vazios ou inválidos e resolver versão da extensão automaticamente
+    const validExtensionPaths = extensionPaths
+      .filter(p => p && p.trim() !== "" && p !== ".")
+      .map(p => this.resolveExtensionPath(p))
+      .filter((p): p is string => p !== null)
 
     const baseArgs = [
       "--disable-blink-features=AutomationControlled",
