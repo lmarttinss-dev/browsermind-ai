@@ -17,6 +17,7 @@ export type Supplier = {
   responseRate: string
   capabilities: string
   certifications: string
+  report: string
   capturedAt: Date
 }
 
@@ -51,6 +52,7 @@ const supplierSchema = new Schema({
   responseRate: { type: String, default: "" },
   capabilities: { type: String, default: "" },
   certifications: { type: String, default: "" },
+  report: { type: String, default: "" },
   capturedAt: { type: Date, default: Date.now },
 }, { _id: false })
 

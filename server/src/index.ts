@@ -13,7 +13,7 @@ import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
 import { Product, type Supplier } from "./models/product.js";
 import { Comparison } from "./models/comparison.js";
-import { parseSuppliersFromReport } from "./parse-suppliers.js";
+import { parseSuppliersFromReport, parseIndividualSupplierReport } from "./parse-suppliers.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3210;
@@ -867,9 +867,240 @@ ${supplierInfo}
   }
 }
 
+// ==========================================
+// Supplier Analysis — Análise individual de fornecedor via URL
+// ==========================================
+
+const SUPPLIER_ANALYSIS_PROMPT = `Você é um analista especializado em importação da China via Alibaba.
+Sua tarefa é analisar em detalhe um fornecedor específico com base no conteúdo da página dele no Alibaba.
+
+Gere um relatório completo em Markdown com as seguintes seções:
+
+## 📋 Dados Básicos
+
+- Nome da empresa:
+- País/Região:
+- Anos de operação:
+- Verified Supplier: Sim/Não
+- Trade Assurance: valor protegido (se disponível)
+- Funcionários: (número, se disponível)
+- Área da fábrica: (se disponível)
+- Principais mercados de exportação:
+
+## ⭐ Reputação e Confiabilidade
+
+- Rating geral: X/5
+- Reviews de compradores: (quantidade e resumo dos comentários)
+- Taxa de resposta:
+- Tempo médio de resposta:
+- On-time delivery rate:
+- Disputas/reclamações: (se visível)
+- Nível de confiança geral: (Baixo / Médio / Alto / Muito Alto)
+
+## 📦 Produtos e Preços
+
+Para cada produto listado (até 10 principais):
+- Nome do produto
+- Preço indicado (ou faixa de preço)
+- MOQ (pedido mínimo)
+- Capacidade de produção
+- Certificações do produto (CE, ROHS, FCC, ISO, etc.)
+
+## 🏭 Capacidades de Produção
+
+- OEM disponível: Sim/Não
+- ODM disponível: Sim/Não
+- Customização: (detalhes)
+- Capacidade produtiva mensal:
+- Certificações da fábrica:
+- Inspeções/auditorias: (se disponível)
+
+## ⚠️ Pontos de Atenção
+
+- Riscos identificados
+- Red flags (se houver)
+- Pontos fracos
+- O que verificar antes de fechar negócio
+
+## ✅ Conclusão
+
+- Score geral do fornecedor: X/10
+- Vale a pena negociar: Sim/Não
+- Melhor para: (tipo de produto/situação)
+- Recomendações de próximos passos
+- Perguntas sugeridas para enviar ao fornecedor`
+
+app.post("/api/supplier/analyze", async (req, res) => {
+  try {
+    const { url, model } = req.body as { url: string; model: string }
+
+    if (!url || typeof url !== "string") {
+      res.status(400).json({ success: false, error: "URL do fornecedor é obrigatória" })
+      return
+    }
+
+    if (!model || typeof model !== "string") {
+      res.status(400).json({ success: false, error: "Modelo de IA é obrigatório" })
+      return
+    }
+
+    // Validar que é uma URL do Alibaba
+    const urlObj = new URL(url)
+    if (!urlObj.hostname.includes("alibaba.com")) {
+      res.status(400).json({ success: false, error: "URL deve ser do Alibaba (alibaba.com)" })
+      return
+    }
+
+    // Navegar até a página do fornecedor e extrair conteúdo
+    const status = await playwrightManager.getStatus()
+    if (!status.active) {
+      res.status(400).json({ success: false, error: "Browser não está ativo. Inicie o browser primeiro." })
+      return
+    }
+
+    await playwrightManager.navigate(url)
+    // Aguardar carregamento da página
+    const page = await playwrightManager.getPage()
+    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {})
+
+    const extracted = await playwrightManager.extractPageContent()
+    const content = [
+      `URL: ${extracted.url}`,
+      `Title: ${extracted.title}`,
+      `\nHeadings:\n${extracted.headings.join("\n")}`,
+      Object.keys(extracted.metaTags).length > 0
+        ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
+        : "",
+      extracted.links.length > 0
+        ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
+        : "",
+      `\nContent:\n${extracted.visibleText}`,
+    ].filter(Boolean).join("\n")
+
+    const userMessage = `Conteúdo da página do fornecedor:\n${content.slice(0, 30000)}\n\nAnalise este fornecedor em detalhe.`
+
+    // Chamar IA
+    let aiResponse: string
+
+    if (model === "gemini-flash-2.5" || model === "gemini-pro-2.5" || model === "gemini-flash-3" || model === "gemini-pro-3.1") {
+      const geminiModelMap: Record<string, string> = {
+        "gemini-flash-2.5": "gemini-2.5-flash",
+        "gemini-pro-2.5": "gemini-2.5-pro",
+        "gemini-flash-3": "gemini-3-flash-preview",
+        "gemini-pro-3.1": "gemini-3.1-pro-preview",
+      }
+      const geminiModel = geminiModelMap[model]
+      const key = apiKeys.gemini
+      if (!key) throw new Error("Chave Gemini não configurada. Configure em Settings.")
+
+      const r = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${key}`,
+        {
+          contents: [{ parts: [{ text: SUPPLIER_ANALYSIS_PROMPT }, { text: userMessage }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 16384 },
+        }
+      )
+      aiResponse = r.data.candidates?.[0]?.content?.parts?.[0]?.text || ""
+
+    } else if (model === "gpt-4.1") {
+      const key = apiKeys.openai
+      if (!key) throw new Error("Chave OpenAI não configurada. Configure em Settings.")
+
+      const r = await axios.post("https://api.openai.com/v1/chat/completions", {
+        model: "gpt-4.1",
+        messages: [
+          { role: "system", content: SUPPLIER_ANALYSIS_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 16384,
+        temperature: 0.7,
+      }, { headers: { Authorization: `Bearer ${key}` } })
+      aiResponse = r.data.choices?.[0]?.message?.content || ""
+
+    } else if (model === "claude-sonnet") {
+      const key = apiKeys.anthropic
+      if (!key) throw new Error("Chave Anthropic não configurada. Configure em Settings.")
+
+      const r = await axios.post("https://api.anthropic.com/v1/messages", {
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 16384,
+        system: SUPPLIER_ANALYSIS_PROMPT,
+        messages: [{ role: "user", content: userMessage }],
+      }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } })
+      aiResponse = r.data.content?.[0]?.text || ""
+
+    } else if (model === "deepseek") {
+      const key = apiKeys.deepseek
+      if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
+
+      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: SUPPLIER_ANALYSIS_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 16384,
+        temperature: 0.7,
+      }, { headers: { Authorization: `Bearer ${key}` } })
+      aiResponse = r.data.choices?.[0]?.message?.content || ""
+
+    } else {
+      throw new Error(`Modelo não suportado: ${model}`)
+    }
+
+    if (!aiResponse) throw new Error("Resposta vazia da IA")
+
+    res.json({
+      success: true,
+      report: aiResponse,
+      supplierUrl: url,
+      analyzedAt: new Date().toISOString(),
+    })
+  } catch (error) {
+    const msg = axios.isAxiosError(error)
+      ? error.response?.data?.error?.message || error.message
+      : error instanceof Error ? error.message : String(error)
+    res.status(500).json({ success: false, error: msg })
+  }
+})
+
+// Vincular fornecedor individual (da análise individual) a um produto
+const handleLinkSupplier: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const { report, supplierUrl } = req.body || {}
+
+    if (!report || typeof report !== "string") {
+      res.status(400).json({ error: "Campo 'report' é obrigatório" })
+      return
+    }
+
+    if (!supplierUrl || typeof supplierUrl !== "string") {
+      res.status(400).json({ error: "Campo 'supplierUrl' é obrigatório" })
+      return
+    }
+
+    const parsed = parseIndividualSupplierReport(report, supplierUrl)
+    const supplier = { ...parsed, report, capturedAt: new Date() }
+
+    product.suppliers.push(supplier as Supplier)
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
 // Registrar rotas de suppliers e compare no pipeline router
 pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
+pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 
 // Graceful shutdown
