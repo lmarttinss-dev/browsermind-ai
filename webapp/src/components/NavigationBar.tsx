@@ -11,6 +11,7 @@ import {
   Loader2,
   Kanban,
   Monitor,
+  Building2,
 } from "lucide-react";
 
 export function NavigationBar() {
@@ -19,7 +20,8 @@ export function NavigationBar() {
   const [editing, setEditing] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const isOnPipeline = location.pathname === "/pipeline";
+  const isOnPipeline = location.pathname.startsWith("/pipeline");
+  const isOnSupplierAnalysis = location.pathname === "/supplier-analysis";
 
   const displayUrl = editing ? urlInput : (browserUrl || "");
 
@@ -119,6 +121,18 @@ export function NavigationBar() {
       >
         {isOnPipeline ? <Monitor className="w-3.5 h-3.5" /> : <Kanban className="w-3.5 h-3.5" />}
         {isOnPipeline ? "Browser" : "Esteira"}
+      </button>
+      <button
+        onClick={() => navigate(isOnSupplierAnalysis ? "/" : "/supplier-analysis")}
+        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
+          isOnSupplierAnalysis
+            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
+            : "bg-purple-600/20 text-purple-400 hover:bg-purple-600/30"
+        }`}
+        title={isOnSupplierAnalysis ? "Voltar ao Browser" : "Análise de Fornecedor"}
+      >
+        {isOnSupplierAnalysis ? <Monitor className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
+        {isOnSupplierAnalysis ? "Browser" : "Fornecedor"}
       </button>
     </div>
   );

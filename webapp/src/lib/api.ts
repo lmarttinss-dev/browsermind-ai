@@ -69,6 +69,18 @@ export const api = {
       method: "DELETE",
     }),
 
+  // Supplier Analysis (individual)
+  analyzeSupplier: (url: string, model: string) =>
+    request<{ success: boolean; report: string; supplierUrl: string; analyzedAt: string }>("/api/supplier/analyze", {
+      method: "POST",
+      body: JSON.stringify({ url, model }),
+    }),
+  linkSupplierToProduct: (productId: string, report: string, supplierUrl: string) =>
+    request<{ success: boolean; suppliers: Supplier[]; supplierReport: string }>(`/api/pipeline/${productId}/suppliers/link`, {
+      method: "POST",
+      body: JSON.stringify({ report, supplierUrl }),
+    }),
+
   // Compare
   comparePipelineProducts: (model: string, stage: PipelineStage = "triagem", forceRefresh = false) =>
     request<ComparisonResponse>("/api/pipeline/compare", {
@@ -106,6 +118,7 @@ export type Supplier = {
   responseRate: string;
   capabilities: string;
   certifications: string;
+  report: string;
   capturedAt: string;
 };
 
