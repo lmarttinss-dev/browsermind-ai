@@ -68,3 +68,10 @@ webapp/src/components/           # React components (NavigationBar, BrowserViewp
 cd server && npm run dev    # Inicia server (tsx watch, porta 3210)
 cd webapp && npm run dev    # Inicia webapp (Vite, porta 5180)
 ```
+
+## Git
+
+- **SEMPRE** criar uma nova branch antes de iniciar qualquer feature, fix ou correção
+- Nunca commitar diretamente na `main`
+- Padrão de nomes: `feature/descricao`, `fix/descricao`, `chore/descricao`
+- Fazer commit e push ao final de cada tarefa
