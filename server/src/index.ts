@@ -11,7 +11,7 @@ import axios from "axios";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
-import { Product, type Supplier } from "./models/product.js";
+import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } from "./models/product.js";
 import { Comparison } from "./models/comparison.js";
 import { parseSuppliersFromReport, parseIndividualSupplierReport } from "./parse-suppliers.js";
 
@@ -605,6 +605,127 @@ const handleDeleteSupplier: import("express").RequestHandler = async (req, res) 
 }
 
 // ==========================================
+// Suppliers — Atualizar status de negociação
+// ==========================================
+
+const handleUpdateSupplierStatus: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice inválido" })
+      return
+    }
+
+    const { status } = req.body || {}
+    if (!status || !NEGOTIATION_STATUSES.includes(status)) {
+      res.status(400).json({ error: `Status inválido. Valores aceitos: ${NEGOTIATION_STATUSES.join(", ")}` })
+      return
+    }
+
+    product.suppliers[index].negotiationStatus = status as NegotiationStatus
+    if (status !== "aguardando_resposta" && !product.suppliers[index].negotiationStartedAt) {
+      product.suppliers[index].negotiationStartedAt = new Date()
+    }
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
+// Suppliers — Adicionar cotação
+// ==========================================
+
+const handleAddSupplierQuote: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice inválido" })
+      return
+    }
+
+    const { unitPrice, moq, shippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+
+    const quote = {
+      unitPrice: unitPrice || "",
+      moq: moq || "",
+      shippingCost: shippingCost || "",
+      deliveryTime: deliveryTime || "",
+      paymentTerms: paymentTerms || "",
+      notes: notes || "",
+      quotedAt: new Date(),
+    }
+
+    product.suppliers[index].quotes.push(quote)
+    product.suppliers[index].lastContactAt = new Date()
+
+    // Auto-mudar status se ainda está aguardando
+    if (product.suppliers[index].negotiationStatus === "aguardando_resposta") {
+      product.suppliers[index].negotiationStatus = "cotacao_recebida"
+    }
+    if (!product.suppliers[index].negotiationStartedAt) {
+      product.suppliers[index].negotiationStartedAt = new Date()
+    }
+
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
+// Suppliers — Remover cotação
+// ==========================================
+
+const handleRemoveSupplierQuote: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice de fornecedor inválido" })
+      return
+    }
+
+    const quoteIndex = parseInt(req.params.quoteIndex as string)
+    if (isNaN(quoteIndex) || quoteIndex < 0 || quoteIndex >= product.suppliers[index].quotes.length) {
+      res.status(400).json({ error: "Índice de cotação inválido" })
+      return
+    }
+
+    product.suppliers[index].quotes.splice(quoteIndex, 1)
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
 // Compare — Compara produtos da triagem e sugere top 3
 // ==========================================
 
@@ -1102,6 +1223,9 @@ pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
+pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
+pipelineRouter.post("/:id/suppliers/:index/quotes", handleAddSupplierQuote)
+pipelineRouter.delete("/:id/suppliers/:index/quotes/:quoteIndex", handleRemoveSupplierQuote)
 
 // Graceful shutdown
 process.on("SIGINT", async () => {

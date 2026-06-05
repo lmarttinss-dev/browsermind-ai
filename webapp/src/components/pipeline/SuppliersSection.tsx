@@ -1,12 +1,33 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ExternalLink, Trash2, ShieldCheck, Clock, Star, Package, Loader2, ChevronDown, ChevronUp, AlertTriangle, Search } from "lucide-react"
+import { ExternalLink, Trash2, ShieldCheck, Clock, Star, Package, Loader2, ChevronDown, ChevronUp, AlertTriangle, Search, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, Plus, DollarSign } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { api, type Supplier, MODELS } from "@/lib/api"
+import { api, type Supplier, type NegotiationStatus, type SupplierQuote, MODELS, NEGOTIATION_STATUSES } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
 const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top3-fornecedores-alibaba")!
+
+const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
+  aguardando_resposta: { label: "Aguardando", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
+  cotacao_recebida: { label: "Cotação recebida", color: "text-blue-400", bgColor: "bg-blue-900/30", borderColor: "border-blue-800" },
+  negociando: { label: "Negociando", color: "text-amber-400", bgColor: "bg-amber-900/30", borderColor: "border-amber-800" },
+  acordo_fechado: { label: "Acordo fechado", color: "text-emerald-400", bgColor: "bg-emerald-900/30", borderColor: "border-emerald-800" },
+  rejeitado: { label: "Rejeitado", color: "text-red-400", bgColor: "bg-red-900/30", borderColor: "border-red-800" },
+  sem_resposta: { label: "Sem resposta", color: "text-gray-500", bgColor: "bg-gray-900", borderColor: "border-gray-700" },
+}
+
+const StatusIcon = ({ status }: { status: NegotiationStatus }) => {
+  const iconClass = "w-3 h-3"
+  switch (status) {
+    case "aguardando_resposta": return <Clock className={iconClass} />
+    case "cotacao_recebida": return <Mail className={iconClass} />
+    case "negociando": return <MessageSquare className={iconClass} />
+    case "acordo_fechado": return <CheckCircle2 className={iconClass} />
+    case "rejeitado": return <XCircle className={iconClass} />
+    case "sem_resposta": return <CircleDot className={iconClass} />
+  }
+}
 
 type Props = {
   productId: string
@@ -22,6 +43,12 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
   const [expandedReports, setExpandedReports] = useState<Set<number>>(new Set())
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null)
+  const [quoteModalIndex, setQuoteModalIndex] = useState<number | null>(null)
+  const [expandedQuotes, setExpandedQuotes] = useState<Set<number>>(new Set())
+  const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
+    unitPrice: "", moq: "", shippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
+  })
+  const [isSavingQuote, setIsSavingQuote] = useState(false)
 
   const toggleReport = (index: number) => {
     setExpandedReports(prev => {
@@ -30,6 +57,48 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
       else next.add(index)
       return next
     })
+  }
+
+  const toggleQuotes = (index: number) => {
+    setExpandedQuotes(prev => {
+      const next = new Set(prev)
+      if (next.has(index)) next.delete(index)
+      else next.add(index)
+      return next
+    })
+  }
+
+  const handleStatusChange = async (index: number, status: NegotiationStatus) => {
+    try {
+      const res = await api.updateSupplierStatus(productId, index, status)
+      onUpdate(res.suppliers, supplierReport)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  const handleSaveQuote = async () => {
+    if (quoteModalIndex === null) return
+    setIsSavingQuote(true)
+    try {
+      const res = await api.addSupplierQuote(productId, quoteModalIndex, quoteForm)
+      onUpdate(res.suppliers, supplierReport)
+      setQuoteModalIndex(null)
+      setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setIsSavingQuote(false)
+    }
+  }
+
+  const handleRemoveQuote = async (supplierIndex: number, quoteIndex: number) => {
+    try {
+      const res = await api.removeSupplierQuote(productId, supplierIndex, quoteIndex)
+      onUpdate(res.suppliers, supplierReport)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
   }
 
   const handleCapture = async () => {
@@ -138,6 +207,23 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     )}
                   </div>
 
+                  {/* Status badge + dropdown */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium border ${STATUS_CONFIG[supplier.negotiationStatus || "aguardando_resposta"].color} ${STATUS_CONFIG[supplier.negotiationStatus || "aguardando_resposta"].bgColor} ${STATUS_CONFIG[supplier.negotiationStatus || "aguardando_resposta"].borderColor}`}>
+                      <StatusIcon status={supplier.negotiationStatus || "aguardando_resposta"} />
+                      {STATUS_CONFIG[supplier.negotiationStatus || "aguardando_resposta"].label}
+                    </div>
+                    <select
+                      value={supplier.negotiationStatus || "aguardando_resposta"}
+                      onChange={(e) => handleStatusChange(index, e.target.value as NegotiationStatus)}
+                      className="text-[10px] bg-gray-800 border border-gray-700 text-gray-400 rounded px-1 py-0.5 focus:outline-none focus:border-blue-500 cursor-pointer"
+                    >
+                      {NEGOTIATION_STATUSES.map(s => (
+                        <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
                     {supplier.unitPrice && (
                       <span className="text-emerald-400 font-medium">{supplier.unitPrice}</span>
@@ -159,6 +245,11 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     )}
                     {supplier.responseRate && (
                       <span>Resposta: {supplier.responseRate}</span>
+                    )}
+                    {supplier.quotes?.length > 0 && (
+                      <span className="text-blue-400 font-medium">
+                        {supplier.quotes.length} cotação(ões)
+                      </span>
                     )}
                   </div>
 
@@ -191,6 +282,22 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                       Detalhar
                     </button>
                   )}
+                  <button
+                    onClick={() => setQuoteModalIndex(index)}
+                    className="flex items-center gap-1 px-2 py-1 text-[10px] text-emerald-400 bg-gray-800 hover:bg-emerald-900/50 rounded transition-colors"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Cotação
+                  </button>
+                  {supplier.quotes?.length > 0 && (
+                    <button
+                      onClick={() => toggleQuotes(index)}
+                      className="flex items-center gap-1 px-2 py-1 text-[10px] text-blue-400 bg-gray-800 hover:bg-blue-900/50 rounded transition-colors"
+                    >
+                      {expandedQuotes.has(index) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      Cotações
+                    </button>
+                  )}
                   {supplier.report && (
                     <button
                       onClick={() => toggleReport(index)}
@@ -209,6 +316,57 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                   </button>
                 </div>
               </div>
+
+              {/* Histórico de cotações */}
+              {supplier.quotes?.length > 0 && expandedQuotes.has(index) && (
+                <div className="mt-3 p-3 bg-gray-800/50 border border-gray-700/50 rounded-lg">
+                  <h5 className="text-[11px] font-semibold text-gray-300 mb-2 flex items-center gap-1.5">
+                    <DollarSign className="w-3.5 h-3.5" />
+                    Histórico de Cotações
+                  </h5>
+                  <div className="space-y-2">
+                    {[...supplier.quotes].reverse().map((quote, qi) => {
+                      const realIndex = supplier.quotes.length - 1 - qi
+                      return (
+                        <div key={qi} className={`p-2.5 rounded border ${qi === 0 ? "border-blue-800/50 bg-blue-900/10" : "border-gray-700/50 bg-gray-900/30"}`}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] text-gray-500">
+                              {new Date(quote.quotedAt).toLocaleDateString("pt-BR")} {new Date(quote.quotedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                              {qi === 0 && <span className="ml-1.5 text-blue-400 font-medium">(mais recente)</span>}
+                            </span>
+                            <button
+                              onClick={() => handleRemoveQuote(index, realIndex)}
+                              className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs">
+                            {quote.unitPrice && (
+                              <span><span className="text-gray-500">Preço:</span> <span className="text-emerald-400 font-medium">{quote.unitPrice}</span></span>
+                            )}
+                            {quote.moq && (
+                              <span><span className="text-gray-500">MOQ:</span> <span className="text-gray-300">{quote.moq}</span></span>
+                            )}
+                            {quote.shippingCost && (
+                              <span><span className="text-gray-500">Frete:</span> <span className="text-gray-300">{quote.shippingCost}</span></span>
+                            )}
+                            {quote.deliveryTime && (
+                              <span><span className="text-gray-500">Prazo:</span> <span className="text-gray-300">{quote.deliveryTime}</span></span>
+                            )}
+                            {quote.paymentTerms && (
+                              <span className="col-span-2"><span className="text-gray-500">Pagamento:</span> <span className="text-gray-300">{quote.paymentTerms}</span></span>
+                            )}
+                          </div>
+                          {quote.notes && (
+                            <p className="mt-1.5 text-[11px] text-gray-400 whitespace-pre-wrap border-t border-gray-700/50 pt-1.5">{quote.notes}</p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Relatório individual do fornecedor */}
               {supplier.report && expandedReports.has(index) && (
@@ -258,6 +416,106 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 className="px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors"
               >
                 Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de nova cotação */}
+      {quoteModalIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setQuoteModalIndex(null)} />
+          <div className="relative bg-gray-800 border border-gray-700 rounded-xl shadow-xl p-5 max-w-lg w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-emerald-900/30 rounded-lg">
+                <DollarSign className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-100">Registrar Cotação</h4>
+                <p className="text-xs text-gray-400">{suppliers[quoteModalIndex]?.name}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">Preço unitário</label>
+                <input
+                  type="text"
+                  value={quoteForm.unitPrice}
+                  onChange={(e) => setQuoteForm(f => ({ ...f, unitPrice: e.target.value }))}
+                  placeholder="US$ 2.50"
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">MOQ</label>
+                <input
+                  type="text"
+                  value={quoteForm.moq}
+                  onChange={(e) => setQuoteForm(f => ({ ...f, moq: e.target.value }))}
+                  placeholder="100 unidades"
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">Frete estimado</label>
+                <input
+                  type="text"
+                  value={quoteForm.shippingCost}
+                  onChange={(e) => setQuoteForm(f => ({ ...f, shippingCost: e.target.value }))}
+                  placeholder="US$ 150 (aéreo)"
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">Prazo de entrega</label>
+                <input
+                  type="text"
+                  value={quoteForm.deliveryTime}
+                  onChange={(e) => setQuoteForm(f => ({ ...f, deliveryTime: e.target.value }))}
+                  placeholder="15-20 dias"
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label className="block text-[11px] text-gray-400 mb-1">Condições de pagamento</label>
+              <input
+                type="text"
+                value={quoteForm.paymentTerms}
+                onChange={(e) => setQuoteForm(f => ({ ...f, paymentTerms: e.target.value }))}
+                placeholder="30% adiantado + 70% antes do envio"
+                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-[11px] text-gray-400 mb-1">Notas / Mensagem do fornecedor</label>
+              <textarea
+                value={quoteForm.notes}
+                onChange={(e) => setQuoteForm(f => ({ ...f, notes: e.target.value }))}
+                placeholder="Cole aqui a resposta do fornecedor ou observações..."
+                rows={4}
+                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500 resize-y"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => { setQuoteModalIndex(null); setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
+                className="px-3 py-1.5 text-sm text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveQuote}
+                disabled={isSavingQuote}
+                className="px-3 py-1.5 text-sm text-white bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900 disabled:text-emerald-400 rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                {isSavingQuote ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                {isSavingQuote ? "Salvando..." : "Registrar"}
               </button>
             </div>
           </div>
