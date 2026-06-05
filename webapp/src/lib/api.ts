@@ -82,6 +82,11 @@ export const api = {
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes/${quoteIndex}`, {
       method: "DELETE",
     }),
+  editSupplierQuote: (productId: string, supplierIndex: number, quoteIndex: number, quote: Partial<Omit<SupplierQuote, "quotedAt">>) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes/${quoteIndex}`, {
+      method: "PATCH",
+      body: JSON.stringify(quote),
+    }),
 
   // Supplier Analysis (individual)
   analyzeSupplier: (url: string, model: string) =>

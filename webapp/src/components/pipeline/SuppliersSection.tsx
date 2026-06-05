@@ -44,6 +44,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [expandedReports, setExpandedReports] = useState<Set<number>>(new Set())
   const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null)
   const [quoteModalIndex, setQuoteModalIndex] = useState<number | null>(null)
+  const [editingQuoteIndex, setEditingQuoteIndex] = useState<number | null>(null)
   const [expandedQuotes, setExpandedQuotes] = useState<Set<number>>(new Set())
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
     unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
@@ -81,15 +82,37 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
     if (quoteModalIndex === null) return
     setIsSavingQuote(true)
     try {
-      const res = await api.addSupplierQuote(productId, quoteModalIndex, quoteForm)
+      let res
+      if (editingQuoteIndex !== null) {
+        res = await api.editSupplierQuote(productId, quoteModalIndex, editingQuoteIndex, quoteForm)
+      } else {
+        res = await api.addSupplierQuote(productId, quoteModalIndex, quoteForm)
+      }
       onUpdate(res.suppliers, supplierReport)
       setQuoteModalIndex(null)
+      setEditingQuoteIndex(null)
       setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setIsSavingQuote(false)
     }
+  }
+
+  const handleEditQuote = (supplierIndex: number, quoteIndex: number) => {
+    const quote = suppliers[supplierIndex].quotes[quoteIndex]
+    setQuoteForm({
+      unitPrice: quote.unitPrice || "",
+      moq: quote.moq || "",
+      shippingCost: quote.shippingCost || "",
+      totalProductCost: quote.totalProductCost || "",
+      totalShippingCost: quote.totalShippingCost || "",
+      deliveryTime: quote.deliveryTime || "",
+      paymentTerms: quote.paymentTerms || "",
+      notes: quote.notes || "",
+    })
+    setQuoteModalIndex(supplierIndex)
+    setEditingQuoteIndex(quoteIndex)
   }
 
   const handleRemoveQuote = async (supplierIndex: number, quoteIndex: number) => {
@@ -334,12 +357,21 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                               {new Date(quote.quotedAt).toLocaleDateString("pt-BR")} {new Date(quote.quotedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                               {qi === 0 && <span className="ml-1.5 text-blue-400 font-medium">(mais recente)</span>}
                             </span>
-                            <button
-                              onClick={() => handleRemoveQuote(index, realIndex)}
-                              className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleEditQuote(index, realIndex)}
+                                className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
+                                title="Editar cotação"
+                              >
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                              </button>
+                              <button
+                                onClick={() => handleRemoveQuote(index, realIndex)}
+                                className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs">
                             {quote.unitPrice && (
@@ -438,7 +470,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 <DollarSign className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-100">Registrar Cotação</h4>
+                <h4 className="text-sm font-semibold text-gray-100">{editingQuoteIndex !== null ? "Editar Cotação" : "Registrar Cotação"}</h4>
                 <p className="text-xs text-gray-400">{suppliers[quoteModalIndex]?.name}</p>
               </div>
             </div>
@@ -530,7 +562,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => { setQuoteModalIndex(null); setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
+                onClick={() => { setQuoteModalIndex(null); setEditingQuoteIndex(null); setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
                 className="px-3 py-1.5 text-sm text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Cancelar
@@ -541,7 +573,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 className="px-3 py-1.5 text-sm text-white bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-900 disabled:text-emerald-400 rounded-lg transition-colors flex items-center gap-1.5"
               >
                 {isSavingQuote ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                {isSavingQuote ? "Salvando..." : "Registrar"}
+                {isSavingQuote ? "Salvando..." : editingQuoteIndex !== null ? "Salvar" : "Registrar"}
               </button>
             </div>
           </div>
