@@ -659,12 +659,14 @@ const handleAddSupplierQuote: import("express").RequestHandler = async (req, res
       return
     }
 
-    const { unitPrice, moq, shippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+    const { unitPrice, moq, shippingCost, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
 
     const quote = {
       unitPrice: unitPrice || "",
       moq: moq || "",
       shippingCost: shippingCost || "",
+      totalProductCost: totalProductCost || "",
+      totalShippingCost: totalShippingCost || "",
       deliveryTime: deliveryTime || "",
       paymentTerms: paymentTerms || "",
       notes: notes || "",

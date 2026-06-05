@@ -46,7 +46,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [quoteModalIndex, setQuoteModalIndex] = useState<number | null>(null)
   const [expandedQuotes, setExpandedQuotes] = useState<Set<number>>(new Set())
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
-    unitPrice: "", moq: "", shippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
+    unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
   const [isSavingQuote, setIsSavingQuote] = useState(false)
 
@@ -84,7 +84,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
       const res = await api.addSupplierQuote(productId, quoteModalIndex, quoteForm)
       onUpdate(res.suppliers, supplierReport)
       setQuoteModalIndex(null)
-      setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
+      setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -349,7 +349,13 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                               <span><span className="text-gray-500">MOQ:</span> <span className="text-gray-300">{quote.moq}</span></span>
                             )}
                             {quote.shippingCost && (
-                              <span><span className="text-gray-500">Frete:</span> <span className="text-gray-300">{quote.shippingCost}</span></span>
+                              <span><span className="text-gray-500">Frete/un:</span> <span className="text-gray-300">{quote.shippingCost}</span></span>
+                            )}
+                            {quote.totalProductCost && (
+                              <span><span className="text-gray-500">Total produto:</span> <span className="text-amber-400 font-medium">{quote.totalProductCost}</span></span>
+                            )}
+                            {quote.totalShippingCost && (
+                              <span><span className="text-gray-500">Total frete:</span> <span className="text-amber-400 font-medium">{quote.totalShippingCost}</span></span>
                             )}
                             {quote.deliveryTime && (
                               <span><span className="text-gray-500">Prazo:</span> <span className="text-gray-300">{quote.deliveryTime}</span></span>
@@ -459,12 +465,12 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-gray-400 mb-1">Frete estimado</label>
+                <label className="block text-[11px] text-gray-400 mb-1">Frete unitário</label>
                 <input
                   type="text"
                   value={quoteForm.shippingCost}
                   onChange={(e) => setQuoteForm(f => ({ ...f, shippingCost: e.target.value }))}
-                  placeholder="US$ 150 (aéreo)"
+                  placeholder="US$ 1.50/un"
                   className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -475,6 +481,26 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                   value={quoteForm.deliveryTime}
                   onChange={(e) => setQuoteForm(f => ({ ...f, deliveryTime: e.target.value }))}
                   placeholder="15-20 dias"
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">Custo total do produto</label>
+                <input
+                  type="text"
+                  value={quoteForm.totalProductCost}
+                  onChange={(e) => setQuoteForm(f => ({ ...f, totalProductCost: e.target.value }))}
+                  placeholder="US$ 250.00"
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">Custo total do frete</label>
+                <input
+                  type="text"
+                  value={quoteForm.totalShippingCost}
+                  onChange={(e) => setQuoteForm(f => ({ ...f, totalShippingCost: e.target.value }))}
+                  placeholder="US$ 150.00"
                   className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -504,7 +530,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => { setQuoteModalIndex(null); setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
+                onClick={() => { setQuoteModalIndex(null); setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
                 className="px-3 py-1.5 text-sm text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Cancelar

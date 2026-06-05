@@ -128,6 +128,8 @@ export type SupplierQuote = {
   unitPrice: string
   moq: string
   shippingCost: string
+  totalProductCost: string
+  totalShippingCost: string
   deliveryTime: string
   paymentTerms: string
   notes: string
