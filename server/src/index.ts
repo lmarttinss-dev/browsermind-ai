@@ -659,12 +659,13 @@ const handleAddSupplierQuote: import("express").RequestHandler = async (req, res
       return
     }
 
-    const { unitPrice, moq, shippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+    const { unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
 
     const quote = {
       unitPrice: unitPrice || "",
       moq: moq || "",
-      shippingCost: shippingCost || "",
+      totalProductCost: totalProductCost || "",
+      totalShippingCost: totalShippingCost || "",
       deliveryTime: deliveryTime || "",
       paymentTerms: paymentTerms || "",
       notes: notes || "",
@@ -716,6 +717,50 @@ const handleRemoveSupplierQuote: import("express").RequestHandler = async (req, 
     }
 
     product.suppliers[index].quotes.splice(quoteIndex, 1)
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
+// Suppliers — Editar cotação
+// ==========================================
+
+const handleEditSupplierQuote: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice de fornecedor inválido" })
+      return
+    }
+
+    const quoteIndex = parseInt(req.params.quoteIndex as string)
+    if (isNaN(quoteIndex) || quoteIndex < 0 || quoteIndex >= product.suppliers[index].quotes.length) {
+      res.status(400).json({ error: "Índice de cotação inválido" })
+      return
+    }
+
+    const { unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+    const quote = product.suppliers[index].quotes[quoteIndex]
+
+    if (unitPrice !== undefined) quote.unitPrice = unitPrice
+    if (moq !== undefined) quote.moq = moq
+    if (totalProductCost !== undefined) quote.totalProductCost = totalProductCost
+    if (totalShippingCost !== undefined) quote.totalShippingCost = totalShippingCost
+    if (deliveryTime !== undefined) quote.deliveryTime = deliveryTime
+    if (paymentTerms !== undefined) quote.paymentTerms = paymentTerms
+    if (notes !== undefined) quote.notes = notes
+
     product.markModified("suppliers")
     await product.save()
 
@@ -1226,6 +1271,7 @@ pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
 pipelineRouter.post("/:id/suppliers/:index/quotes", handleAddSupplierQuote)
 pipelineRouter.delete("/:id/suppliers/:index/quotes/:quoteIndex", handleRemoveSupplierQuote)
+pipelineRouter.patch("/:id/suppliers/:index/quotes/:quoteIndex", handleEditSupplierQuote)
 
 // Graceful shutdown
 process.on("SIGINT", async () => {

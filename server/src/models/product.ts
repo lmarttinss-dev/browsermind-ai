@@ -12,7 +12,8 @@ export type NegotiationStatus = typeof NEGOTIATION_STATUSES[number]
 export type SupplierQuote = {
   unitPrice: string
   moq: string
-  shippingCost: string
+  totalProductCost: string
+  totalShippingCost: string
   deliveryTime: string
   paymentTerms: string
   notes: string
@@ -61,7 +62,8 @@ export type PipelineProduct = Document & {
 const supplierQuoteSchema = new Schema({
   unitPrice: { type: String, default: "" },
   moq: { type: String, default: "" },
-  shippingCost: { type: String, default: "" },
+  totalProductCost: { type: String, default: "" },
+  totalShippingCost: { type: String, default: "" },
   deliveryTime: { type: String, default: "" },
   paymentTerms: { type: String, default: "" },
   notes: { type: String, default: "" },
