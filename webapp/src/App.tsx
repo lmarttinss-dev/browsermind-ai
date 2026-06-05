@@ -9,6 +9,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { PipelinePage } from "@/pages/PipelinePage";
 import { ProductDetailPage } from "@/pages/ProductDetailPage";
 import { SupplierAnalysisPage } from "@/pages/SupplierAnalysisPage";
+import { SupplierDetailPage } from "@/pages/SupplierDetailPage";
 
 function MainView() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/" element={<MainView />} />
         <Route path="/pipeline" element={<PipelinePage />} />
         <Route path="/pipeline/:id" element={<ProductDetailPage />} />
+        <Route path="/pipeline/:id/supplier/:supplierIndex" element={<SupplierDetailPage />} />
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
       </Routes>
 
