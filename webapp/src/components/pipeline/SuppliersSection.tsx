@@ -39,6 +39,11 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
+  const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos">("todos")
+
+  const filteredSuppliers = statusFilter === "todos"
+    ? suppliers
+    : suppliers.filter(s => (s.negotiationStatus || "aguardando_resposta") === statusFilter)
 
   const handleCapture = async () => {
     setIsCapturing(true)
@@ -115,8 +120,42 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
           </p>
         </div>
       ) : (
-        <div className="grid gap-2">
-          {suppliers.map((supplier, index) => {
+        <>
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            <button
+              onClick={() => setStatusFilter("todos")}
+              className={`text-[11px] px-2 py-1 rounded-lg border transition-colors ${
+                statusFilter === "todos"
+                  ? "border-blue-500 bg-blue-900/40 text-blue-300"
+                  : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500"
+              }`}
+            >
+              Todos ({suppliers.length})
+            </button>
+            {(Object.keys(STATUS_CONFIG) as NegotiationStatus[]).map(key => {
+              const count = suppliers.filter(s => (s.negotiationStatus || "aguardando_resposta") === key).length
+              if (count === 0) return null
+              const cfg = STATUS_CONFIG[key]
+              return (
+                <button
+                  key={key}
+                  onClick={() => setStatusFilter(key)}
+                  className={`text-[11px] px-2 py-1 rounded-lg border transition-colors flex items-center gap-1 ${
+                    statusFilter === key
+                      ? `${cfg.borderColor} ${cfg.bgColor} ${cfg.color}`
+                      : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500"
+                  }`}
+                >
+                  <StatusIcon status={key} />
+                  {cfg.label} ({count})
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="grid gap-2">
+            {filteredSuppliers.map((supplier) => {
+              const index = suppliers.indexOf(supplier)
             const status = supplier.negotiationStatus || "aguardando_resposta"
             const statusConfig = STATUS_CONFIG[status]
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
@@ -162,7 +201,8 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
               </button>
             )
           })}
-        </div>
+          </div>
+        </>
       )}
     </div>
   )

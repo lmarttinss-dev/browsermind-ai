@@ -51,6 +51,7 @@ export const SupplierDetailPage = () => {
   const [editingQuoteIndex, setEditingQuoteIndex] = useState<number | null>(null)
   const [isSavingQuote, setIsSavingQuote] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const [confirmRemoveQuoteIndex, setConfirmRemoveQuoteIndex] = useState<number | null>(null)
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
     unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
@@ -462,7 +463,7 @@ export const SupplierDetailPage = () => {
                             Editar
                           </button>
                           <button
-                            onClick={() => handleRemoveQuote(realIndex)}
+                            onClick={() => setConfirmRemoveQuoteIndex(realIndex)}
                             className="text-xs text-red-400 hover:text-red-300 transition-colors px-2 py-1 rounded hover:bg-red-900/30"
                           >
                             Remover
@@ -551,6 +552,38 @@ export const SupplierDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de confirmação de remoção de cotação */}
+      {confirmRemoveQuoteIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setConfirmRemoveQuoteIndex(null)} />
+          <div className="relative bg-gray-800 border border-gray-700 rounded-xl shadow-xl p-5 max-w-sm w-full mx-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-red-900/30 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <h4 className="text-sm font-semibold text-gray-100">Remover cotação</h4>
+            </div>
+            <p className="text-sm text-gray-400 mb-5">
+              Tem certeza que deseja remover esta cotação? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmRemoveQuoteIndex(null)}
+                className="px-3 py-1.5 text-sm text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { handleRemoveQuote(confirmRemoveQuoteIndex); setConfirmRemoveQuoteIndex(null) }}
+                className="px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors"
+              >
+                Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmação de remoção */}
       {confirmRemove && (
