@@ -68,6 +68,20 @@ export const api = {
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${index}`, {
       method: "DELETE",
     }),
+  updateSupplierStatus: (productId: string, supplierIndex: number, status: NegotiationStatus) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+  addSupplierQuote: (productId: string, supplierIndex: number, quote: Omit<SupplierQuote, "quotedAt">) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes`, {
+      method: "POST",
+      body: JSON.stringify(quote),
+    }),
+  removeSupplierQuote: (productId: string, supplierIndex: number, quoteIndex: number) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes/${quoteIndex}`, {
+      method: "DELETE",
+    }),
 
   // Supplier Analysis (individual)
   analyzeSupplier: (url: string, model: string) =>
@@ -107,6 +121,19 @@ export interface ActionResult {
 export type PipelineStage = "triagem" | "analise" | "aprovado" | "importando" | "concluido";
 export type CompetitionLevel = "Baixa" | "Média" | "Alta" | "Saturado";
 
+export const NEGOTIATION_STATUSES = ["aguardando_resposta", "cotacao_recebida", "negociando", "acordo_fechado", "rejeitado", "sem_resposta"] as const
+export type NegotiationStatus = typeof NEGOTIATION_STATUSES[number]
+
+export type SupplierQuote = {
+  unitPrice: string
+  moq: string
+  shippingCost: string
+  deliveryTime: string
+  paymentTerms: string
+  notes: string
+  quotedAt: string
+}
+
 export type Supplier = {
   name: string;
   url: string;
@@ -120,6 +147,10 @@ export type Supplier = {
   certifications: string;
   report: string;
   capturedAt: string;
+  negotiationStatus: NegotiationStatus;
+  quotes: SupplierQuote[];
+  negotiationStartedAt?: string;
+  lastContactAt?: string;
 };
 
 export type PipelineProduct = {

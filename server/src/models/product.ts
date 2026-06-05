@@ -6,6 +6,19 @@ export type PipelineStage = typeof PIPELINE_STAGES[number]
 export const COMPETITION_LEVELS = ["Baixa", "Média", "Alta", "Saturado"] as const
 export type CompetitionLevel = typeof COMPETITION_LEVELS[number]
 
+export const NEGOTIATION_STATUSES = ["aguardando_resposta", "cotacao_recebida", "negociando", "acordo_fechado", "rejeitado", "sem_resposta"] as const
+export type NegotiationStatus = typeof NEGOTIATION_STATUSES[number]
+
+export type SupplierQuote = {
+  unitPrice: string
+  moq: string
+  shippingCost: string
+  deliveryTime: string
+  paymentTerms: string
+  notes: string
+  quotedAt: Date
+}
+
 export type Supplier = {
   name: string
   url: string
@@ -19,6 +32,10 @@ export type Supplier = {
   certifications: string
   report: string
   capturedAt: Date
+  negotiationStatus: NegotiationStatus
+  quotes: SupplierQuote[]
+  negotiationStartedAt?: Date
+  lastContactAt?: Date
 }
 
 export type PipelineProduct = Document & {
@@ -41,6 +58,16 @@ export type PipelineProduct = Document & {
   updatedAt: Date
 }
 
+const supplierQuoteSchema = new Schema({
+  unitPrice: { type: String, default: "" },
+  moq: { type: String, default: "" },
+  shippingCost: { type: String, default: "" },
+  deliveryTime: { type: String, default: "" },
+  paymentTerms: { type: String, default: "" },
+  notes: { type: String, default: "" },
+  quotedAt: { type: Date, default: Date.now },
+}, { _id: false })
+
 const supplierSchema = new Schema({
   name: { type: String, required: true },
   url: { type: String, default: "" },
@@ -54,6 +81,10 @@ const supplierSchema = new Schema({
   certifications: { type: String, default: "" },
   report: { type: String, default: "" },
   capturedAt: { type: Date, default: Date.now },
+  negotiationStatus: { type: String, enum: NEGOTIATION_STATUSES, default: "aguardando_resposta" },
+  quotes: { type: [supplierQuoteSchema], default: [] },
+  negotiationStartedAt: { type: Date },
+  lastContactAt: { type: Date },
 }, { _id: false })
 
 const productSchema = new Schema<PipelineProduct>(

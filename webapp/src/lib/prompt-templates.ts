@@ -373,4 +373,370 @@ Após o JSON, inclua um relatório em Markdown com:
 2. Análise detalhada de cada produto do top 3
 3. Recomendação final`,
   },
+  {
+    id: "analise-oferta-demanda-concorrencia",
+    name: "Análise de Oferta, Demanda e Concorrência",
+    description: "Relatório estratégico completo sobre viabilidade comercial de um produto no Mercado Livre",
+    content: `# Análise de Oferta, Demanda e Concorrência — Mercado Livre
+
+## Contexto
+
+Você é um especialista em **Market Intelligence para Mercado Livre**, com foco em análise de nichos, validação de produtos e identificação de oportunidades.
+
+Seu objetivo é analisar os dados fornecidos e produzir um relatório estratégico completo sobre a viabilidade comercial do produto.
+
+---
+
+# Objetivos da Análise
+
+Determinar:
+
+- Nível de demanda
+- Nível de concorrência
+- Saturação do mercado
+- Oportunidade de entrada
+- Potencial de faturamento
+- Dificuldade para ranquear organicamente
+- Possibilidade de diferenciação
+- Estratégia recomendada
+
+---
+
+# Dados Coletados
+
+## Categoria
+
+**[INSERIR NOME DA CATEGORIA]**
+
+---
+
+## Indicadores Gerais
+
+| Métrica | Valor |
+|----------|---------|
+| Total de vendas da página | 14.237 |
+| Taxa Clássico | 13% |
+| Taxa Premium | 18% |
+
+---
+
+## Anúncios Encontrados
+
+### Anúncio 1
+
+| Métrica | Valor |
+|----------|---------|
+| Vendas | 10.000 |
+| Participação | 70,2% |
+| Visitas | 31.846 |
+| Tempo de anúncio | 1.757 dias |
+| Faturamento estimado | R$ 151.500 |
+
+---
+
+### Anúncio 2
+
+| Métrica | Valor |
+|----------|---------|
+| Vendas | 1.000 |
+| Participação | 7,0% |
+| Visitas | 1.498 |
+| Tempo de anúncio | 76 dias |
+| Faturamento estimado | Não informado |
+
+---
+
+### Anúncio 3
+
+| Métrica | Valor |
+|----------|---------|
+| Vendas | 25 |
+| Participação | 0,2% |
+| Tempo de anúncio | 215 dias |
+
+---
+
+### Anúncio 4
+
+| Métrica | Valor |
+|----------|---------|
+| Vendas | 25 |
+| Participação | 0,2% |
+| Tempo de anúncio | 252 dias |
+
+---
+
+# Tarefa 1 — Análise da Demanda
+
+Avalie:
+
+- Existe demanda validada?
+- A demanda é crescente, estável ou concentrada?
+- Quantidade estimada de vendas mensais.
+- Potencial de faturamento da categoria.
+- Potencial de recorrência.
+
+### Classificação
+
+Escolha uma:
+
+- Muito Baixa
+- Baixa
+- Média
+- Alta
+- Muito Alta
+
+### Justificativa
+
+Explique detalhadamente os motivos da classificação.
+
+---
+
+# Tarefa 2 — Análise da Concorrência
+
+Avalie:
+
+- Quantidade de vendedores relevantes.
+- Quantidade de anúncios ativos competitivos.
+- Nível de maturidade dos concorrentes.
+- Dependência da categoria em poucos vendedores.
+- Facilidade para novos vendedores entrarem.
+
+### Classificação
+
+Escolha uma:
+
+- Muito Baixa
+- Baixa
+- Média
+- Alta
+- Muito Alta
+
+### Justificativa
+
+Explique os fatores que influenciam a concorrência.
+
+---
+
+# Tarefa 3 — Análise de Concentração de Mercado
+
+Calcule:
+
+### Participação do líder
+
+(%)
+
+### Participação dos Top 3
+
+(%)
+
+### Participação dos Top 10
+
+(%)
+
+Determine se o mercado é:
+
+- Pulverizado
+- Moderadamente Concentrado
+- Altamente Concentrado
+
+Explique:
+
+- Quais riscos existem.
+- Quais vantagens existem.
+- Se há dependência excessiva de poucos vendedores.
+
+---
+
+# Tarefa 4 — Oportunidade de Entrada
+
+Responda:
+
+### Existe espaço para novos vendedores?
+
+### O líder domina por:
+
+- Antiguidade?
+- Preço?
+- Reputação?
+- SEO?
+- Catálogo?
+- Volume?
+
+### Um novo vendedor conseguiria competir através de:
+
+- Melhor preço
+- Melhor kit
+- Melhor oferta
+- Melhor anúncio
+- Melhor SEO
+- Melhor logística
+- Melhor reputação
+
+Explique em detalhes.
+
+---
+
+# Tarefa 5 — Potencial de Lucro
+
+Considerando:
+
+- Taxa da categoria
+- Competitividade
+- Volume de vendas
+- Possível guerra de preços
+
+Avalie:
+
+- Margem potencial
+- Margem provável
+- Risco de erosão de margem
+
+Classifique:
+
+- Muito Baixo
+- Baixo
+- Médio
+- Alto
+- Muito Alto
+
+---
+
+# Tarefa 6 — Score de Oportunidade
+
+Atribua uma nota de 0 a 10 para:
+
+| Critério | Nota |
+|-----------|--------|
+| Demanda | |
+| Concorrência | |
+| Potencial de Lucro | |
+| Facilidade de Entrada | |
+| Escalabilidade | |
+
+---
+
+## Score Final
+
+Calcule:
+
+Score Final = Média das Notas
+
+---
+
+### Interpretação
+
+| Nota | Interpretação |
+|--------|----------------|
+| 0–4 | Evitar |
+| 5–6 | Arriscado |
+| 7–8 | Boa oportunidade |
+| 9–10 | Excelente oportunidade |
+
+---
+
+# Tarefa 7 — Estratégia Recomendada
+
+Escolha apenas uma:
+
+- Entrar imediatamente
+- Entrar com diferenciação
+- Entrar com kit
+- Entrar via catálogo
+- Testar com estoque mínimo
+- Não entrar
+
+Explique detalhadamente a decisão.
+
+---
+
+# Tarefa 8 — Plano de Ataque de 30 Dias
+
+Monte um plano contendo:
+
+## Semana 1
+
+- Pesquisa de fornecedores
+- Definição de preço
+- Criação do anúncio
+
+## Semana 2
+
+- SEO de título
+- SEO de atributos
+- Criação de imagens
+
+## Semana 3
+
+- Campanhas patrocinadas
+- Ajustes de conversão
+
+## Semana 4
+
+- Escala
+- Otimizações
+- Reinvestimento
+
+---
+
+# Estratégia de SEO
+
+Sugira:
+
+- Título ideal
+- Palavras-chave secundárias
+- Estratégia de atributos
+- Estratégia de catálogo
+
+---
+
+# Estratégia de Imagens
+
+Sugira:
+
+- Quantidade de imagens
+- Sequência ideal do carrossel
+- Diferenciais visuais
+- Gatilhos de conversão
+
+---
+
+# Estratégia de Precificação
+
+Defina:
+
+- Preço de entrada
+- Preço competitivo
+- Faixa máxima aceitável
+- Estratégia contra líderes
+
+---
+
+# Conclusão Executiva
+
+Produza uma conclusão final de até 10 linhas contendo:
+
+1. Vale a pena entrar?
+2. Qual o principal risco?
+3. Qual a principal oportunidade?
+4. Qual a estratégia recomendada?
+5. Qual a nota final do produto?
+6. Qual o potencial de crescimento?
+
+---
+
+# Regras de Análise
+
+Considere que:
+
+- Participação acima de 50% indica forte concentração.
+- Anúncios antigos possuem vantagem histórica.
+- Mercados pulverizados tendem a ser mais acessíveis.
+- Mercados concentrados exigem diferenciação.
+- Demanda validada é obrigatória.
+- Priorize oportunidades com alta demanda e baixa barreira de entrada.
+- Considere tanto curto quanto longo prazo.
+
+Forneça respostas objetivas, quantitativas e estratégicas.`,
+  },
 ]
