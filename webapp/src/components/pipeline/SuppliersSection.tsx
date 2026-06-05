@@ -47,7 +47,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [editingQuoteIndex, setEditingQuoteIndex] = useState<number | null>(null)
   const [expandedQuotes, setExpandedQuotes] = useState<Set<number>>(new Set())
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
-    unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
+    unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
   const [isSavingQuote, setIsSavingQuote] = useState(false)
 
@@ -91,7 +91,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
       onUpdate(res.suppliers, supplierReport)
       setQuoteModalIndex(null)
       setEditingQuoteIndex(null)
-      setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
+      setQuoteForm({ unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -104,7 +104,6 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
     setQuoteForm({
       unitPrice: quote.unitPrice || "",
       moq: quote.moq || "",
-      shippingCost: quote.shippingCost || "",
       totalProductCost: quote.totalProductCost || "",
       totalShippingCost: quote.totalShippingCost || "",
       deliveryTime: quote.deliveryTime || "",
@@ -380,9 +379,6 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                             {quote.moq && (
                               <span><span className="text-gray-500">MOQ:</span> <span className="text-gray-300">{quote.moq}</span></span>
                             )}
-                            {quote.shippingCost && (
-                              <span><span className="text-gray-500">Frete/un:</span> <span className="text-gray-300">{quote.shippingCost}</span></span>
-                            )}
                             {quote.totalProductCost && (
                               <span><span className="text-gray-500">Total produto:</span> <span className="text-amber-400 font-medium">{quote.totalProductCost}</span></span>
                             )}
@@ -497,16 +493,6 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-gray-400 mb-1">Frete unitário</label>
-                <input
-                  type="text"
-                  value={quoteForm.shippingCost}
-                  onChange={(e) => setQuoteForm(f => ({ ...f, shippingCost: e.target.value }))}
-                  placeholder="US$ 1.50/un"
-                  className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-              <div>
                 <label className="block text-[11px] text-gray-400 mb-1">Prazo de entrega</label>
                 <input
                   type="text"
@@ -562,7 +548,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => { setQuoteModalIndex(null); setEditingQuoteIndex(null); setQuoteForm({ unitPrice: "", moq: "", shippingCost: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
+                onClick={() => { setQuoteModalIndex(null); setEditingQuoteIndex(null); setQuoteForm({ unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
                 className="px-3 py-1.5 text-sm text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Cancelar

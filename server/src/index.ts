@@ -659,12 +659,11 @@ const handleAddSupplierQuote: import("express").RequestHandler = async (req, res
       return
     }
 
-    const { unitPrice, moq, shippingCost, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+    const { unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
 
     const quote = {
       unitPrice: unitPrice || "",
       moq: moq || "",
-      shippingCost: shippingCost || "",
       totalProductCost: totalProductCost || "",
       totalShippingCost: totalShippingCost || "",
       deliveryTime: deliveryTime || "",
@@ -751,12 +750,11 @@ const handleEditSupplierQuote: import("express").RequestHandler = async (req, re
       return
     }
 
-    const { unitPrice, moq, shippingCost, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+    const { unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
     const quote = product.suppliers[index].quotes[quoteIndex]
 
     if (unitPrice !== undefined) quote.unitPrice = unitPrice
     if (moq !== undefined) quote.moq = moq
-    if (shippingCost !== undefined) quote.shippingCost = shippingCost
     if (totalProductCost !== undefined) quote.totalProductCost = totalProductCost
     if (totalShippingCost !== undefined) quote.totalShippingCost = totalShippingCost
     if (deliveryTime !== undefined) quote.deliveryTime = deliveryTime

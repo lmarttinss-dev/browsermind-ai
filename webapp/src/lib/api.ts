@@ -132,7 +132,6 @@ export type NegotiationStatus = typeof NEGOTIATION_STATUSES[number]
 export type SupplierQuote = {
   unitPrice: string
   moq: string
-  shippingCost: string
   totalProductCost: string
   totalShippingCost: string
   deliveryTime: string
