@@ -8,6 +8,22 @@ import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
 const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top3-fornecedores-alibaba")!
 
+const parseCurrency = (value: string): number | null => {
+  if (!value) return null
+  const cleaned = value.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+  const num = parseFloat(cleaned)
+  return isNaN(num) ? null : num
+}
+
+const formatTotal = (a: string, b: string): string | null => {
+  const va = parseCurrency(a)
+  const vb = parseCurrency(b)
+  if (va === null && vb === null) return null
+  const total = (va || 0) + (vb || 0)
+  const prefix = a.match(/^[^0-9]*/)?.[0]?.trim() || b.match(/^[^0-9]*/)?.[0]?.trim() || ""
+  return prefix ? `${prefix} ${total.toFixed(2)}` : total.toFixed(2)
+}
+
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
   cotacao_recebida: { label: "Cotação recebida", color: "text-blue-400", bgColor: "bg-blue-900/30", borderColor: "border-blue-800" },
@@ -385,6 +401,9 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                             {quote.totalShippingCost && (
                               <span><span className="text-gray-500">Total frete:</span> <span className="text-amber-400 font-medium">{quote.totalShippingCost}</span></span>
                             )}
+                            {formatTotal(quote.totalProductCost, quote.totalShippingCost) && (
+                              <span><span className="text-gray-500">Custo total:</span> <span className="text-emerald-400 font-bold">{formatTotal(quote.totalProductCost, quote.totalShippingCost)}</span></span>
+                            )}
                             {quote.deliveryTime && (
                               <span><span className="text-gray-500">Prazo:</span> <span className="text-gray-300">{quote.deliveryTime}</span></span>
                             )}
@@ -523,6 +542,14 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 />
               </div>
             </div>
+
+            {/* Custo total calculado */}
+            {formatTotal(quoteForm.totalProductCost, quoteForm.totalShippingCost) && (
+              <div className="mb-3 px-3 py-2 bg-emerald-900/20 border border-emerald-800/50 rounded-lg flex items-center justify-between">
+                <span className="text-[11px] text-gray-400">Custo total (produto + frete)</span>
+                <span className="text-sm font-semibold text-emerald-400">{formatTotal(quoteForm.totalProductCost, quoteForm.totalShippingCost)}</span>
+              </div>
+            )}
 
             <div className="mb-3">
               <label className="block text-[11px] text-gray-400 mb-1">Condições de pagamento</label>
