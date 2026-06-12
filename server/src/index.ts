@@ -13,7 +13,7 @@ import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
 import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } from "./models/product.js";
 import { Comparison } from "./models/comparison.js";
-import { parseSuppliersFromReport, parseIndividualSupplierReport } from "./parse-suppliers.js";
+import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport } from "./parse-suppliers.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3210;
@@ -513,6 +513,10 @@ app.post("/api/analyze", async (req, res) => {
           const lastProduct = await Product.findOne({ stage: "triagem" }).sort({ order: -1 })
           const order = lastProduct ? lastProduct.order + 1 : 0
 
+          // Detecta se é um kit pelo título ou relatório
+          const isKit = /\bkit\b/i.test(productTitle) || /\bkit\b/i.test(aiResponse)
+          const kitItems = isKit ? parseKitItemsFromReport(aiResponse) : []
+
           const product = await Product.create({
             title: productTitle.slice(0, 200),
             url: productUrl,
@@ -527,6 +531,8 @@ app.post("/api/analyze", async (req, res) => {
             analysisReport: aiResponse,
             analyzedAt: new Date(),
             order,
+            isKit,
+            kitItems,
           })
           pipelineProductId = product._id
         }

@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Package, TrendingUp, Star, ExternalLink } from "lucide-react"
+import { Package, TrendingUp, Star, ExternalLink, Boxes } from "lucide-react"
 import type { PipelineProduct } from "@/lib/api"
 
 export const ProductCard = ({ product, onClick }: { product: PipelineProduct; onClick: () => void }) => {
@@ -56,6 +56,12 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
 
       {/* Badges */}
       <div className="flex flex-wrap gap-1.5 mb-2">
+        {product.isKit && (
+          <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-cyan-900/30 text-cyan-400">
+            <Boxes className="w-3 h-3" />
+            Kit
+          </span>
+        )}
         {product.score > 0 && (
           <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-900/30 text-blue-400">
             <Star className="w-3 h-3" />
