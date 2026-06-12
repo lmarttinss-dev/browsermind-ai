@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { ArrowLeft, Search, Loader2, ExternalLink, Clock, Link2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { api, MODELS, type PipelineProduct } from "@/lib/api"
+import { api, MODELS, type PipelineProduct, type ModelId } from "@/lib/api"
 
 type AnalysisResult = {
   report: string
@@ -32,15 +32,37 @@ export const SupplierAnalysisPage = () => {
     }).catch(() => {})
   }, [])
 
-  const handleAnalyze = async () => {
-    if (!url.trim()) return
+  // Auto-preenche URL e modelo dos parâmetros da rota e já dispara a análise
+  useEffect(() => {
+    const urlParam = searchParams.get("url")
+    const modelParam = searchParams.get("model")
 
+    if (!urlParam || result || isAnalyzing) return
+
+    setUrl(urlParam)
+
+    // Define o modelo antes de analisar, usando o valor do searchParams diretamente
+    const model = modelParam && MODELS.some((m) => m.id === modelParam)
+      ? (modelParam as ModelId)
+      : selectedModel
+
+    setSelectedModel(model)
+
+    if (urlParam.trim()) {
+      // Pequeno delay para garantir que o state do modelo atualizou antes da análise
+      const timer = setTimeout(() => doAnalyze(urlParam.trim(), model), 50)
+      return () => clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const doAnalyze = async (targetUrl: string, model: ModelId) => {
     setIsAnalyzing(true)
     setError(null)
     setResult(null)
 
     try {
-      const res = await api.analyzeSupplier(url.trim(), selectedModel)
+      const res = await api.analyzeSupplier(targetUrl, model)
       const analysis: AnalysisResult = {
         report: res.report,
         supplierUrl: res.supplierUrl,
@@ -53,6 +75,10 @@ export const SupplierAnalysisPage = () => {
     } finally {
       setIsAnalyzing(false)
     }
+  }
+
+  const handleAnalyze = async () => {
+    await doAnalyze(url.trim(), selectedModel)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

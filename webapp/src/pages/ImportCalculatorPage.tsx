@@ -10,6 +10,7 @@ import {
   type ProductInput,
   type SalesInput,
 } from "@/lib/calculator"
+import { parseReportMetrics } from "@/lib/utils"
 
 type ProductMode = "single" | "multiple"
 
@@ -36,6 +37,7 @@ const ImportCalculatorPage = () => {
   const productId = params.get("productId")
   const supplierIndex = params.get("supplier")
   const quoteIndex = params.get("quote")
+  const urlPrice = params.get("price")
 
   const [product, setProduct] = useState<ProductInput>({
     name: "",
@@ -74,10 +76,15 @@ const ImportCalculatorPage = () => {
         // Preenche nome do produto
         setProduct((prev) => ({ ...prev, name: prod.title || "" }))
 
+        // Determina o preço de venda: product.price > metrics > urlParam
+        const metricsPrice = parseReportMetrics(prod.analysisReport || "").price
+        const resolvedPrice = prod.price > 0 ? prod.price : (metricsPrice > 0 ? metricsPrice : 0)
+        const salePrice = resolvedPrice > 0 ? resolvedPrice : (urlPrice ? parseFloat(urlPrice) : 0)
+
         // Preenche dados de venda
         setSales((prev) => ({
           ...prev,
-          salePrice: prod.price > 0 ? prod.price : prev.salePrice,
+          salePrice: salePrice > 0 ? salePrice : prev.salePrice,
         }))
 
         // Se tem supplier/quote nos params, extrai dados
