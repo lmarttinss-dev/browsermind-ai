@@ -100,6 +100,13 @@ export const api = {
       body: JSON.stringify({ report, supplierUrl }),
     }),
 
+  // Calculator
+  saveCalculatorResult: (id: string, calcResult: CalculatorResult) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}/calculator`, {
+      method: "PATCH",
+      body: JSON.stringify(calcResult),
+    }),
+
   // Compare
   comparePipelineProducts: (model: string, stage: PipelineStage = "triagem", forceRefresh = false) =>
     request<ComparisonResponse>("/api/pipeline/compare", {
@@ -198,6 +205,16 @@ export type ComparisonResponse = {
   cached: boolean;
   cachedAt?: string;
 };
+
+export type CalculatorResult = {
+  unitCost: number
+  roi: number
+  contributionMargin: number
+  profitPerUnit: number
+  multiplier: number
+  salePrice: number
+  quantity: number
+}
 
 export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek-flash" | "deepseek-pro";
 

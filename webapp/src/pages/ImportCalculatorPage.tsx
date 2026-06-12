@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
-import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2 } from "lucide-react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2 } from "lucide-react"
+import { api, type PipelineProduct, type Supplier } from "@/lib/api"
 import {
   calcImport,
   calcSales,
@@ -12,20 +14,28 @@ import {
 type ProductMode = "single" | "multiple"
 
 const ImportCalculatorPage = () => {
+  const { search } = useLocation()
+  const navigate = useNavigate()
   const [dollarRate, setDollarRate] = useState(5.17)
   const [loadingRate, setLoadingRate] = useState(true)
   const [productMode, setProductMode] = useState<ProductMode>("single")
 
-  useEffect(() => {
-    fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL")
-      .then((res) => res.json())
-      .then((data) => {
-        const rate = parseFloat(data.USDBRL.ask)
-        if (!isNaN(rate)) setDollarRate(Math.round(rate * 100) / 100)
-      })
-      .catch(() => {})
-      .finally(() => setLoadingRate(false))
-  }, [])
+  // Estado para produto da esteira
+  const [pipelineProduct, setPipelineProduct] = useState<PipelineProduct | null>(null)
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false)
+  const [selectedSupplierInfo, setSelectedSupplierInfo] = useState<{
+    supplier: Supplier | null
+    supplierIndex: number
+    quoteIndex: number | null
+  } | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [savedSuccess, setSavedSuccess] = useState(false)
+
+  // Lê parâmetros da URL manualmente (mais confiável que useSearchParams com navigate)
+  const params = new URLSearchParams(search)
+  const productId = params.get("productId")
+  const supplierIndex = params.get("supplier")
+  const quoteIndex = params.get("quote")
 
   const [product, setProduct] = useState<ProductInput>({
     name: "",
@@ -44,6 +54,88 @@ const ImportCalculatorPage = () => {
     adFee: 11,
     packagingCost: 0,
   })
+
+  // Limpa strings como "US$ 1.32" → 1.32
+  const parsePrice = (v: string | undefined): number => {
+    if (!v) return 0
+    const cleaned = v.replace(/[^0-9.,]/g, "").replace(",", ".")
+    return parseFloat(cleaned) || 0
+  }
+
+  // Busca produto da esteira se veio com productId
+  useEffect(() => {
+    if (!productId) return
+    setIsLoadingProduct(true)
+    api.getPipelineProduct(productId)
+      .then((res) => {
+        setPipelineProduct(res.product)
+        const prod = res.product
+
+        // Preenche nome do produto
+        setProduct((prev) => ({ ...prev, name: prod.title || "" }))
+
+        // Preenche dados de venda
+        setSales((prev) => ({
+          ...prev,
+          salePrice: prod.price > 0 ? prod.price : prev.salePrice,
+        }))
+
+        // Se tem supplier/quote nos params, extrai dados
+        if (supplierIndex && prod.suppliers) {
+          const sIdx = parseInt(supplierIndex, 10)
+          const supplier = prod.suppliers[sIdx]
+          if (supplier) {
+            // Determina qual cotação usar: a especificada nos params ou a mais recente
+            let effectiveQuoteIndex: number | null = quoteIndex ? parseInt(quoteIndex, 10) : null
+
+            if (effectiveQuoteIndex === null && supplier.quotes && supplier.quotes.length > 0) {
+              const sortedQuotes = supplier.quotes
+                .map((q, i) => ({ index: i, date: new Date(q.quotedAt).getTime() }))
+                .sort((a, b) => b.date - a.date)
+              effectiveQuoteIndex = sortedQuotes[0].index
+            }
+
+            setSelectedSupplierInfo({
+              supplier,
+              supplierIndex: sIdx,
+              quoteIndex: effectiveQuoteIndex,
+            })
+
+            // Preço do fornecedor — atualiza via setProduct separado
+            if (effectiveQuoteIndex !== null) {
+              const quote = supplier.quotes?.[effectiveQuoteIndex]
+              if (quote) {
+                setProduct((prev) => ({
+                  ...prev,
+                  unitPriceDollar: parsePrice(quote.unitPrice),
+                  shippingDollar: parsePrice(quote.totalShippingCost),
+                  quantity: parseInt(quote.moq, 10) || 50,
+                }))
+              }
+            } else {
+              setProduct((prev) => ({
+                ...prev,
+                unitPriceDollar: parsePrice(supplier.unitPrice),
+                quantity: parseInt(supplier.moq, 10) || 50,
+              }))
+            }
+          }
+        }
+      })
+      .catch((err) => console.error("Erro ao buscar produto da esteira:", err))
+      .finally(() => setIsLoadingProduct(false))
+  }, [productId, supplierIndex, quoteIndex])
+
+  useEffect(() => {
+    fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL")
+      .then((res) => res.json())
+      .then((data) => {
+        const rate = parseFloat(data.USDBRL.ask)
+        if (!isNaN(rate)) setDollarRate(Math.round(rate * 100) / 100)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingRate(false))
+  }, [])
 
   // Etapa 1 - Cálculos de importação
   const importCalc = useMemo(
@@ -70,6 +162,27 @@ const ImportCalculatorPage = () => {
     [importCalc, salesCalc, sales.salePrice, product.quantity],
   )
 
+  const handleSaveCalculator = async () => {
+    if (!productId) return
+    setIsSaving(true)
+    try {
+      await api.saveCalculatorResult(productId, {
+        unitCost: importCalc.unitCost,
+        roi: salesCalc.roi,
+        contributionMargin: salesCalc.contributionMargin,
+        profitPerUnit: salesCalc.profitPerUnit,
+        multiplier: investmentCalc.multiplier,
+        salePrice: sales.salePrice,
+        quantity: product.quantity,
+      })
+      setSavedSuccess(true)
+    } catch (err) {
+      console.error("Erro ao salvar resultado:", err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const formatBRL = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
@@ -88,6 +201,36 @@ const ImportCalculatorPage = () => {
             <p className="text-xs text-gray-500 mt-1">
               Descubra o custo real, o preço de venda ideal e o lucro da sua importação
             </p>
+
+            {/* Badge: Produto da Esteira */}
+            {isLoadingProduct && (
+              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-400">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Carregando produto...
+              </div>
+            )}
+            {pipelineProduct && !isLoadingProduct && (
+              <div className="mt-3 flex items-center justify-center gap-3 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 bg-blue-900/30 text-blue-400 text-xs font-medium px-3 py-1 rounded-full border border-blue-800/30">
+                  <Link className="w-3 h-3" />
+                  Produto: {pipelineProduct.title.length > 50
+                    ? pipelineProduct.title.slice(0, 50) + "…"
+                    : pipelineProduct.title}
+                </span>
+                {selectedSupplierInfo?.supplier && (
+                  <span className="inline-flex items-center gap-1.5 bg-amber-900/30 text-amber-400 text-xs font-medium px-3 py-1 rounded-full border border-amber-800/30">
+                    <Package className="w-3 h-3" />
+                    Fornecedor: {selectedSupplierInfo.supplier.name}
+                  </span>
+                )}
+                <button
+                  onClick={() => navigate(`/pipeline/${productId}`)}
+                  className="text-xs text-gray-500 hover:text-blue-400 underline transition-colors"
+                >
+                  Ver na esteira →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -541,6 +684,52 @@ const ImportCalculatorPage = () => {
         <p className="text-center text-xs text-gray-600">
           Cálculos estimados • ICMS aplicado por dentro • Confirme alíquotas com seu contador
         </p>
+
+        {/* Salvar na Esteira */}
+        {pipelineProduct && !savedSuccess && (
+          <div className="flex justify-center pb-8">
+            <button
+              onClick={handleSaveCalculator}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Link className="w-4 h-4" />
+              )}
+              {isSaving ? "Salvando..." : "Salvar Resultado na Esteira"}
+            </button>
+          </div>
+        )}
+
+        {/* Sucesso ao salvar */}
+        {savedSuccess && (
+          <div className="flex flex-col items-center gap-4 pb-8">
+            <div className="flex items-center gap-2 text-emerald-400 bg-emerald-900/20 border border-emerald-800/30 rounded-xl px-6 py-4">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="text-sm font-semibold">Resultado salvo na esteira!</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(`/pipeline/${productId}`)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm rounded-lg transition-colors"
+              >
+                Ver Produto na Esteira
+              </button>
+              <button
+                onClick={() => {
+                  setSavedSuccess(false)
+                  setPipelineProduct(null)
+                  setSelectedSupplierInfo(null)
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gray-700/50 hover:bg-gray-600 text-gray-400 text-sm rounded-lg transition-colors"
+              >
+                Continuar Calculando
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -90,3 +90,51 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "Erro ao remover produto" })
   }
 })
+
+// Salvar resultado da calculadora de viabilidade no produto
+router.patch("/:id/calculator", async (req, res) => {
+  try {
+    const { unitCost, roi, contributionMargin, profitPerUnit, multiplier, salePrice, quantity } = req.body
+
+    const product = await Product.findById(req.params.id)
+    if (!product) return res.status(404).json({ error: "Produto não encontrado" })
+
+    // Monta seção de análise financeira
+    const financialSection = `
+## 📊 Análise de Viabilidade Financeira
+
+| Indicador | Valor |
+|-----------|-------|
+| Custo unitário (R$) | ${unitCost?.toFixed(2) || "—"} |
+| Preço de venda (R$) | ${salePrice?.toFixed(2) || "—"} |
+| Quantidade | ${quantity || "—"} |
+| ROI | ${roi?.toFixed(1) || "—"}% |
+| Margem de Contribuição | ${contributionMargin?.toFixed(1) || "—"}% |
+| Lucro por unidade (R$) | ${profitPerUnit?.toFixed(2) || "—"} |
+| Multiplicador (investimento → retorno) | ${multiplier?.toFixed(2) || "—"}x |
+
+> ⏱ Calculado em ${new Date().toLocaleString("pt-BR")}
+`
+
+    // Atualiza o produto (analysisReport é string, não array)
+    const updatedAnalysisReport = product.analysisReport
+      ? product.analysisReport + "\n\n" + financialSection
+      : financialSection
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          potentialMargin: roi != null ? `${roi.toFixed(0)}%` : product.potentialMargin,
+          ...(salePrice != null && { price: salePrice }),
+          analysisReport: updatedAnalysisReport,
+        },
+      },
+      { new: true }
+    )
+
+    res.json({ success: true, product: updated })
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao salvar resultado da calculadora" })
+  }
+})

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
@@ -31,6 +31,7 @@ export const ProductDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("produto")
+  const [showSupplierSelector, setShowSupplierSelector] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -40,6 +41,30 @@ export const ProductDetailPage = () => {
       .catch((err) => setError(err.message))
       .finally(() => setIsLoading(false))
   }, [id])
+
+  const handleOpenCalculator = () => {
+    if (!product) return
+    const suppliersWithQuotes = product.suppliers?.filter((s) => s.quotes && s.quotes.length > 0) || []
+    if (suppliersWithQuotes.length > 0) {
+      setShowSupplierSelector(true)
+    } else {
+      navigate(`/calculator?productId=${product._id}`)
+    }
+  }
+
+  const handleCalculateWithSupplier = (
+    supplierIndex: number,
+    quoteIndex: number | null
+  ) => {
+    if (!product) return
+    const params = new URLSearchParams({ productId: product._id })
+    params.set("supplier", String(supplierIndex))
+    if (quoteIndex !== null) {
+      params.set("quote", String(quoteIndex))
+    }
+    setShowSupplierSelector(false)
+    navigate(`/calculator?${params.toString()}`)
+  }
 
   const handleDelete = async () => {
     if (!product) return
@@ -110,8 +135,13 @@ export const ProductDetailPage = () => {
             <ExternalLink className="w-3.5 h-3.5" />
             Abrir no ML
           </a>
-        )}
-        <button
+        )}        <button
+          onClick={handleOpenCalculator}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-amber-700/50 hover:bg-amber-700 text-amber-300 rounded-lg transition-colors"
+        >
+          <Calculator className="w-3.5 h-3.5" />
+          Calcular Viabilidade
+        </button>        <button
           onClick={handleDelete}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
         >
@@ -268,6 +298,100 @@ export const ProductDetailPage = () => {
           />
         )}
       </div>
+
+      {/* Modal seletor de fornecedor */}
+      {showSupplierSelector && product.suppliers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
+              <h3 className="text-base font-semibold text-gray-100">Selecionar Fornecedor</h3>
+              <button
+                onClick={() => setShowSupplierSelector(false)}
+                className="p-1 text-gray-400 hover:text-gray-200 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Opção: usar apenas dados do produto */}
+              <button
+                onClick={() => {
+                  if (!product) return
+                  setShowSupplierSelector(false)
+                  navigate(`/calculator?productId=${product._id}`)
+                }}
+                className="w-full text-left p-4 rounded-lg border border-gray-600 bg-gray-700/30 hover:bg-gray-700 transition-colors"
+              >
+                <p className="text-sm font-medium text-gray-200">Usar apenas dados do produto</p>
+                <p className="text-xs text-gray-500 mt-1">Preço de venda (R$) sem dados de fornecedor</p>
+              </button>
+
+              {product.suppliers
+                .filter((s) => s.quotes && s.quotes.length > 0)
+                .map((supplier, sIndex) => {
+                  const realIndex = product.suppliers.indexOf(supplier)
+                  return (
+                    <div key={realIndex} className="rounded-lg border border-gray-600 bg-gray-700/30 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          const sorted = supplier.quotes
+                            .map((q, i) => ({ index: i, date: new Date(q.quotedAt).getTime() }))
+                            .sort((a, b) => b.date - a.date)
+                          handleCalculateWithSupplier(realIndex, sorted[0].index)
+                        }}
+                        className="w-full text-left p-4 hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-sm font-medium text-gray-200">{supplier.name}</p>
+                          {supplier.rating > 0 && (
+                            <span className="text-xs text-yellow-400">★ {supplier.rating.toFixed(1)}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <span>Preço: <strong className="text-gray-300">${supplier.unitPrice || "—"}</strong></span>
+                          <span>MOQ: <strong className="text-gray-300">{supplier.moq || "—"}</strong></span>
+                        </div>
+                      </button>
+
+                      <div className="border-t border-gray-700 divide-y divide-gray-700">
+                        {supplier.quotes.map((quote, qIndex) => (
+                          <button
+                            key={qIndex}
+                            onClick={() => handleCalculateWithSupplier(realIndex, qIndex)}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-700/50 transition-colors flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-4 text-xs">
+                              <span className="text-gray-500">Cotação #{qIndex + 1}</span>
+                              <span className="text-gray-400">
+                                $<strong className="text-gray-200">{quote.unitPrice || "—"}</strong> / un
+                              </span>
+                              {quote.moq && (
+                                <span className="text-gray-500">MOQ: <strong className="text-gray-300">{quote.moq}</strong></span>
+                              )}
+                            </div>
+                            {quote.totalShippingCost && (
+                              <span className="text-xs text-gray-500">
+                                Frete: $<strong className="text-gray-300">{quote.totalShippingCost}</strong>
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+            <div className="px-5 py-3 border-t border-gray-700 text-center">
+              <button
+                onClick={() => setShowSupplierSelector(false)}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
