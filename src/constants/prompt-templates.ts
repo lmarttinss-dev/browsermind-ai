@@ -278,7 +278,7 @@ Determinar:
 
 ## Anúncios Encontrados
 
-> **IMPORTANTE:** Para cada anúncio, extraia a URL completa do produto. O link está no atributo `href` do título do anúncio. Exemplo de formato: `https://www.mercadolivre.com.br/pelicula-para-iphone-17-pro-pro-max-protecao-de-lente-camera/up/MLBU3730697970`
+> **IMPORTANTE:** Para cada anúncio, extraia a URL completa do produto. O link está no atributo \`href\` do título do anúncio. Exemplo de formato: \`https://www.mercadolivre.com.br/pelicula-para-iphone-17-pro-pro-max-protecao-de-lente-camera/up/MLBU3730697970\`
 
 ### Anúncio 1
 
