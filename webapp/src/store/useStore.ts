@@ -65,7 +65,7 @@ interface AppState {
   closeBrowser: () => Promise<void>;
   navigateTo: (url: string) => Promise<void>;
   takeScreenshot: () => Promise<void>;
-  analyzePage: () => Promise<void>;
+  analyzePage: (templateId?: string) => Promise<void>;
   executeActions: (actions?: BrowserAction[]) => Promise<void>;
   saveApiKeys: (keys: Record<string, string>) => Promise<void>;
   loadConfiguredKeys: () => Promise<void>;
@@ -183,7 +183,7 @@ export const useStore = create<AppState>((set, get) => ({
     } catch { /* ignore */ }
   },
 
-  analyzePage: async () => {
+  analyzePage: async (templateId?: string) => {
     const { prompt, selectedModel } = get();
     if (!prompt.trim()) {
       set({ error: "Digite um prompt" });
@@ -193,7 +193,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true, error: null, response: "", pendingActions: [] });
 
     try {
-      const res = await api.analyze({ prompt, model: selectedModel });
+      const res = await api.analyze({ prompt, model: selectedModel, templateId });
 
       if (res.success) {
         const entry: HistoryEntry = {
