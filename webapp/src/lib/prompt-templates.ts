@@ -422,10 +422,13 @@ Determinar:
 
 ## Anúncios Encontrados
 
+> **IMPORTANTE:** Para cada anúncio, extraia a URL completa do produto. O link está no atributo `href` do título do anúncio. Exemplo de formato: `https://www.mercadolivre.com.br/pelicula-para-iphone-17-pro-pro-max-protecao-de-lente-camera/up/MLBU3730697970`
+
 ### Anúncio 1
 
 | Métrica | Valor |
 |----------|---------|
+| Link | (URL completa do anúncio no Mercado Livre) |
 | Vendas | 10.000 |
 | Participação | 70,2% |
 | Visitas | 31.846 |
@@ -438,6 +441,7 @@ Determinar:
 
 | Métrica | Valor |
 |----------|---------|
+| Link | (URL completa do anúncio no Mercado Livre) |
 | Vendas | 1.000 |
 | Participação | 7,0% |
 | Visitas | 1.498 |
@@ -450,6 +454,7 @@ Determinar:
 
 | Métrica | Valor |
 |----------|---------|
+| Link | (URL completa do anúncio no Mercado Livre) |
 | Vendas | 25 |
 | Participação | 0,2% |
 | Tempo de anúncio | 215 dias |
@@ -460,6 +465,7 @@ Determinar:
 
 | Métrica | Valor |
 |----------|---------|
+| Link | (URL completa do anúncio no Mercado Livre) |
 | Vendas | 25 |
 | Participação | 0,2% |
 | Tempo de anúncio | 252 dias |
