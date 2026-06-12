@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2 } from "lucide-react"
+import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2, Plus, Trash2, Boxes } from "lucide-react"
 import { api, type PipelineProduct, type Supplier } from "@/lib/api"
 import {
   calcImport,
@@ -13,6 +13,12 @@ import {
 import { parseReportMetrics } from "@/lib/utils"
 
 type ProductMode = "single" | "multiple"
+
+type KitCalcItem = {
+  name: string
+  unitCostBRL: number
+  quantity: number
+}
 
 const ImportCalculatorPage = () => {
   const { search } = useLocation()
@@ -56,6 +62,10 @@ const ImportCalculatorPage = () => {
     adFee: 11,
     packagingCost: 0,
   })
+
+  // Kit simulation (Etapa 2)
+  const [isKit, setIsKit] = useState(false)
+  const [kitItems, setKitItems] = useState<KitCalcItem[]>([{ name: "", unitCostBRL: 0, quantity: 1 }])
 
   // Limpa strings como "US$ 1.32" → 1.32
   const parsePrice = (v: string | undefined): number => {
@@ -144,16 +154,25 @@ const ImportCalculatorPage = () => {
       .finally(() => setLoadingRate(false))
   }, [])
 
-  // Etapa 1 - Cálculos de importação
+  // Etapa 1 - Cálculos de importação (sem interferência do kit)
   const importCalc = useMemo(
     () => calcImport(product, dollarRate, COURIER_RATE),
     [product, dollarRate],
   )
 
+  // Custo unitário efetivo na Etapa 2: se for kit, soma (custoBRL × qtd) de cada item
+  const effectiveUnitCost = useMemo(() => {
+    if (!isKit) return importCalc.unitCost
+    const total = kitItems.reduce((sum, item) => {
+      return sum + (item.unitCostBRL || 0) * (item.quantity || 1)
+    }, 0)
+    return total > 0 ? total : importCalc.unitCost
+  }, [isKit, kitItems, importCalc.unitCost])
+
   // Etapa 2 - Cálculos de viabilidade de venda
   const salesCalc = useMemo(
-    () => calcSales(sales, importCalc.unitCost),
-    [sales, importCalc.unitCost],
+    () => calcSales(sales, effectiveUnitCost),
+    [sales, effectiveUnitCost],
   )
 
   // Etapa 3 - Montinho ao Montão
@@ -161,12 +180,12 @@ const ImportCalculatorPage = () => {
     () =>
       calcInvestment(
         importCalc.totalImport,
-        importCalc.unitCost,
+        effectiveUnitCost,
         sales.salePrice,
         product.quantity,
         salesCalc.totalExpenses,
       ),
-    [importCalc, salesCalc, sales.salePrice, product.quantity],
+    [importCalc, salesCalc, sales.salePrice, product.quantity, effectiveUnitCost],
   )
 
   const handleSaveCalculator = async () => {
@@ -458,35 +477,118 @@ const ImportCalculatorPage = () => {
               </p>
 
               {/* Toggle Kit */}
-              <div className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3 mb-6">
+              <div className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3 mb-3">
                 <div className="flex items-center gap-1">
-                  <Package className="w-4 h-4 text-gray-500" />
+                  <Boxes className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-300">É kit?</span>
                   <HelpCircle className="w-3.5 h-3.5 text-gray-500" />
                 </div>
                 <div className="flex bg-gray-800 rounded-lg border border-gray-600">
                   <button
-                    onClick={() => setSales({ ...sales, isKit: false })}
+                    onClick={() => setIsKit(false)}
                     className={`px-3 py-1.5 text-sm rounded-lg transition ${
-                      !sales.isKit
-                        ? "bg-orange-500 text-white"
-                        : "text-gray-400 hover:bg-gray-700"
+                      !isKit ? "bg-emerald-500 text-white" : "text-gray-400 hover:bg-gray-700"
                     }`}
                   >
                     Não
                   </button>
                   <button
-                    onClick={() => setSales({ ...sales, isKit: true })}
+                    onClick={() => setIsKit(true)}
                     className={`px-3 py-1.5 text-sm rounded-lg transition ${
-                      sales.isKit
-                        ? "bg-orange-500 text-white"
-                        : "text-gray-400 hover:bg-gray-700"
+                      isKit ? "bg-emerald-500 text-white" : "text-gray-400 hover:bg-gray-700"
                     }`}
                   >
                     Sim
                   </button>
                 </div>
               </div>
+
+              {/* Kit Items (Etapa 2) */}
+              {isKit && (
+                <div className="bg-gray-700/30 rounded-lg border border-gray-600 p-4 space-y-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-400 font-medium">
+                      Itens do Kit ({kitItems.length})
+                    </p>
+                    <button
+                      onClick={() => setKitItems([...kitItems, { name: "", unitCostBRL: 0, quantity: 1 }])}
+                      className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Adicionar item
+                    </button>
+                  </div>
+
+                  {kitItems.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="text-[10px] text-gray-500 mb-0.5 block">
+                          Item {i + 1}
+                        </label>
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => {
+                            const updated = [...kitItems]
+                            updated[i] = { ...updated[i], name: e.target.value }
+                            setKitItems(updated)
+                          }}
+                          placeholder="Nome do item"
+                          className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-gray-500 mb-0.5 block">Custo unit. (R$)</label>
+                        <div className="relative w-24">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">R$</span>
+                          <input
+                            type="number"
+                            value={item.unitCostBRL || ""}
+                            onChange={(e) => {
+                              const updated = [...kitItems]
+                              updated[i] = { ...updated[i], unitCostBRL: Number(e.target.value) || 0 }
+                              setKitItems(updated)
+                            }}
+                            placeholder={i === 0 ? importCalc.unitCost.toFixed(2) : "0.00"}
+                            step="0.01"
+                            className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-7 pr-2 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                          />
+                        </div>
+                      </div>
+                      <div className="w-16">
+                        <label className="text-[10px] text-gray-500 mb-0.5 block">Unid/Kit</label>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const updated = [...kitItems]
+                            updated[i] = { ...updated[i], quantity: Math.max(1, Number(e.target.value) || 1) }
+                            setKitItems(updated)
+                          }}
+                          min={1}
+                          className="w-full border border-gray-600 bg-gray-700 rounded-lg px-2 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                        />
+                      </div>
+                      {kitItems.length > 1 && (
+                        <button
+                          onClick={() => setKitItems(kitItems.filter((_, idx) => idx !== i))}
+                          className="text-gray-500 hover:text-red-400 transition-colors mt-4"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Total do kit */}
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-600">
+                    <span className="text-xs text-gray-400">Custo total do kit</span>
+                    <span className="text-sm font-bold text-cyan-400">
+                      R$ {effectiveUnitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Inputs Etapa 2 */}
               <div className="grid grid-cols-2 gap-4">
@@ -504,12 +606,14 @@ const ImportCalculatorPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Custo do produto (Etapa 1)</label>
+                  <label className="text-xs text-gray-400 mb-1 block">
+                    Custo do produto {isKit ? "(Kit)" : "(Etapa 1)"}
+                  </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
                     <input
                       type="number"
-                      value={Number(importCalc.unitCost.toFixed(2))}
+                      value={Number(effectiveUnitCost.toFixed(2))}
                       readOnly
                       className="w-full border border-gray-600 bg-gray-700/50 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-300 font-semibold"
                     />
