@@ -11,7 +11,8 @@ const MODEL_KEY_MAP: Record<string, string> = {
   "gemini-pro-3.1": "gemini",
   "gpt-4.1": "openai",
   "claude-sonnet": "anthropic",
-  "deepseek-chat": "deepseek",
+  "deepseek-flash": "deepseek",
+  "deepseek-pro": "deepseek",
 };
 
 const KEY_LABELS: Record<string, string> = {

@@ -455,12 +455,13 @@ app.post("/api/analyze", async (req, res) => {
       }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } });
       aiResponse = r.data.content?.[0]?.text || "";
 
-    } else if (model === "deepseek") {
+    } else if (model === "deepseek-flash" || model === "deepseek-pro") {
       const key = apiKeys.deepseek;
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.");
+      const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash";
 
       const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: "deepseek-chat",
+        model: deepseekModel,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userMessage },
@@ -969,12 +970,13 @@ ${supplierInfo}
       }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } })
       aiResponse = r.data.content?.[0]?.text || ""
 
-    } else if (model === "deepseek") {
+    } else if (model === "deepseek-flash" || model === "deepseek-pro") {
       const key = apiKeys.deepseek
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
+      const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
 
       const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: "deepseek-chat",
+        model: deepseekModel,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
@@ -1195,12 +1197,13 @@ app.post("/api/supplier/analyze", async (req, res) => {
       }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } })
       aiResponse = r.data.content?.[0]?.text || ""
 
-    } else if (model === "deepseek") {
+    } else if (model === "deepseek-flash" || model === "deepseek-pro") {
       const key = apiKeys.deepseek
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
+      const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
 
       const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: "deepseek-chat",
+        model: deepseekModel,
         messages: [
           { role: "system", content: SUPPLIER_ANALYSIS_PROMPT },
           { role: "user", content: userMessage },

@@ -29,7 +29,8 @@ export type ModelId =
   | "gemini-pro-3.1"
   | "gpt-4.1"
   | "claude-sonnet"
-  | "deepseek";
+  | "deepseek-flash"
+  | "deepseek-pro";
 
 export interface ModelOption {
   id: ModelId;
@@ -44,7 +45,8 @@ export const MODELS: ModelOption[] = [
   { id: "gemini-pro-3.1", name: "Gemini 3.1 Pro", provider: "google" },
   { id: "gpt-4.1", name: "GPT-4.1", provider: "openai" },
   { id: "claude-sonnet", name: "Claude Sonnet", provider: "anthropic" },
-  { id: "deepseek", name: "DeepSeek", provider: "deepseek" },
+  { id: "deepseek-flash", name: "DeepSeek V4 Flash", provider: "deepseek" },
+  { id: "deepseek-pro", name: "DeepSeek V4 Pro", provider: "deepseek" },
 ];
 
 export interface AnalysisEntry {
