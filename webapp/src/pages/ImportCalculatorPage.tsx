@@ -16,7 +16,6 @@ type ProductMode = "single" | "multiple"
 
 type KitCalcItem = {
   name: string
-  unitCostBRL: number
   quantity: number
 }
 
@@ -65,7 +64,7 @@ const ImportCalculatorPage = () => {
 
   // Kit simulation (Etapa 2)
   const [isKit, setIsKit] = useState(false)
-  const [kitItems, setKitItems] = useState<KitCalcItem[]>([{ name: "", unitCostBRL: 0, quantity: 1 }])
+  const [kitItems, setKitItems] = useState<KitCalcItem[]>([{ name: "", quantity: 1 }])
 
   // Limpa strings como "US$ 1.32" → 1.32
   const parsePrice = (v: string | undefined): number => {
@@ -160,13 +159,11 @@ const ImportCalculatorPage = () => {
     [product, dollarRate],
   )
 
-  // Custo unitário efetivo na Etapa 2: se for kit, soma (custoBRL × qtd) de cada item
+  // Custo unitário efetivo na Etapa 2: se for kit, unitCost × soma das qtds
   const effectiveUnitCost = useMemo(() => {
     if (!isKit) return importCalc.unitCost
-    const total = kitItems.reduce((sum, item) => {
-      return sum + (item.unitCostBRL || 0) * (item.quantity || 1)
-    }, 0)
-    return total > 0 ? total : importCalc.unitCost
+    const totalQty = kitItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
+    return importCalc.unitCost * totalQty
   }, [isKit, kitItems, importCalc.unitCost])
 
   // Etapa 2 - Cálculos de viabilidade de venda
@@ -511,7 +508,7 @@ const ImportCalculatorPage = () => {
                       Itens do Kit ({kitItems.length})
                     </p>
                     <button
-                      onClick={() => setKitItems([...kitItems, { name: "", unitCostBRL: 0, quantity: 1 }])}
+                      onClick={() => setKitItems([...kitItems, { name: "", quantity: 1 }])}
                       className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
@@ -537,25 +534,7 @@ const ImportCalculatorPage = () => {
                           className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                         />
                       </div>
-                      <div>
-                        <label className="text-[10px] text-gray-500 mb-0.5 block">Custo unit. (R$)</label>
-                        <div className="relative w-24">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">R$</span>
-                          <input
-                            type="number"
-                            value={item.unitCostBRL || ""}
-                            onChange={(e) => {
-                              const updated = [...kitItems]
-                              updated[i] = { ...updated[i], unitCostBRL: Number(e.target.value) || 0 }
-                              setKitItems(updated)
-                            }}
-                            placeholder={i === 0 ? importCalc.unitCost.toFixed(2) : "0.00"}
-                            step="0.01"
-                            className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-7 pr-2 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-                          />
-                        </div>
-                      </div>
-                      <div className="w-16">
+                      <div className="w-20">
                         <label className="text-[10px] text-gray-500 mb-0.5 block">Unid/Kit</label>
                         <input
                           type="number"
@@ -582,7 +561,9 @@ const ImportCalculatorPage = () => {
 
                   {/* Total do kit */}
                   <div className="flex justify-between items-center pt-3 border-t border-gray-600">
-                    <span className="text-xs text-gray-400">Custo total do kit</span>
+                    <span className="text-xs text-gray-400">
+                      Custo unit. (Etapa 1) × {kitItems.reduce((s, i) => s + (i.quantity || 1), 0)} unid
+                    </span>
                     <span className="text-sm font-bold text-cyan-400">
                       R$ {effectiveUnitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
