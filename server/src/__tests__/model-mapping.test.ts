@@ -12,7 +12,8 @@ const SUPPORTED_MODELS = [
   ...Object.keys(GEMINI_MODEL_MAP),
   "gpt-4.1",
   "claude-sonnet",
-  "deepseek",
+  "deepseek-flash",
+  "deepseek-pro",
 ]
 
 function resolveGeminiModel(modelId: string): string | null {
@@ -69,7 +70,8 @@ describe("Mapeamento de modelos", () => {
     it("não deve identificar modelos de outros providers como Gemini", () => {
       expect(isGeminiModel("gpt-4.1")).toBe(false)
       expect(isGeminiModel("claude-sonnet")).toBe(false)
-      expect(isGeminiModel("deepseek")).toBe(false)
+      expect(isGeminiModel("deepseek-flash")).toBe(false)
+      expect(isGeminiModel("deepseek-pro")).toBe(false)
     })
   })
 
@@ -82,7 +84,8 @@ describe("Mapeamento de modelos", () => {
         "gemini-pro-3.1",
         "gpt-4.1",
         "claude-sonnet",
-        "deepseek",
+        "deepseek-flash",
+        "deepseek-pro",
       ]
       for (const model of validModels) {
         expect(isSupportedModel(model), `${model} deveria ser suportado`).toBe(true)
@@ -104,8 +107,8 @@ describe("Mapeamento de modelos", () => {
       }
     })
 
-    it("deve ter exatamente 7 modelos suportados", () => {
-      expect(SUPPORTED_MODELS).toHaveLength(7)
+    it("deve ter exatamente 8 modelos suportados", () => {
+      expect(SUPPORTED_MODELS).toHaveLength(8)
     })
 
     it("deve ter exatamente 4 modelos Gemini mapeados", () => {

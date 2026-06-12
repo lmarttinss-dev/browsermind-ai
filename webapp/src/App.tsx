@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { NavigationBar } from "@/components/NavigationBar";
 import { BrowserViewport } from "@/components/BrowserViewport";
@@ -10,6 +10,7 @@ import { PipelinePage } from "@/pages/PipelinePage";
 import { ProductDetailPage } from "@/pages/ProductDetailPage";
 import { SupplierAnalysisPage } from "@/pages/SupplierAnalysisPage";
 import { SupplierDetailPage } from "@/pages/SupplierDetailPage";
+import ImportCalculatorPage from "@/pages/ImportCalculatorPage";
 
 function MainView() {
   return (
@@ -34,6 +35,8 @@ function MainView() {
 
 export default function App() {
   const { checkStatus, serverOnline } = useStore();
+  const location = useLocation();
+  const hideServerStatus = location.pathname === "/calculator";
 
   // Poll server status
   useEffect(() => {
@@ -53,10 +56,11 @@ export default function App() {
         <Route path="/pipeline/:id" element={<ProductDetailPage />} />
         <Route path="/pipeline/:id/supplier/:supplierIndex" element={<SupplierDetailPage />} />
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
+        <Route path="/calculator" element={<ImportCalculatorPage />} />
       </Routes>
 
       {/* Server status indicator */}
-      <div className="absolute bottom-2 left-2">
+      {!hideServerStatus && <div className="absolute bottom-2 left-2">
         <div className={`flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-full ${
           serverOnline
             ? "bg-emerald-900/50 text-emerald-400"
@@ -65,7 +69,7 @@ export default function App() {
           <span className={`w-1.5 h-1.5 rounded-full ${serverOnline ? "bg-emerald-400" : "bg-red-400"} animate-pulse`} />
           {serverOnline ? "Server Online" : "Server Offline"}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

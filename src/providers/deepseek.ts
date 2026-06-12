@@ -2,8 +2,14 @@ import axios from "axios";
 import { BaseProvider } from "./base";
 
 export class DeepSeekProvider extends BaseProvider {
-  name = "DeepSeek";
-  model = "deepseek-chat";
+  name: string;
+  model: string;
+
+  constructor(apiKey: string, model: "deepseek-v4-flash" | "deepseek-v4-pro" = "deepseek-v4-flash") {
+    super(apiKey);
+    this.model = model;
+    this.name = model === "deepseek-v4-pro" ? "DeepSeek V4 Pro" : "DeepSeek V4 Flash";
+  }
 
   async analyze(params: {
     prompt: string;

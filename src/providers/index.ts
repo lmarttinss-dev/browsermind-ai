@@ -18,8 +18,10 @@ export function createProvider(modelId: ModelId, apiKeys: Record<string, string>
       return new OpenAIProvider(apiKeys.openai || "");
     case "claude-sonnet":
       return new ClaudeProvider(apiKeys.anthropic || "");
-    case "deepseek":
-      return new DeepSeekProvider(apiKeys.deepseek || "");
+    case "deepseek-flash":
+      return new DeepSeekProvider(apiKeys.deepseek || "", "deepseek-v4-flash");
+    case "deepseek-pro":
+      return new DeepSeekProvider(apiKeys.deepseek || "", "deepseek-v4-pro");
     default:
       throw new Error(`Modelo não suportado: ${modelId}`);
   }

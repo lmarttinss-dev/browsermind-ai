@@ -12,6 +12,7 @@ import {
   Kanban,
   Monitor,
   Building2,
+  Calculator,
 } from "lucide-react";
 
 export function NavigationBar() {
@@ -22,6 +23,7 @@ export function NavigationBar() {
   const navigate = useNavigate();
   const isOnPipeline = location.pathname.startsWith("/pipeline");
   const isOnSupplierAnalysis = location.pathname === "/supplier-analysis";
+  const isOnCalculator = location.pathname === "/calculator";
 
   const displayUrl = editing ? urlInput : (browserUrl || "");
 
@@ -133,6 +135,18 @@ export function NavigationBar() {
       >
         {isOnSupplierAnalysis ? <Monitor className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
         {isOnSupplierAnalysis ? "Browser" : "Fornecedor"}
+      </button>
+      <button
+        onClick={() => navigate(isOnCalculator ? "/" : "/calculator")}
+        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
+          isOnCalculator
+            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
+            : "bg-orange-600/20 text-orange-400 hover:bg-orange-600/30"
+        }`}
+        title={isOnCalculator ? "Voltar ao Browser" : "Calculadora de Importação"}
+      >
+        {isOnCalculator ? <Monitor className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
+        {isOnCalculator ? "Browser" : "Calculadora"}
       </button>
     </div>
   );

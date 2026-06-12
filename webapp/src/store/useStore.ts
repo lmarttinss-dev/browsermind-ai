@@ -37,6 +37,7 @@ interface AppState {
   autoRefreshScreenshot: boolean;
   extensionPaths: string[];
   userDataDir: string;
+  initialConfigLoaded: boolean;
 
   // Data
   history: HistoryEntry[];
@@ -92,6 +93,7 @@ export const useStore = create<AppState>((set, get) => ({
   autoRefreshScreenshot: true,
   extensionPaths: ["/mnt/c/Users/Leandro Martins/AppData/Local/Google/Chrome/User Data/Default/Extensions/jdefnfmbnchmnjkcknaadaddgjbgephh/7.2.1_0"],
   userDataDir: "~/.browsermind-profile",
+  initialConfigLoaded: false,
 
   history: [],
   actionLogs: [],
@@ -119,13 +121,14 @@ export const useStore = create<AppState>((set, get) => ({
         browserActive: status.active,
         browserUrl: status.url,
         browserTitle: status.title,
+        error: null,
       });
       // Carrega modelo padrão do server (apenas na primeira conexão)
-      if (!get().browserActive) {
+      if (!get().initialConfigLoaded) {
         try {
           const config = await api.getConfig();
           if (config.defaultModel) {
-            set({ selectedModel: config.defaultModel as ModelId });
+            set({ selectedModel: config.defaultModel as ModelId, initialConfigLoaded: true });
           }
         } catch { /* ignora se endpoint não disponível */ }
       }

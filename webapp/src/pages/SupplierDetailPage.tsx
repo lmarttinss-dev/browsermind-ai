@@ -41,6 +41,31 @@ const formatTotal = (a: string, b: string): string | null => {
   return prefix ? `${prefix} ${total.toFixed(2)}` : total.toFixed(2)
 }
 
+const parseMoq = (value: string): number | null => {
+  if (!value) return null
+  const match = value.match(/[\d.,]+/)
+  if (!match) return null
+  const num = parseInt(match[0].replace(/[.,]/g, ""))
+  return isNaN(num) ? null : num
+}
+
+const calculateProductCost = (unitPrice: string, moq: string): string => {
+  const price = parseCurrency(unitPrice)
+  const qty = parseMoq(moq)
+  if (price === null || qty === null) return ""
+  const total = price * qty
+  return maskDollar(total.toFixed(2))
+}
+
+const maskDollar = (value: string): string => {
+  const digits = value.replace(/[^0-9]/g, "")
+  if (!digits) return ""
+  const cents = digits.padStart(3, "0")
+  const intPart = cents.slice(0, -2).replace(/^0+/, "") || "0"
+  const decPart = cents.slice(-2)
+  return `US$ ${intPart}.${decPart}`
+}
+
 export const SupplierDetailPage = () => {
   const { id, supplierIndex } = useParams<{ id: string; supplierIndex: string }>()
   const navigate = useNavigate()
@@ -339,8 +364,11 @@ export const SupplierDetailPage = () => {
                     <input
                       type="text"
                       value={quoteForm.unitPrice}
-                      onChange={(e) => setQuoteForm(f => ({ ...f, unitPrice: e.target.value }))}
-                      placeholder="US$ 2.50"
+                      onChange={(e) => {
+                        const unitPrice = maskDollar(e.target.value)
+                        setQuoteForm(f => ({ ...f, unitPrice, totalProductCost: calculateProductCost(unitPrice, f.moq) || f.totalProductCost }))
+                      }}
+                      placeholder="US$ 0.00"
                       className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -349,7 +377,10 @@ export const SupplierDetailPage = () => {
                     <input
                       type="text"
                       value={quoteForm.moq}
-                      onChange={(e) => setQuoteForm(f => ({ ...f, moq: e.target.value }))}
+                      onChange={(e) => {
+                        const moq = e.target.value
+                        setQuoteForm(f => ({ ...f, moq, totalProductCost: calculateProductCost(f.unitPrice, moq) || f.totalProductCost }))
+                      }}
                       placeholder="100 unidades"
                       className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                     />
@@ -359,8 +390,8 @@ export const SupplierDetailPage = () => {
                     <input
                       type="text"
                       value={quoteForm.totalProductCost}
-                      onChange={(e) => setQuoteForm(f => ({ ...f, totalProductCost: e.target.value }))}
-                      placeholder="US$ 250.00"
+                      onChange={(e) => setQuoteForm(f => ({ ...f, totalProductCost: maskDollar(e.target.value) }))}
+                      placeholder="US$ 0.00"
                       className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -369,8 +400,8 @@ export const SupplierDetailPage = () => {
                     <input
                       type="text"
                       value={quoteForm.totalShippingCost}
-                      onChange={(e) => setQuoteForm(f => ({ ...f, totalShippingCost: e.target.value }))}
-                      placeholder="US$ 150.00"
+                      onChange={(e) => setQuoteForm(f => ({ ...f, totalShippingCost: maskDollar(e.target.value) }))}
+                      placeholder="US$ 0.00"
                       className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>

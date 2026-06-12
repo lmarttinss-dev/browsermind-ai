@@ -199,7 +199,7 @@ export type ComparisonResponse = {
   cachedAt?: string;
 };
 
-export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek";
+export type ModelId = "gemini-flash-2.5" | "gemini-pro-2.5" | "gemini-flash-3" | "gemini-pro-3.1" | "gpt-4.1" | "claude-sonnet" | "deepseek-flash" | "deepseek-pro";
 
 export interface ModelOption {
   id: ModelId;
@@ -213,5 +213,6 @@ export const MODELS: ModelOption[] = [
   { id: "gemini-pro-3.1", name: "Gemini 3.1 Pro" },
   { id: "gpt-4.1", name: "GPT-4.1" },
   { id: "claude-sonnet", name: "Claude Sonnet" },
-  { id: "deepseek", name: "DeepSeek" },
+  { id: "deepseek-flash", name: "DeepSeek V4 Flash" },
+  { id: "deepseek-pro", name: "DeepSeek V4 Pro" },
 ];
