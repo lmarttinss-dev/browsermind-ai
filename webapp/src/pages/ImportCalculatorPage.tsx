@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2, Plus, Trash2, Boxes } from "lucide-react"
+import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2, Boxes } from "lucide-react"
 import { api, type PipelineProduct, type Supplier } from "@/lib/api"
 import {
   calcImport,
@@ -13,11 +13,6 @@ import {
 import { parseReportMetrics } from "@/lib/utils"
 
 type ProductMode = "single" | "multiple"
-
-type KitCalcItem = {
-  name: string
-  quantity: number
-}
 
 const ImportCalculatorPage = () => {
   const { search } = useLocation()
@@ -64,7 +59,7 @@ const ImportCalculatorPage = () => {
 
   // Kit simulation (Etapa 2)
   const [isKit, setIsKit] = useState(false)
-  const [kitItems, setKitItems] = useState<KitCalcItem[]>([{ name: "", quantity: 1 }])
+  const [kitQuantity, setKitQuantity] = useState(2)
 
   // Limpa strings como "US$ 1.32" → 1.32
   const parsePrice = (v: string | undefined): number => {
@@ -159,12 +154,11 @@ const ImportCalculatorPage = () => {
     [product, dollarRate],
   )
 
-  // Custo unitário efetivo na Etapa 2: se for kit, unitCost × soma das qtds
+  // Custo unitário efetivo na Etapa 2: se for kit, unitCost × qtd
   const effectiveUnitCost = useMemo(() => {
     if (!isKit) return importCalc.unitCost
-    const totalQty = kitItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
-    return importCalc.unitCost * totalQty
-  }, [isKit, kitItems, importCalc.unitCost])
+    return importCalc.unitCost * kitQuantity
+  }, [isKit, kitQuantity, importCalc.unitCost])
 
   // Etapa 2 - Cálculos de viabilidade de venda
   const salesCalc = useMemo(
@@ -500,72 +494,25 @@ const ImportCalculatorPage = () => {
                 </div>
               </div>
 
-              {/* Kit Items (Etapa 2) */}
+              {/* Kit Quantity (Etapa 2) */}
               {isKit && (
-                <div className="bg-gray-700/30 rounded-lg border border-gray-600 p-4 space-y-3 mb-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-400 font-medium">
-                      Itens do Kit ({kitItems.length})
-                    </p>
-                    <button
-                      onClick={() => setKitItems([...kitItems, { name: "", quantity: 1 }])}
-                      className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Adicionar item
-                    </button>
-                  </div>
-
-                  {kitItems.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <label className="text-[10px] text-gray-500 mb-0.5 block">
-                          Item {i + 1}
-                        </label>
-                        <input
-                          type="text"
-                          value={item.name}
-                          onChange={(e) => {
-                            const updated = [...kitItems]
-                            updated[i] = { ...updated[i], name: e.target.value }
-                            setKitItems(updated)
-                          }}
-                          placeholder="Nome do item"
-                          className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-                        />
-                      </div>
-                      <div className="w-20">
-                        <label className="text-[10px] text-gray-500 mb-0.5 block">Unid/Kit</label>
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const updated = [...kitItems]
-                            updated[i] = { ...updated[i], quantity: Math.max(1, Number(e.target.value) || 1) }
-                            setKitItems(updated)
-                          }}
-                          min={1}
-                          className="w-full border border-gray-600 bg-gray-700 rounded-lg px-2 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-                        />
-                      </div>
-                      {kitItems.length > 1 && (
-                        <button
-                          onClick={() => setKitItems(kitItems.filter((_, idx) => idx !== i))}
-                          className="text-gray-500 hover:text-red-400 transition-colors mt-4"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Total do kit */}
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-600">
-                    <span className="text-xs text-gray-400">
-                      Custo unit. (Etapa 1) × {kitItems.reduce((s, i) => s + (i.quantity || 1), 0)} unid
+                <div className="bg-gray-700/30 rounded-lg border border-gray-600 p-4 mb-6">
+                  <label className="text-xs text-gray-400 mb-2 block">
+                    Unidades por kit
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      value={kitQuantity}
+                      onChange={(e) => setKitQuantity(Math.max(1, Number(e.target.value) || 1))}
+                      min={1}
+                      className="w-24 border border-gray-600 bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    />
+                    <span className="text-xs text-gray-500">
+                      × R$ {importCalc.unitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (custo unit.)
                     </span>
-                    <span className="text-sm font-bold text-cyan-400">
-                      R$ {effectiveUnitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <span className="text-sm font-bold text-cyan-400 ml-auto">
+                      = R$ {effectiveUnitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
