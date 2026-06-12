@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight } from "lucide-react"
+import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Search } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { api, type PipelineProduct, type Supplier, type NegotiationStatus, type SupplierQuote, NEGOTIATION_STATUSES } from "@/lib/api"
+import { api, MODELS, type ModelId, type PipelineProduct, type Supplier, type NegotiationStatus, type SupplierQuote, NEGOTIATION_STATUSES } from "@/lib/api"
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando resposta", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
@@ -70,6 +70,7 @@ export const SupplierDetailPage = () => {
   const { id, supplierIndex } = useParams<{ id: string; supplierIndex: string }>()
   const navigate = useNavigate()
   const [product, setProduct] = useState<PipelineProduct | null>(null)
+  const [selectedModel, setSelectedModel] = useState<ModelId>(MODELS[0].id)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
@@ -218,15 +219,33 @@ export const SupplierDetailPage = () => {
           </div>
           <div className="flex items-center gap-2">
             {supplier.url && (
-              <a
-                href={supplier.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Alibaba
-              </a>
+              <>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value as ModelId)}
+                  className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+                >
+                  {MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => navigate(`/supplier-analysis?url=${encodeURIComponent(supplier.url)}&model=${selectedModel}`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  Analisar
+                </button>
+                <a
+                  href={supplier.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Alibaba
+                </a>
+              </>
             )}
             <button
               onClick={() => setConfirmRemove(true)}

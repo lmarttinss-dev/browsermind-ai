@@ -201,9 +201,36 @@ export class PlaywrightManager {
     return this.page!;
   }
 
-  async navigate(url: string): Promise<void> {
+  async navigate(url: string, options?: { retries?: number; timeout?: number }): Promise<void> {
     const page = await this.getPage();
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    const retries = options?.retries ?? 2;
+    const timeout = options?.timeout ?? 30000;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout });
+        return;
+      } catch (err) {
+        const msg = String(err);
+        // ERR_ABORTED: ocorre quando a navegação é cancelada (ex: redirect, anti-bot, popup)
+        // Bloqueio de domínio: alguns sites redirecionam para página em branco
+        if (msg.includes("ERR_ABORTED") || msg.includes("net::ERR_BLOCKED_BY_CLIENT")) {
+          if (attempt < retries) {
+            console.log(`🔄 Navegação abortada (tentativa ${attempt + 1}/${retries + 1}), re-tentando em 1s...`);
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+          // Na última tentativa, tenta com waitUntil: "load" como fallback
+          if (attempt === retries) {
+            console.log("⚠️ Última tentativa com waitUntil: load...");
+            await page.goto(url, { waitUntil: "load", timeout: timeout + 10000 });
+            return;
+          }
+        }
+        // Outros erros (timeout, DNS, etc) — relança
+        throw err;
+      }
+    }
   }
 
   async getCurrentUrl(): Promise<string> {

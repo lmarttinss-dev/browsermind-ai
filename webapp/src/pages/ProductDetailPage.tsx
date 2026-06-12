@@ -48,7 +48,7 @@ export const ProductDetailPage = () => {
     if (suppliersWithQuotes.length > 0) {
       setShowSupplierSelector(true)
     } else {
-      navigate(`/calculator?productId=${product._id}`)
+      navigate(`/calculator?productId=${product._id}&price=${price}`)
     }
   }
 
@@ -58,6 +58,7 @@ export const ProductDetailPage = () => {
   ) => {
     if (!product) return
     const params = new URLSearchParams({ productId: product._id })
+    params.set("price", String(price))
     params.set("supplier", String(supplierIndex))
     if (quoteIndex !== null) {
       params.set("quote", String(quoteIndex))
