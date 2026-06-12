@@ -535,7 +535,7 @@ const ImportCalculatorPage = () => {
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 mb-1 block">
-                    Custo do produto {isKit ? "(Kit)" : "(Etapa 1)"}
+                    Custo do {isKit ? `kit (Etapa 1 × ${kitQuantity})` : "produto (Etapa 1)"}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
