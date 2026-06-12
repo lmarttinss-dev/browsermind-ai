@@ -20,6 +20,11 @@ export type SupplierQuote = {
   quotedAt: Date
 }
 
+export type KitItem = {
+  name: string
+  quantity: number
+}
+
 export type Supplier = {
   name: string
   url: string
@@ -55,6 +60,8 @@ export type PipelineProduct = Document & {
   order: number
   suppliers: Supplier[]
   supplierReport: string
+  isKit: boolean
+  kitItems: KitItem[]
   createdAt: Date
   updatedAt: Date
 }
@@ -89,6 +96,11 @@ const supplierSchema = new Schema({
   lastContactAt: { type: Date },
 }, { _id: false })
 
+const kitItemSchema = new Schema({
+  name: { type: String, required: true },
+  quantity: { type: Number, default: 1 },
+}, { _id: false })
+
 const productSchema = new Schema<PipelineProduct>(
   {
     title: { type: String, required: true },
@@ -106,6 +118,8 @@ const productSchema = new Schema<PipelineProduct>(
     order: { type: Number, default: 0 },
     suppliers: { type: [supplierSchema], default: [] },
     supplierReport: { type: String, default: "" },
+    isKit: { type: Boolean, default: false },
+    kitItems: { type: [kitItemSchema], default: [] },
   },
   { timestamps: true }
 )

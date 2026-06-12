@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2 } from "lucide-react"
+import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2, Boxes } from "lucide-react"
 import { api, type PipelineProduct, type Supplier } from "@/lib/api"
 import {
   calcImport,
@@ -56,6 +56,10 @@ const ImportCalculatorPage = () => {
     adFee: 11,
     packagingCost: 0,
   })
+
+  // Kit simulation (Etapa 2)
+  const [isKit, setIsKit] = useState(false)
+  const [kitQuantity, setKitQuantity] = useState(2)
 
   // Limpa strings como "US$ 1.32" → 1.32
   const parsePrice = (v: string | undefined): number => {
@@ -144,16 +148,22 @@ const ImportCalculatorPage = () => {
       .finally(() => setLoadingRate(false))
   }, [])
 
-  // Etapa 1 - Cálculos de importação
+  // Etapa 1 - Cálculos de importação (sem interferência do kit)
   const importCalc = useMemo(
     () => calcImport(product, dollarRate, COURIER_RATE),
     [product, dollarRate],
   )
 
+  // Custo unitário efetivo na Etapa 2: se for kit, unitCost × qtd
+  const effectiveUnitCost = useMemo(() => {
+    if (!isKit) return importCalc.unitCost
+    return importCalc.unitCost * kitQuantity
+  }, [isKit, kitQuantity, importCalc.unitCost])
+
   // Etapa 2 - Cálculos de viabilidade de venda
   const salesCalc = useMemo(
-    () => calcSales(sales, importCalc.unitCost),
-    [sales, importCalc.unitCost],
+    () => calcSales(sales, effectiveUnitCost),
+    [sales, effectiveUnitCost],
   )
 
   // Etapa 3 - Montinho ao Montão
@@ -161,12 +171,12 @@ const ImportCalculatorPage = () => {
     () =>
       calcInvestment(
         importCalc.totalImport,
-        importCalc.unitCost,
+        effectiveUnitCost,
         sales.salePrice,
         product.quantity,
         salesCalc.totalExpenses,
       ),
-    [importCalc, salesCalc, sales.salePrice, product.quantity],
+    [importCalc, salesCalc, sales.salePrice, product.quantity, effectiveUnitCost],
   )
 
   const handleSaveCalculator = async () => {
@@ -458,35 +468,55 @@ const ImportCalculatorPage = () => {
               </p>
 
               {/* Toggle Kit */}
-              <div className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3 mb-6">
+              <div className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3 mb-3">
                 <div className="flex items-center gap-1">
-                  <Package className="w-4 h-4 text-gray-500" />
+                  <Boxes className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-300">É kit?</span>
                   <HelpCircle className="w-3.5 h-3.5 text-gray-500" />
                 </div>
                 <div className="flex bg-gray-800 rounded-lg border border-gray-600">
                   <button
-                    onClick={() => setSales({ ...sales, isKit: false })}
+                    onClick={() => setIsKit(false)}
                     className={`px-3 py-1.5 text-sm rounded-lg transition ${
-                      !sales.isKit
-                        ? "bg-orange-500 text-white"
-                        : "text-gray-400 hover:bg-gray-700"
+                      !isKit ? "bg-emerald-500 text-white" : "text-gray-400 hover:bg-gray-700"
                     }`}
                   >
                     Não
                   </button>
                   <button
-                    onClick={() => setSales({ ...sales, isKit: true })}
+                    onClick={() => setIsKit(true)}
                     className={`px-3 py-1.5 text-sm rounded-lg transition ${
-                      sales.isKit
-                        ? "bg-orange-500 text-white"
-                        : "text-gray-400 hover:bg-gray-700"
+                      isKit ? "bg-emerald-500 text-white" : "text-gray-400 hover:bg-gray-700"
                     }`}
                   >
                     Sim
                   </button>
                 </div>
               </div>
+
+              {/* Kit Quantity (Etapa 2) */}
+              {isKit && (
+                <div className="bg-gray-700/30 rounded-lg border border-gray-600 p-4 mb-6">
+                  <label className="text-xs text-gray-400 mb-2 block">
+                    Unidades por kit
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      value={kitQuantity}
+                      onChange={(e) => setKitQuantity(Math.max(1, Number(e.target.value) || 1))}
+                      min={1}
+                      className="w-24 border border-gray-600 bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    />
+                    <span className="text-xs text-gray-500">
+                      × R$ {importCalc.unitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (custo unit.)
+                    </span>
+                    <span className="text-sm font-bold text-cyan-400 ml-auto">
+                      = R$ {effectiveUnitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Inputs Etapa 2 */}
               <div className="grid grid-cols-2 gap-4">
@@ -504,12 +534,14 @@ const ImportCalculatorPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Custo do produto (Etapa 1)</label>
+                  <label className="text-xs text-gray-400 mb-1 block">
+                    Custo do {isKit ? `kit (Etapa 1 × ${kitQuantity})` : "produto (Etapa 1)"}
+                  </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
                     <input
                       type="number"
-                      value={Number(importCalc.unitCost.toFixed(2))}
+                      value={Number(effectiveUnitCost.toFixed(2))}
                       readOnly
                       className="w-full border border-gray-600 bg-gray-700/50 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-300 font-semibold"
                     />

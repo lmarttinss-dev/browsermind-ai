@@ -166,6 +166,11 @@ export type Supplier = {
   lastContactAt?: string;
 };
 
+export type KitItem = {
+  name: string
+  quantity: number
+}
+
 export type PipelineProduct = {
   _id: string;
   title: string;
@@ -183,6 +188,8 @@ export type PipelineProduct = {
   order: number;
   suppliers: Supplier[];
   supplierReport: string;
+  isKit: boolean
+  kitItems: KitItem[]
   createdAt: string;
   updatedAt: string;
 };
