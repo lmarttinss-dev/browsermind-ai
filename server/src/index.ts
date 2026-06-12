@@ -297,11 +297,12 @@ Diretrizes:
 
 app.post("/api/analyze", async (req, res) => {
   try {
-    const { prompt, model, pageContent, screenshot } = req.body as {
+    const { prompt, model, pageContent, screenshot, templateId } = req.body as {
       prompt: string;
       model: string;
       pageContent?: string;
       screenshot?: string;
+      templateId?: string;
     };
 
     if (!prompt) {
@@ -489,11 +490,10 @@ app.post("/api/analyze", async (req, res) => {
       }
     } catch { /* ignore */ }
 
-    // Auto-inserir produto na esteira se a análise contém dados de viabilidade
+    // Auto-inserir produto na esteira apenas para o template "importação simplificada"
     let pipelineProductId = null;
     try {
-      const hasViabilityData = /score\s*final|demanda|concorr[eê]ncia|margem|vendas\s*(mensais|por\s*dia)/i.test(aiResponse)
-      if (hasViabilityData && content) {
+      if (templateId === "importacao-simplificada" && content) {
         const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
         const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
         const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useStore } from "@/store/useStore";
 import { MODELS } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
@@ -17,10 +18,12 @@ export function ChatPanel() {
     browserTitle,
   } = useStore();
 
+  const [activeTemplate, setActiveTemplate] = useState("")
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      analyzePage();
+      analyzePage(activeTemplate || undefined);
     }
   };
 
@@ -29,6 +32,7 @@ export function ChatPanel() {
     const template = PROMPT_TEMPLATES.find((t) => t.id === templateId);
     if (template) {
       setPrompt(template.content);
+      setActiveTemplate(templateId)
     }
   };
 
@@ -90,7 +94,7 @@ export function ChatPanel() {
 
         <div className="flex gap-2">
           <button
-            onClick={analyzePage}
+            onClick={() => analyzePage(activeTemplate || undefined)}
             disabled={isLoading || !prompt.trim()}
             className="flex-1 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
           >
