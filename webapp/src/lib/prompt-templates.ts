@@ -404,6 +404,8 @@ Determinar:
 
 # Dados Coletados
 
+> ⚠️ **Fonte da Verdade**: Os dados abaixo são fornecidos pela extensão **AvantPro** diretamente do Mercado Livre. Baseie TODAS as suas análises, cálculos e conclusões exclusivamente nesses dados. Não invente, estime ou assuma métricas que não estejam presentes abaixo.
+
 ## Categoria
 
 **[INSERIR NOME DA CATEGORIA]**
@@ -797,6 +799,8 @@ Produza uma conclusão final de até 10 linhas contendo:
 ---
 
 # Regras de Análise
+
+**Fonte da Verdade — AvantPro**: Todos os dados da seção "Métricas da Categoria (AvantPro)" são extraídos diretamente do Mercado Livre e constituem a única fonte de verdade para esta análise. Suas conclusões DEVEM ser fundamentadas nesses números.
 
 Considere que:
 
