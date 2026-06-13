@@ -2,6 +2,7 @@ import { useState } from "react"
 import { X, Loader2, ArrowRight, Trophy, Check, RefreshCw, Clock } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { usePipelineStore } from "@/store/usePipelineStore"
 import { MODELS } from "@/lib/api"
 import type { PipelineProduct, PipelineStage } from "@/lib/api"
@@ -245,7 +246,22 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-200 mb-3">Análise Detalhada</h3>
                   <div className="prose prose-invert prose-sm max-w-none bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code({ className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || "")
+                          if (match && match[1] === "mermaid") {
+                            return <MermaidRenderer chart={String(children)} />
+                          }
+                          return (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          )
+                        },
+                      }}
+                    >
                       {comparison.report}
                     </ReactMarkdown>
                   </div>

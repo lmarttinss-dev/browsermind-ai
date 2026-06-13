@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Search } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, MODELS, type ModelId, type PipelineProduct, type Supplier, type NegotiationStatus, type SupplierQuote, NEGOTIATION_STATUSES } from "@/lib/api"
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
@@ -593,6 +594,17 @@ export const SupplierDetailPage = () => {
                     a: ({ href, children }) => (
                       <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
                     ),
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || "")
+                      if (match && match[1] === "mermaid") {
+                        return <MermaidRenderer chart={String(children)} />
+                      }
+                      return (
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      )
+                    },
                   }}
                 >
                   {supplier.report}

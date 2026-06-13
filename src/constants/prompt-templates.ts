@@ -260,19 +260,35 @@ Determinar:
 
 # Dados Coletados
 
+> ⚠️ **Fonte da Verdade**: Os dados abaixo são fornecidos pela extensão **AvantPro** diretamente do Mercado Livre. Baseie TODAS as suas análises, cálculos e conclusões exclusivamente nesses dados. Não invente, estime ou assuma métricas que não estejam presentes abaixo.
+
 ## Categoria
 
 **[INSERIR NOME DA CATEGORIA]**
 
 ---
 
-## Indicadores Gerais
+## Métricas da Categoria (AvantPro)
 
 | Métrica | Valor |
 |----------|---------|
-| Total de vendas da página | 14.237 |
-| Taxa Clássico | 13% |
-| Taxa Premium | 18% |
+| Total de Vendas da Página (últimos meses) | (ex: 9.377) |
+| Taxa Clássico | (ex: 12,0%) |
+| Taxa Premium | (ex: 17,0%) |
+| Medalhas (Ouro/Platina/Diamante/Black) | (ex: 6/9/16/20) |
+| Full | (ex: 28) |
+| Frete Grátis | (ex: 17) |
+| Menor Preço | R$ (ex: 19,00) |
+| Maior Preço | R$ (ex: 158,00) |
+| Menor Faturamento | R$ (ex: 19,00) |
+| Maior Faturamento | R$ (ex: 49.970,00) |
+| Vendedores | (ex: 26) |
+| Catálogos | (ex: 14) |
+| Anúncios Patrocinados | (ex: 12) |
+| Fora de Catálogo | (ex: 38) |
+| ProdutoPro | (ex: 2) |
+| Oficiais | (ex: 7) |
+| Internacional | (ex: 3) |
 
 ---
 
@@ -332,6 +348,37 @@ Avalie:
 - Potencial de faturamento da categoria.
 - Potencial de recorrência.
 
+### Métricas de Oportunidade da Categoria
+
+Com base nos dados de categoria do Mercado Livre, determine:
+
+- **Índice de Oportunidade:** (Baixo | Médio | Alto — ideal: Baixo ou Médio)
+- **Receita média por vendedor:** R$ (ideal: R$ 10.000 – R$ 50.000)
+- **Vendedores com medalhas na categoria:** (% do total de sellers — ideal: 0%–20%, indica categoria ainda em desenvolvimento e sem domínio de operadores profissionais)
+
+### Dinâmica e Sazonalidade
+
+Analise a tendência de longo prazo (até 24 meses) para distinguir se a categoria está em declínio real ou apenas passando por uma baixa sazonal:
+
+- **Tendência de vendas:** (Crescente | Estável | Declinante)
+- **Sazonalidade identificada:** (Sim/Não)
+- **Mês mais forte historicamente:**
+- **Mês mais fraco historicamente:**
+- **Impacto de feriados:** (Natal, Black Friday, Dia das Mães — quais afetam e com que intensidade?)
+- **Risco de "estoque parado" nos meses fracos:** (Baixo | Médio | Alto)
+
+### Gráfico de Sazonalidade (Mermaid)
+
+Gere um gráfico de barras com as vendas mensais estimadas (últimos 12 meses). Use blocos de código com linguagem \`mermaid\`:
+
+\`\`\`mermaid
+xychart-beta
+    title "Vendas Mensais Estimadas (12 meses)"
+    x-axis [Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez]
+    y-axis "Unidades" 0 --> 5000
+    bar [1200, 980, 1100, 850, 1400, 2100, 720, 600, 800, 1300, 3200, 2800]
+\`\`\`
+
 ### Classificação
 
 Escolha uma:
@@ -344,7 +391,7 @@ Escolha uma:
 
 ### Justificativa
 
-Explique detalhadamente os motivos da classificação.
+Explique detalhadamente os motivos da classificação. Analise se a demanda é crescente ou apenas concentrada em poucos meses. Lembre-se: sazonalidade não é risco, é informação para planejar estoque e janelas de lançamento.
 
 ---
 
@@ -358,6 +405,19 @@ Avalie:
 - Dependência da categoria em poucos vendedores.
 - Facilidade para novos vendedores entrarem.
 
+### Sinais de Categoria Saudável
+
+Três condições que, quando verdadeiras simultaneamente, indicam oportunidade real:
+
+- **Receita total da categoria:** R$ (≥ R$ 5 milhões é sinal positivo de mercado aquecido)
+- **Monopolização pelos top sellers:** (% do mercado — < 20% é saudável, > 50% é perigoso)
+- **Concentração de marcas:** (nenhuma marca domina a prateleira | 1-2 marcas fortes | muitas marcas estabelecidas — ideal: nenhuma marca isolada domina)
+
+### Vendedores de Destaque
+
+- **Vendedores de crescimento acelerado:** identifique sellers que estão crescendo rápido a partir de uma base pequena — eles geralmente percebem tendências antes dos líderes de mercado e merecem ser estudados com cuidado.
+- **Vendedores para monitoramento contínuo:** quais sellers performam acima da média e merecem ser adicionados a um monitoramento permanente (Seller Tracker)?
+
 ### Classificação
 
 Escolha uma:
@@ -370,7 +430,7 @@ Escolha uma:
 
 ### Justificativa
 
-Explique os fatores que influenciam a concorrência.
+Explique os fatores que influenciam a concorrência. Considere se a categoria está aberta a novos entrantes ou já é dominada por players estabelecidos com marcas fortes.
 
 ---
 
@@ -401,6 +461,19 @@ Explique:
 - Quais riscos existem.
 - Quais vantagens existem.
 - Se há dependência excessiva de poucos vendedores.
+
+### Gráfico de Concentração (Mermaid)
+
+Gere um gráfico de pizza com a distribuição de market share entre os principais vendedores:
+
+\`\`\`mermaid
+pie showData
+    title "Market Share por Vendedor"
+    "Líder" : 45
+    "2º Colocado" : 18
+    "3º Colocado" : 10
+    "Demais vendedores" : 27
+\`\`\`
 
 ---
 
@@ -583,6 +656,8 @@ Produza uma conclusão final de até 10 linhas contendo:
 
 # Regras de Análise
 
+**Fonte da Verdade — AvantPro**: Todos os dados da seção "Métricas da Categoria (AvantPro)" são extraídos diretamente do Mercado Livre e constituem a única fonte de verdade para esta análise. Suas conclusões DEVEM ser fundamentadas nesses números.
+
 Considere que:
 
 - Participação acima de 50% indica forte concentração.
@@ -593,6 +668,23 @@ Considere que:
 - Priorize oportunidades com alta demanda e baixa barreira de entrada.
 - Considere tanto curto quanto longo prazo.
 
-Forneça respostas objetivas, quantitativas e estratégicas.`,
+### Critérios para Nicho Promissor
+
+- **Índice de Oportunidade Baixo ou Médio** + **Receita por vendedor R$ 10k–50k** + **0–20% de vendedores com medalhas** = nicho promissor e pouco atendido — você pode ganhar dinheiro sem competir contra muitos vendedores experientes.
+- **Receita total da categoria ≥ R$ 5 milhões** + **Top sellers < 20% do mercado** + **Nenhuma marca dominante** = oportunidade real de entrada com espaço para construir volume.
+- **Sazonalidade não é risco** — é informação estratégica para planejar estoque, escolher janelas de lançamento e encontrar oportunidades nos meses em que concorrentes desistem.
+- **Vendedores de crescimento acelerado** merecem atenção redobrada — monitore-os permanentemente para se antecipar a movimentos, não apenas reagir.
+- Categoria com **tendência de alta ou estável** é positiva; **tendência de queda consistente** é sinal de alerta que exige investigação mais profunda.
+
+Forneça respostas objetivas, quantitativas e estratégicas.
+
+### Uso de Gráficos Mermaid
+
+Sempre que relevante, inclua gráficos em Mermaid para visualização dos dados. Use blocos de código com \`\`\`mermaid. Tipos de gráficos disponíveis:
+
+- **xychart-beta**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
+- **pie**: gráfico de pizza para distribuição (market share, concentração)
+
+Coloque os gráficos próximos aos dados que eles representam, não todos no final.`,
   },
 ]
