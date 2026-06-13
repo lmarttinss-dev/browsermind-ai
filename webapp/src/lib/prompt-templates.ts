@@ -495,6 +495,18 @@ Analise a tendência de longo prazo (até 24 meses) para distinguir se a categor
 - **Impacto de feriados:** (Natal, Black Friday, Dia das Mães — quais afetam e com que intensidade?)
 - **Risco de "estoque parado" nos meses fracos:** (Baixo | Médio | Alto)
 
+### Gráfico de Sazonalidade (Mermaid)
+
+Gere um gráfico de barras com as vendas mensais estimadas (últimos 12 meses). Use blocos de código com linguagem \`mermaid\`:
+
+\`\`\`mermaid
+xychart-beta
+    title "Vendas Mensais Estimadas (12 meses)"
+    x-axis [Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez]
+    y-axis "Unidades" 0 --> 5000
+    bar [1200, 980, 1100, 850, 1400, 2100, 720, 600, 800, 1300, 3200, 2800]
+\`\`\`
+
 ### Classificação
 
 Escolha uma:
@@ -577,6 +589,19 @@ Explique:
 - Quais riscos existem.
 - Quais vantagens existem.
 - Se há dependência excessiva de poucos vendedores.
+
+### Gráfico de Concentração (Mermaid)
+
+Gere um gráfico de pizza com a distribuição de market share entre os principais vendedores:
+
+\`\`\`mermaid
+pie showData
+    title "Market Share por Vendedor"
+    "Líder" : 45
+    "2º Colocado" : 18
+    "3º Colocado" : 10
+    "Demais vendedores" : 27
+\`\`\`
 
 ---
 
@@ -777,6 +802,15 @@ Considere que:
 - **Vendedores de crescimento acelerado** merecem atenção redobrada — monitore-os permanentemente para se antecipar a movimentos, não apenas reagir.
 - Categoria com **tendência de alta ou estável** é positiva; **tendência de queda consistente** é sinal de alerta que exige investigação mais profunda.
 
-Forneça respostas objetivas, quantitativas e estratégicas.`,
+Forneça respostas objetivas, quantitativas e estratégicas.
+
+### Uso de Gráficos Mermaid
+
+Sempre que relevante, inclua gráficos em Mermaid para visualização dos dados. Use blocos de código com \`\`\`mermaid. Tipos de gráficos disponíveis:
+
+- **xychart-beta**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
+- **pie**: gráfico de pizza para distribuição (market share, concentração)
+
+Coloque os gráficos próximos aos dados que eles representam, não todos no final.`,
   },
 ]

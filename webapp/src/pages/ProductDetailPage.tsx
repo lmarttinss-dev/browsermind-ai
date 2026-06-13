@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Boxes } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
 import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
@@ -298,7 +299,22 @@ export const ProductDetailPage = () => {
                     Relatório de Análise
                   </h3>
                   <div className="prose prose-invert max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code({ className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || "")
+                          if (match && match[1] === "mermaid") {
+                            return <MermaidRenderer chart={String(children)} />
+                          }
+                          return (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          )
+                        },
+                      }}
+                    >
                       {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
                     </ReactMarkdown>
                   </div>
