@@ -476,6 +476,25 @@ Avalie:
 - Potencial de faturamento da categoria.
 - Potencial de recorrência.
 
+### Métricas de Oportunidade da Categoria
+
+Com base nos dados de categoria do Mercado Livre, determine:
+
+- **Índice de Oportunidade:** (Baixo | Médio | Alto — ideal: Baixo ou Médio)
+- **Receita média por vendedor:** R$ (ideal: R$ 10.000 – R$ 50.000)
+- **Vendedores com medalhas na categoria:** (% do total de sellers — ideal: 0%–20%, indica categoria ainda em desenvolvimento e sem domínio de operadores profissionais)
+
+### Dinâmica e Sazonalidade
+
+Analise a tendência de longo prazo (até 24 meses) para distinguir se a categoria está em declínio real ou apenas passando por uma baixa sazonal:
+
+- **Tendência de vendas:** (Crescente | Estável | Declinante)
+- **Sazonalidade identificada:** (Sim/Não)
+- **Mês mais forte historicamente:**
+- **Mês mais fraco historicamente:**
+- **Impacto de feriados:** (Natal, Black Friday, Dia das Mães — quais afetam e com que intensidade?)
+- **Risco de "estoque parado" nos meses fracos:** (Baixo | Médio | Alto)
+
 ### Classificação
 
 Escolha uma:
@@ -488,7 +507,7 @@ Escolha uma:
 
 ### Justificativa
 
-Explique detalhadamente os motivos da classificação.
+Explique detalhadamente os motivos da classificação. Analise se a demanda é crescente ou apenas concentrada em poucos meses. Lembre-se: sazonalidade não é risco, é informação para planejar estoque e janelas de lançamento.
 
 ---
 
@@ -502,6 +521,19 @@ Avalie:
 - Dependência da categoria em poucos vendedores.
 - Facilidade para novos vendedores entrarem.
 
+### Sinais de Categoria Saudável
+
+Três condições que, quando verdadeiras simultaneamente, indicam oportunidade real:
+
+- **Receita total da categoria:** R$ (≥ R$ 5 milhões é sinal positivo de mercado aquecido)
+- **Monopolização pelos top sellers:** (% do mercado — < 20% é saudável, > 50% é perigoso)
+- **Concentração de marcas:** (nenhuma marca domina a prateleira | 1-2 marcas fortes | muitas marcas estabelecidas — ideal: nenhuma marca isolada domina)
+
+### Vendedores de Destaque
+
+- **Vendedores de crescimento acelerado:** identifique sellers que estão crescendo rápido a partir de uma base pequena — eles geralmente percebem tendências antes dos líderes de mercado e merecem ser estudados com cuidado.
+- **Vendedores para monitoramento contínuo:** quais sellers performam acima da média e merecem ser adicionados a um monitoramento permanente (Seller Tracker)?
+
 ### Classificação
 
 Escolha uma:
@@ -514,7 +546,7 @@ Escolha uma:
 
 ### Justificativa
 
-Explique os fatores que influenciam a concorrência.
+Explique os fatores que influenciam a concorrência. Considere se a categoria está aberta a novos entrantes ou já é dominada por players estabelecidos com marcas fortes.
 
 ---
 
@@ -736,6 +768,14 @@ Considere que:
 - Demanda validada é obrigatória.
 - Priorize oportunidades com alta demanda e baixa barreira de entrada.
 - Considere tanto curto quanto longo prazo.
+
+### Critérios para Nicho Promissor
+
+- **Índice de Oportunidade Baixo ou Médio** + **Receita por vendedor R$ 10k–50k** + **0–20% de vendedores com medalhas** = nicho promissor e pouco atendido — você pode ganhar dinheiro sem competir contra muitos vendedores experientes.
+- **Receita total da categoria ≥ R$ 5 milhões** + **Top sellers < 20% do mercado** + **Nenhuma marca dominante** = oportunidade real de entrada com espaço para construir volume.
+- **Sazonalidade não é risco** — é informação estratégica para planejar estoque, escolher janelas de lançamento e encontrar oportunidades nos meses em que concorrentes desistem.
+- **Vendedores de crescimento acelerado** merecem atenção redobrada — monitore-os permanentemente para se antecipar a movimentos, não apenas reagir.
+- Categoria com **tendência de alta ou estável** é positiva; **tendência de queda consistente** é sinal de alerta que exige investigação mais profunda.
 
 Forneça respostas objetivas, quantitativas e estratégicas.`,
   },
