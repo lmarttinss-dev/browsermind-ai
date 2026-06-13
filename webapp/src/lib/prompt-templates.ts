@@ -410,13 +410,27 @@ Determinar:
 
 ---
 
-## Indicadores Gerais
+## Métricas da Categoria (AvantPro)
 
 | Métrica | Valor |
 |----------|---------|
-| Total de vendas da página | 14.237 |
-| Taxa Clássico | 13% |
-| Taxa Premium | 18% |
+| Total de Vendas da Página (últimos meses) | (ex: 9.377) |
+| Taxa Clássico | (ex: 12,0%) |
+| Taxa Premium | (ex: 17,0%) |
+| Medalhas (Ouro/Platina/Diamante/Black) | (ex: 6/9/16/20) |
+| Full | (ex: 28) |
+| Frete Grátis | (ex: 17) |
+| Menor Preço | R$ (ex: 19,00) |
+| Maior Preço | R$ (ex: 158,00) |
+| Menor Faturamento | R$ (ex: 19,00) |
+| Maior Faturamento | R$ (ex: 49.970,00) |
+| Vendedores | (ex: 26) |
+| Catálogos | (ex: 14) |
+| Anúncios Patrocinados | (ex: 12) |
+| Fora de Catálogo | (ex: 38) |
+| ProdutoPro | (ex: 2) |
+| Oficiais | (ex: 7) |
+| Internacional | (ex: 3) |
 
 ---
 
