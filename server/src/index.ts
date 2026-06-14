@@ -507,7 +507,7 @@ app.post("/api/analyze", async (req, res) => {
         const pageTitleMatch = content.match(/^Title:\s*(.+)/m)
 
         const productTitle = titleMatch?.[1]?.trim() || pageTitleMatch?.[1]?.trim() || "Produto analisado"
-        const productUrl = urlMatch?.[1]?.trim().replace(/[`*"'<>]+$/, "").trim() || ""
+        const productUrl = urlMatch?.[1]?.trim().replace(/`/g, "").trim() || ""
 
         if (productUrl) {
           const lastProduct = await Product.findOne({ stage: "triagem" }).sort({ order: -1 })
@@ -571,7 +571,11 @@ const handleCaptureSuppliers: import("express").RequestHandler = async (req, res
 
     // Parsear fornecedores do relatório markdown
     const parsed = parseSuppliersFromReport(report)
-    const suppliers = parsed.map(s => ({ ...s, capturedAt: new Date() }))
+    const suppliers = parsed.map(s => ({
+      ...s,
+      url: s.url.replace(/`/g, "").trim(),
+      capturedAt: new Date(),
+    }))
 
     // Append ao array existente (não sobrescreve)
     product.suppliers.push(...suppliers)
@@ -1106,7 +1110,8 @@ Para cada produto listado (até 10 principais):
 
 app.post("/api/supplier/analyze", async (req, res) => {
   try {
-    const { url, model } = req.body as { url: string; model: string }
+    const { url: rawUrl, model } = req.body as { url: string; model: string }
+    const url = (rawUrl || "").replace(/`/g, "").trim()
 
     if (!url || typeof url !== "string") {
       res.status(400).json({ success: false, error: "URL do fornecedor é obrigatória" })
@@ -1248,7 +1253,8 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       return
     }
 
-    const { report, supplierUrl } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl } = req.body || {}
+    const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (!report || typeof report !== "string") {
       res.status(400).json({ error: "Campo 'report' é obrigatório" })

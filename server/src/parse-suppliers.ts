@@ -28,8 +28,8 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
 
     if (nameMatch) {
       let rawUrl = (urlMatch?.[1] || "").trim()
-      // Limpar artefatos de markdown: backticks, asteriscos, aspas, etc.
-      rawUrl = rawUrl.replace(/[`*"'<>]+$/, "").trim()
+      // Limpar artefatos de markdown: remove todos os backticks, asteriscos, aspas
+      rawUrl = rawUrl.replace(/`/g, "").replace(/[*"'<>]/g, "").trim()
       // Normalizar URL: adicionar protocolo se necessário e remover query params
       if (rawUrl.startsWith("//")) rawUrl = `https:${rawUrl}`
       rawUrl = rawUrl.split("?")[0]
