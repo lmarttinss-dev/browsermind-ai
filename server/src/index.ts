@@ -507,7 +507,7 @@ app.post("/api/analyze", async (req, res) => {
         const pageTitleMatch = content.match(/^Title:\s*(.+)/m)
 
         const productTitle = titleMatch?.[1]?.trim() || pageTitleMatch?.[1]?.trim() || "Produto analisado"
-        const productUrl = urlMatch?.[1]?.trim() || ""
+        const productUrl = urlMatch?.[1]?.trim().replace(/[`*"'<>]+$/, "").trim() || ""
 
         if (productUrl) {
           const lastProduct = await Product.findOne({ stage: "triagem" }).sort({ order: -1 })
