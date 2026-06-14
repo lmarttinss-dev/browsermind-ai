@@ -12,11 +12,11 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
     // 2. Qualquer markdown link [text](url) contendo alibaba.com
     // 3. Qualquer URL alibaba.com/product-detail/ na seção
     // 4. Qualquer URL começando com // seguido de alibaba.com
-    const urlMatch = section.match(/\*\*Link[^:]*:\*\*\s*(?:\[.*?\]\()?\s*((?:https?:)?\/\/[^\s)>]+)/i)
-      || section.match(/\*\*Link[^:]*:\*\*.*?((?:https?:)?\/\/[^\s)>]+alibaba\.com[^\s)>]*)/i)
+    const urlMatch = section.match(/\*\*Link[^:]*:\*\*\s*(?:\[.*?\]\()?\s*((?:https?:)?\/\/[^\s)>`]+)/i)
+      || section.match(/\*\*Link[^:]*:\*\*.*?((?:https?:)?\/\/[^\s)>`]+alibaba\.com[^\s)>`]*)/i)
       || section.match(/\[.*?\]\(((?:https?:)?\/\/[^\s)]+alibaba\.com[^\s)]*)\)/i)
-      || section.match(/(https?:\/\/(?:www\.)?alibaba\.com\/product-detail\/[^\s)>]+)/i)
-      || section.match(/(\/\/(?:www\.)?alibaba\.com\/product-detail\/[^\s)>]+)/i)
+      || section.match(/(https?:\/\/(?:www\.)?alibaba\.com\/product-detail\/[^\s)>`]+)/i)
+      || section.match(/(\/\/(?:www\.)?alibaba\.com\/product-detail\/[^\s)>`]+)/i)
     const priceMatch = section.match(/\*\*Preço indicado:\*\*\s*(.+)/i)
     const moqMatch = section.match(/\*\*MOQ[^:]*:\*\*\s*(.+)/i)
     const ratingMatch = section.match(/\*\*Rating:\*\*\s*([\d.,]+)/i)
@@ -28,6 +28,8 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
 
     if (nameMatch) {
       let rawUrl = (urlMatch?.[1] || "").trim()
+      // Limpar artefatos de markdown: remove todos os backticks, asteriscos, aspas
+      rawUrl = rawUrl.replace(/`/g, "").replace(/[*"'<>]/g, "").trim()
       // Normalizar URL: adicionar protocolo se necessário e remover query params
       if (rawUrl.startsWith("//")) rawUrl = `https:${rawUrl}`
       rawUrl = rawUrl.split("?")[0]

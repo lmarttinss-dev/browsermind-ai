@@ -214,7 +214,7 @@ export const SupplierAnalysisPage = () => {
                       setIsLinking(true)
                       setLinkSuccess(null)
                       try {
-                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl)
+                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl.replace(/`/g, ""))
                         const product = products.find(p => p._id === selectedProductId)
                         setLinkSuccess(`Vinculado a "${product?.title}"`);
                       } catch (err) {
