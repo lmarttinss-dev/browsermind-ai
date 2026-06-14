@@ -154,7 +154,7 @@ IMPORTANTE sobre links dos produtos:
 - Exemplo: href="//www.alibaba.com/product-detail/Nome-Produto_123456.html?spm=xxx&priceId=yyy"
   → URL final: https://www.alibaba.com/product-detail/Nome-Produto_123456.html
 - Use SEMPRE a URL limpa (sem parâmetros) no relatório
-- NÃO coloque a URL entre crases (backticks). Escreva a URL diretamente, ex: `**Link do produto:** https://...` e NÃO `**Link do produto:** \`https://...\``
+- NÃO coloque a URL entre crases (backticks). Escreva a URL diretamente, ex: **Link do produto:** https://... (nunca dentro de \`\`)
 
 # Template do Relatório
 
