@@ -60,6 +60,12 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
 
       const saveRes = await api.captureSuppliers(productId, analyzeRes.response)
       onUpdate(saveRes.suppliers, saveRes.supplierReport)
+
+      if (saveRes.skippedCount && saveRes.skippedCount > 0) {
+        setError(`Aviso: ${saveRes.skippedCount} fornecedor(es) ignorado(s) por já existirem no produto. ${saveRes.addedCount} novo(s) adicionado(s).`)
+      } else {
+        setError(null)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {

@@ -60,7 +60,7 @@ export const api = {
 
   // Suppliers
   captureSuppliers: (productId: string, report: string) =>
-    request<{ success: boolean; suppliers: Supplier[]; supplierReport: string }>(`/api/pipeline/${productId}/suppliers`, {
+    request<{ success: boolean; suppliers: Supplier[]; supplierReport: string; addedCount?: number; skippedCount?: number }>(`/api/pipeline/${productId}/suppliers`, {
       method: "POST",
       body: JSON.stringify({ report }),
     }),

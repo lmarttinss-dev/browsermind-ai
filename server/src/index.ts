@@ -571,19 +571,32 @@ const handleCaptureSuppliers: import("express").RequestHandler = async (req, res
 
     // Parsear fornecedores do relatório markdown
     const parsed = parseSuppliersFromReport(report)
-    const suppliers = parsed.map(s => ({
+    const newSuppliers = parsed.map(s => ({
       ...s,
       url: s.url.replace(/`/g, "").trim(),
       capturedAt: new Date(),
     }))
 
+    // Dedup: remover fornecedores cujo nome já existe no produto
+    const existingNames = new Set(product.suppliers.map(s => s.name))
+    const uniqueSuppliers = newSuppliers.filter(s => s.name && !existingNames.has(s.name))
+    const skippedCount = newSuppliers.length - uniqueSuppliers.length
+
     // Append ao array existente (não sobrescreve)
-    product.suppliers.push(...suppliers)
+    if (uniqueSuppliers.length > 0) {
+      product.suppliers.push(...uniqueSuppliers)
+    }
     // Salvar relatório de fornecedores
     product.set("supplierReport", report)
     await product.save()
 
-    res.json({ success: true, suppliers: product.suppliers, supplierReport: report })
+    res.json({
+      success: true,
+      suppliers: product.suppliers,
+      supplierReport: report,
+      addedCount: uniqueSuppliers.length,
+      skippedCount,
+    })
   } catch (error) {
     const msg = axios.isAxiosError(error)
       ? error.response?.data?.error?.message || error.message
