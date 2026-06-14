@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { ArrowLeft, Search, Loader2, ExternalLink, Clock, Link2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, MODELS, type PipelineProduct, type ModelId } from "@/lib/api"
 
 type AnalysisResult = {
@@ -243,7 +244,22 @@ export const SupplierAnalysisPage = () => {
 
             {/* Report Markdown */}
             <div className="prose prose-invert prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({ className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "")
+                    if (match && match[1] === "mermaid") {
+                      return <MermaidRenderer chart={String(children)} />
+                    }
+                    return (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    )
+                  },
+                }}
+              >
                 {result.report}
               </ReactMarkdown>
             </div>
