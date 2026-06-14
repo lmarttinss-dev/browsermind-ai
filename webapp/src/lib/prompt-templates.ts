@@ -123,19 +123,23 @@ Forneça uma conclusão objetiva informando:
 - Recomendação final`,
   },
   {
-    id: "top3-fornecedores-alibaba",
-    name: "Top 3 Fornecedores (Alibaba)",
-    description: "Seleciona os 3 melhores fornecedores com base em avaliação, certificações e MOQ",
-    content: `Analise os fornecedores/produtos listados nesta página do Alibaba e selecione os TOP 3 melhores fornecedores para importação. Gere um relatório em Markdown.
+    id: "top5-fornecedores-alibaba",
+    name: "Top 5 Fornecedores (Alibaba)",
+    description: "Seleciona os 5 melhores fornecedores com base em avaliação, certificações e MOQ",
+    content: `Analise os fornecedores/produtos listados nesta página do Alibaba e selecione os TOP 5 melhores fornecedores para importação. Gere um relatório em Markdown.
+
+⚠️  É OBRIGATÓRIO listar exatamente 5 fornecedores no relatório. Se houver mais de 5 qualificados, escolha os 5 melhores. Se houver menos de 5 que atendam a TODOS os critérios, relaxe os critérios secundários (anos de operação, taxa de resposta) para completar os 5 — mas NUNCA inclua fornecedores sem o selo Verified Supplier.
 
 IMPORTANTE: Só inclua fornecedores que sejam **Verified Supplier** (auditado pelo Alibaba). Descarte qualquer fornecedor que não tenha esse selo.
 
-Métricas mínimas obrigatórias (eliminar se não atingir):
+Métricas mínimas para os TOP 3 (eliminar se não atingir):
 - Rating: ≥ 4.5/5 (ideal ≥ 4.7)
 - Trade Assurance: ≥ US$ 10.000 (ideal ≥ US$ 50.000)
 - Anos de operação: ≥ 3 anos (ideal ≥ 5)
 - Taxa de resposta: ≥ 80% (ideal ≥ 90%)
 - On-time delivery: ≥ 85% (ideal ≥ 95%)
+
+Para o 4º e 5º colocados, os critérios podem ser mais flexíveis (Rating ≥ 4.0, Anos ≥ 1, Resposta ≥ 70%), desde que o fornecedor seja Verified Supplier.
 
 Critérios de seleção (por ordem de prioridade):
 1. Verified Supplier (obrigatório)
@@ -167,7 +171,9 @@ Use como título do relatório as características principais do produto pesquis
 - URL da página de resultados:
 - Total de fornecedores analisados:
 
-## 🏆 Top 3 Fornecedores Recomendados
+## 🏆 Top 5 Fornecedores Recomendados
+
+⚠️  PREENCHA TODAS AS 5 SEÇÕES ABAIXO. É obrigatório ter exatamente 5 fornecedores.
 
 ### 🥇 1º — [Nome do Fornecedor]
 
@@ -214,16 +220,46 @@ Use como título do relatório as características principais do produto pesquis
 - **Certificações:**
 - **Por que foi escolhido:**
 
+### 4º — [Nome do Fornecedor]
+
+- **Link do produto:**
+- **País/Região:**
+- **Anos de operação:**
+- **Verified Supplier:** Sim/Não
+- **Trade Assurance:** Sim/Não
+- **Rating:** X/5 ⭐
+- **Taxa de resposta:**
+- **Preço indicado:**
+- **MOQ (pedido mínimo):**
+- **Capacidades:** OEM / ODM / Customização
+- **Certificações:**
+- **Por que foi escolhido:**
+
+### 5º — [Nome do Fornecedor]
+
+- **Link do produto:**
+- **País/Região:**
+- **Anos de operação:**
+- **Verified Supplier:** Sim/Não
+- **Trade Assurance:** Sim/Não
+- **Rating:** X/5 ⭐
+- **Taxa de resposta:**
+- **Preço indicado:**
+- **MOQ (pedido mínimo):**
+- **Capacidades:** OEM / ODM / Customização
+- **Certificações:**
+- **Por que foi escolhido:**
+
 ## 📊 Comparativo Rápido
 
-| Critério | 🥇 1º | 🥈 2º | 🥉 3º |
-|----------|-------|-------|-------|
-| Verified | | | |
-| Trade Assurance | | | |
-| Rating | | | |
-| Anos | | | |
-| MOQ | | | |
-| Preço | | | |
+| Critério | 🥇 1º | 🥈 2º | 🥉 3º | 4º | 5º |
+|----------|-------|-------|-------|----|----|
+| Verified | | | | | |
+| Trade Assurance | | | | | |
+| Rating | | | | | |
+| Anos | | | | | |
+| MOQ | | | | | |
+| Preço | | | | | |
 
 ## ⚠️ Alertas e Riscos
 
