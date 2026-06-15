@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Boxes } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -170,12 +170,6 @@ export const ProductDetailPage = () => {
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${stageInfo.color}`}>
               {stageInfo.label}
             </span>
-            {product.isKit && (
-              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-cyan-900/50 text-cyan-300 border border-cyan-800 flex items-center gap-1">
-                <Boxes className="w-3 h-3" />
-                Kit
-              </span>
-            )}
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
           <div className="flex items-center gap-4 text-sm text-gray-400">
