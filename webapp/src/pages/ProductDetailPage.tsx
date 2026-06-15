@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Boxes } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -23,7 +23,7 @@ const COMPETITION_COLORS: Record<string, string> = {
   Saturado: "text-red-400 bg-red-900/30 border-red-800",
 }
 
-type Tab = "produto" | "fornecedores" | "kit"
+type Tab = "produto" | "fornecedores"
 
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -170,12 +170,6 @@ export const ProductDetailPage = () => {
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${stageInfo.color}`}>
               {stageInfo.label}
             </span>
-            {product.isKit && (
-              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-cyan-900/50 text-cyan-300 border border-cyan-800 flex items-center gap-1">
-                <Boxes className="w-3 h-3" />
-                Kit
-              </span>
-            )}
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
           <div className="flex items-center gap-4 text-sm text-gray-400">
@@ -222,24 +216,7 @@ export const ProductDetailPage = () => {
             </span>
           )}
         </button>
-        {product.isKit && (
-          <button
-            onClick={() => setActiveTab("kit")}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "kit"
-                ? "border-blue-500 text-blue-400"
-                : "border-transparent text-gray-400 hover:text-gray-300"
-            }`}
-          >
-            <Boxes className="w-4 h-4" />
-            Itens do Kit
-            {product.kitItems?.length > 0 && (
-              <span className="text-[10px] font-bold bg-cyan-600 text-white px-1.5 py-0.5 rounded-full">
-                {product.kitItems.length}
-              </span>
-            )}
-          </button>
-        )}
+
       </div>
 
       {/* Tab content */}
@@ -339,40 +316,7 @@ export const ProductDetailPage = () => {
           />
         )}
 
-        {activeTab === "kit" && (
-          <div className="p-5">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-              <Boxes className="w-4 h-4" />
-              Itens do Kit ({product.kitItems?.length || 0})
-            </h3>
-            {product.kitItems && product.kitItems.length > 0 ? (
-              <div className="space-y-3">
-                {product.kitItems.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
-                  >
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-cyan-900/20 border border-cyan-800/30 text-cyan-400 font-bold text-sm flex-shrink-0">
-                      {item.quantity}x
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-200 font-medium">{item.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Quantidade: {item.quantity}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <Boxes className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">Nenhum item registrado no kit.</p>
-                <p className="text-gray-600 text-xs mt-1">
-                  Este produto está marcado como kit, mas os itens ainda não foram extraídos.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+
       </div>
 
       {/* Modal seletor de fornecedor */}
