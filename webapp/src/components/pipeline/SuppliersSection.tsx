@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
@@ -40,10 +40,13 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
   const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos">("todos")
+  const [searchQuery, setSearchQuery] = useState("")
 
-  const filteredSuppliers = statusFilter === "todos"
-    ? suppliers
-    : suppliers.filter(s => (s.negotiationStatus || "aguardando_resposta") === statusFilter)
+  const filteredSuppliers = suppliers.filter(s => {
+    const matchesStatus = statusFilter === "todos" || (s.negotiationStatus || "aguardando_resposta") === statusFilter
+    const matchesSearch = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesStatus && matchesSearch
+  })
 
   const handleCapture = async () => {
     setIsCapturing(true)
@@ -127,6 +130,18 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
         </div>
       ) : (
         <>
+          {/* Campo de busca por nome */}
+          <div className="relative mb-3">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Buscar fornecedor pelo nome..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
+            />
+          </div>
+
           <div className="flex flex-wrap gap-1.5 mb-3">
             <button
               onClick={() => setStatusFilter("todos")}
