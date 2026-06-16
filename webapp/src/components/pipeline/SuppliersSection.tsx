@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUpDown } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
@@ -39,14 +39,58 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
+  type SortOption = "default" | "total-asc" | "total-desc" | "rating"
   const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos" | "inviavel">("todos")
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState<SortOption>("default")
+
+  // Helper: extrai o custo total (produto + frete) da última cotação
+  const getTotalCost = (s: Supplier): number | null => {
+    const q = s.quotes?.length > 0 ? s.quotes[s.quotes.length - 1] : null
+    if (!q) return null
+    const parse = (v: string) => {
+      if (!v) return null
+      const cleaned = v.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+      const num = parseFloat(cleaned)
+      return isNaN(num) ? null : num
+    }
+    const a = parse(q.totalProductCost)
+    const b = parse(q.totalShippingCost)
+    if (a === null && b === null) return null
+    return (a || 0) + (b || 0)
+  }
 
   const filteredSuppliers = suppliers.filter(s => {
     const matchesStatus = statusFilter === "todos"
       || (statusFilter === "inviavel" ? s.viable === false : (s.negotiationStatus || "aguardando_resposta") === statusFilter)
     const matchesSearch = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesStatus && matchesSearch
+  })
+
+  const sortedSuppliers = [...filteredSuppliers].sort((a, b) => {
+    switch (sortBy) {
+      case "total-asc": {
+        const ca = getTotalCost(a)
+        const cb = getTotalCost(b)
+        if (ca === null && cb === null) return 0
+        if (ca === null) return 1
+        if (cb === null) return -1
+        return ca - cb
+      }
+      case "total-desc": {
+        const ca = getTotalCost(a)
+        const cb = getTotalCost(b)
+        if (ca === null && cb === null) return 0
+        if (ca === null) return 1
+        if (cb === null) return -1
+        return cb - ca
+      }
+      case "rating": {
+        return (b.rating || 0) - (a.rating || 0)
+      }
+      default:
+        return 0
+    }
   })
 
   const handleCapture = async () => {
@@ -131,16 +175,31 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
         </div>
       ) : (
         <>
-          {/* Campo de busca por nome */}
-          <div className="relative mb-3 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Buscar fornecedor pelo nome..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
-            />
+          {/* Campo de busca + Ordenação */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="relative max-w-xs flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Buscar fornecedor pelo nome..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
+              />
+            </div>
+            <div className="relative flex items-center gap-1">
+              <ArrowUpDown className="w-3 h-3 text-gray-500 absolute left-2.5 pointer-events-none" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="pl-7 pr-2 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+              >
+                <option value="default">Ordenar por</option>
+                <option value="total-asc">Menor custo</option>
+                <option value="total-desc">Maior custo</option>
+                <option value="rating">Maior rating</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -194,7 +253,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
           </div>
 
           <div className="grid gap-2">
-            {filteredSuppliers.map((supplier) => {
+            {sortedSuppliers.map((supplier) => {
               const index = suppliers.indexOf(supplier)
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
             const isNotViable = supplier.viable === false
