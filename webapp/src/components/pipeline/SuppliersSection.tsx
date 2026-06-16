@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
@@ -180,19 +180,31 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             const status = supplier.negotiationStatus || "aguardando_resposta"
             const statusConfig = STATUS_CONFIG[status]
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
+            const isNotViable = supplier.viable === false
 
             return (
               <button
                 key={`${supplier.url}-${index}`}
                 onClick={() => navigate(`/pipeline/${productId}/supplier/${index}`)}
-                className="w-full p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-gray-500 hover:bg-gray-800/50 transition-colors text-left group"
+                className={`w-full p-3 rounded-lg border transition-colors text-left group ${
+                  isNotViable
+                    ? "bg-red-950/30 border-red-800/60 hover:border-red-700 hover:bg-red-950/50"
+                    : "bg-gray-900/50 border-gray-700 hover:border-gray-500 hover:bg-gray-800/50"
+                }`}
               >
+                {/* Banner de inviabilidade */}
+                {isNotViable && (
+                  <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-red-900/40 border border-red-700/60 rounded text-[10px] font-semibold text-red-300 uppercase tracking-wider">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                    Fornecedor sem viabilidade
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-200 truncate">{supplier.name}</span>
+                      <span className={`text-sm font-medium truncate ${isNotViable ? "text-red-300 line-through" : "text-gray-200"}`}>{supplier.name}</span>
                       {supplier.tradeAssurance && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                        <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isNotViable ? "text-red-600" : "text-emerald-400"}`} />
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-xs">

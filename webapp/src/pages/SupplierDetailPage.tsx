@@ -152,6 +152,16 @@ export const SupplierDetailPage = () => {
     }
   }
 
+  const handleToggleViability = async () => {
+    if (!product) return
+    try {
+      const res = await api.updateSupplierViability(product._id, index, !supplier.viable)
+      setProduct({ ...product, suppliers: res.suppliers })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
   const handleRemoveSupplier = async () => {
     if (!product) return
     try {
@@ -249,6 +259,18 @@ export const SupplierDetailPage = () => {
               </>
             )}
             <button
+              onClick={handleToggleViability}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                supplier.viable === false
+                  ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
+                  : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
+              }`}
+              title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              {supplier.viable === false ? "Inviável" : "Viável"}
+            </button>
+            <button
               onClick={() => setConfirmRemove(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
             >
@@ -262,6 +284,17 @@ export const SupplierDetailPage = () => {
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-5 space-y-6">
+
+          {/* Banner de inviabilidade */}
+          {supplier.viable === false && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-red-950/50 border-2 border-red-700/80 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-red-300">Fornecedor sem viabilidade</p>
+                <p className="text-xs text-red-400/80">Este fornecedor foi marcado como inviável para importação. As cotações ainda podem ser registradas, mas ele não será considerado nas análises comparativas.</p>
+              </div>
+            </div>
+          )}
 
           {/* Error */}
           {error && (

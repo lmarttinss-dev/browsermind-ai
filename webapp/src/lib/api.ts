@@ -73,6 +73,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
+  updateSupplierViability: (productId: string, supplierIndex: number, viable: boolean) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/viability`, {
+      method: "PATCH",
+      body: JSON.stringify({ viable }),
+    }),
   addSupplierQuote: (productId: string, supplierIndex: number, quote: Omit<SupplierQuote, "quotedAt">) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes`, {
       method: "POST",
@@ -160,6 +165,7 @@ export type Supplier = {
   certifications: string;
   report: string;
   capturedAt: string;
+  viable: boolean;
   negotiationStatus: NegotiationStatus;
   quotes: SupplierQuote[];
   negotiationStartedAt?: string;
