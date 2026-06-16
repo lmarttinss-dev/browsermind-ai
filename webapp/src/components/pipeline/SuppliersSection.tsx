@@ -196,8 +196,6 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
           <div className="grid gap-2">
             {filteredSuppliers.map((supplier) => {
               const index = suppliers.indexOf(supplier)
-            const status = supplier.negotiationStatus || "aguardando_resposta"
-            const statusConfig = STATUS_CONFIG[status]
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
             const isNotViable = supplier.viable === false
 
@@ -220,31 +218,46 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 )}
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
+                    {/* Linha 1: Nome + Rating + Trade Assurance */}
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-sm font-medium truncate ${isNotViable ? "text-red-300 line-through" : "text-gray-200"}`}>{supplier.name}</span>
                       {supplier.tradeAssurance && (
                         <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isNotViable ? "text-red-600" : "text-emerald-400"}`} />
                       )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${statusConfig.color} ${statusConfig.bgColor} ${statusConfig.borderColor}`}>
-                        <StatusIcon status={status} />
-                        {statusConfig.label}
-                      </div>
-                      {supplier.unitPrice && (
-                        <span className="text-emerald-400 font-medium">{supplier.unitPrice}</span>
-                      )}
-                      {supplier.moq && (
-                        <span className="text-gray-500">MOQ: {supplier.moq}</span>
-                      )}
                       {supplier.rating > 0 && (
-                        <span className="text-gray-500 flex items-center gap-0.5">
+                        <span className="text-xs text-gray-400 flex items-center gap-0.5 ml-auto flex-shrink-0">
                           <Star className="w-3 h-3 text-yellow-500" />
                           {supplier.rating}
                         </span>
                       )}
-                      {supplier.quotes?.length > 0 && (
-                        <span className="text-blue-400">{supplier.quotes.length} cotação(ões)</span>
+                    </div>
+
+                    {/* Linha 2: Custo total + cotação recebida (sútil) */}
+                    <div className="flex items-center gap-2 text-xs">
+                      {latestQuote ? (
+                        <span className="text-emerald-400 font-medium">
+                          {(() => {
+                            const parseCurrency = (v: string): number | null => {
+                              if (!v) return null
+                              const cleaned = v.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+                              const num = parseFloat(cleaned)
+                              return isNaN(num) ? null : num
+                            }
+                            const a = parseCurrency(latestQuote.totalProductCost)
+                            const b = parseCurrency(latestQuote.totalShippingCost)
+                            if (a === null && b === null) return null
+                            const total = (a || 0) + (b || 0)
+                            return `US$ ${total.toFixed(2)}`
+                          })() || "—"}
+                        </span>
+                      ) : (
+                        <span className="text-gray-600">Sem cotação</span>
+                      )}
+                      {supplier.negotiationStatus === "cotacao_recebida" && (
+                        <span className="text-[10px] text-blue-400/60 flex items-center gap-0.5">
+                          <Mail className="w-2.5 h-2.5" />
+                          Cotação recebida
+                        </span>
                       )}
                     </div>
                   </div>
