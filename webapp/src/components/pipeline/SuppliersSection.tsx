@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUpDown } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
@@ -39,7 +39,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
-  type SortOption = "default" | "total-asc" | "total-desc" | "rating"
+  type SortOption = "default" | "total-asc" | "total-desc"
   const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos" | "inviavel">("todos")
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<SortOption>("default")
@@ -84,9 +84,6 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
         if (ca === null) return 1
         if (cb === null) return -1
         return cb - ca
-      }
-      case "rating": {
-        return (b.rating || 0) - (a.rating || 0)
       }
       default:
         return 0
@@ -187,18 +184,29 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
               />
             </div>
-            <div className="relative flex items-center gap-1">
-              <ArrowUpDown className="w-3 h-3 text-gray-500 absolute left-2.5 pointer-events-none" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="pl-7 pr-2 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSortBy(sortBy === "total-asc" ? "default" : "total-asc")}
+                className={`flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
+                  sortBy === "total-asc"
+                    ? "border-emerald-600 bg-emerald-900/30 text-emerald-300"
+                    : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:text-gray-300"
+                }`}
               >
-                <option value="default">Ordenar por</option>
-                <option value="total-asc">Menor custo</option>
-                <option value="total-desc">Maior custo</option>
-                <option value="rating">Maior rating</option>
-              </select>
+                <ArrowUp className="w-3 h-3" />
+                Menor custo
+              </button>
+              <button
+                onClick={() => setSortBy(sortBy === "total-desc" ? "default" : "total-desc")}
+                className={`flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
+                  sortBy === "total-desc"
+                    ? "border-emerald-600 bg-emerald-900/30 text-emerald-300"
+                    : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:text-gray-300"
+                }`}
+              >
+                <ArrowDown className="w-3 h-3" />
+                Maior custo
+              </button>
             </div>
           </div>
 
