@@ -10,9 +10,11 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     id: "importacao-simplificada",
     name: "Análise para Importação Simplificada",
     description: "Relatório completo de viabilidade do produto para importação simplificada",
-    content: `Analise a viabilidade deste produto para importação simplificada e gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
+    content: `Analise a viabilidade de importação simplificada deste produto com base nas métricas do AvantPro visíveis na página. Gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
 
 IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatamente no formato abaixo. Esses campos são extraídos automaticamente pelo sistema.
+
+PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 # Template do Relatório
 
@@ -22,8 +24,8 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 
 - Nome: (nome completo do produto)
 - Categoria: (categoria principal > subcategoria)
-- Preço atual: R$ (valor no formato brasileiro, ex: 49,90)
-- Vendas mensais estimadas: (número inteiro, ex: 1.200)
+- Preço atual: R$ (valor no formato brasileiro, ex: 69,00)
+- Vendas mensais estimadas: (número inteiro, ex: 223)
 - Concorrência: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
 - Potencial de margem: (percentual ou faixa, ex: 35-45%)
 - Score Final: (nota de 0 a 10 representando viabilidade geral)
@@ -35,67 +37,136 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 - Nome:
 - URL:
 - Categoria:
-- Preço atual:
-- Data do anúncio:
+- Preço de venda atual (R$):
+- Data de criação do anúncio:
 - Dias ativo:
-- Loja/Vendedor:
-- Reputação do vendedor:
+- Loja / Vendedor:
+- Reputação do vendedor (MercadoLíder, Platinum, etc.):
+- Posição no ranking da categoria:
+- Selos e destaques (MAIS VENDIDO, OFERTA DO DIA, etc.):
+- Avaliação média (estrelas):
+- Quantidade de avaliações/opiniões:
 
-## 📊 Métricas do Mercado Livre
+## 📊 Métricas do AvantPro (extraídas do DOM)
 
-- Total de vendas:
+Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
+
+- Preço de venda atual:
+- Estoque disponível:
+- Total vendido (histórico):
 - Vendas por dia:
-- Vendas mensais estimadas:
-- Faturamento mensal estimado:
-- Número de visitas:
-- Taxa de conversão estimada:
-- Quantidade de avaliações:
-- Nota média:
-- Tendência de crescimento:
+- Vendas mensais (unidades/mês):
+- Visitas ao anúncio:
+- Taxa de conversão (%):
+- Receita mensal estimada: vendas mensais × preço de venda (calcule: R$ X,XX)
+- Faturamento total do vendedor (se disponível):
+- Ticket médio da loja (se disponível):
 
-## ⭐ Análise de Qualidade
+### 💰 Dados financeiros do vendedor (se disponíveis no AvantPro)
 
-Avalie:
+- Imposto por venda: R$ X,XX (X%)
+- Comissão Mercado Livre por venda: R$ X,XX (X%)
+- Valor líquido recebido por venda: R$ X,XX (X%)
+- Custo fixo por venda na plataforma: (imposto + comissão)
 
-- Qualidade percebida do produto
-- Principais elogios nas avaliações
-- Principais reclamações
-- Frequência de problemas relatados
-- Potencial de recompra
-- Risco de devolução/reembolso
+## 🔥 Análise de Demanda e Concorrência
 
-## 🔥 Análise de Demanda
+### Demanda
 
-Avalie:
+- Vendas diárias: interprete o ritmo (ex: 7/dia = giro consistente)
+- Volume mensal: classifique como Baixo (<50), Médio (50-200), Alto (200-500) ou Muito Alto (>500)
+- Taxa de conversão: classifique como Baixa (<5%), Média (5-10%), Alta (10-15%) ou Muito Alta (>15%)
+- Tendência: interprete se a demanda está crescendo, estável ou caindo com base nos dados
 
-- Nível de demanda atual
-- Potencial de viralização
-- Competitividade da categoria
-- Saturação do mercado
-- Potencial para anúncios pagos
-- Público-alvo provável
+### Concorrência
+
+- Quantos produtos semelhantes aparecem na página:
+- Faixa de preços dos concorrentes (mínimo — máximo):
+- Onde este produto se posiciona na faixa (entrada, meio, topo):
+- Concorrente principal: nome, preço e diferencial
+- Barreiras de entrada identificadas:
+
+### Análise de posicionamento
+
+- Se o produto está na faixa mais competitiva (R$ 19–R$ 45): ALERTA — exige custo de importação muito baixo para competir
+- Se está acima de R$ 60: oportunidade de margem, mas exige diferenciação (qualidade, marca, avaliações)
+- Se estoque do concorrente está baixo (<5 unidades): possível janela de oportunidade para novos entrantes
+
+## ⭐ Forças e Fraquezas do Vendedor Atual
+
+### Forças
+
+- Selos e reputação (MercadoLíder, +1000 vendas, bom atendimento)
+- Tempo de mercado e estabilidade
+- Qualidade do anúncio (fotos, descrição, vídeos)
+
+### Fraquezas
+
+- Fotos insuficientes ou de baixa resolução (oportunidade de diferenciação)
+- Descrição pobre ou incompleta
+- Estoque limitado ou rupturas frequentes
+- Tempo de entrega elevado
+- Ausência de variações (cores, tamanhos)
+
+### Oportunidades de diferenciação para o importador
+
+- Fotos profissionais em alta resolução
+- Descrição rica com especificações detalhadas
+- Vídeos demonstrativos
+- Maior estoque e disponibilidade imediata
+- Variações de cor/modelo
+- Embalagem diferenciada
+- Atendimento pós-venda superior
 
 ## 🚚 Viabilidade para Importação Simplificada
 
-Avalie:
+### Características do produto para importação
 
-- Facilidade de importação
-- Tamanho/peso ideal para importação
-- Risco alfandegário
-- Potencial de margem
-- Facilidade logística
-- Possibilidade de diferenciação
-- Complexidade operacional
+- Tamanho e peso: classifique como Ideal / Viável / Problemático
+- Risco alfandegário: Baixo / Médio / Alto
+- Categoria tarifária provável:
+- Necessidade de certificação (Anatel, INMETRO, etc.):
+
+### Cálculo de rentabilidade para o importador
+
+Compare o custo total de importação estimado com o valor líquido recebido na plataforma:
+
+- Valor líquido por venda (ML): R$ X,XX (extraído do AvantPro)
+- Custo de importação estimado por unidade (produto + frete): R$ X,XX
+- Imposto de importação estimado (60% sobre produto + frete): R$ X,XX
+- Custo total de importação por unidade: R$ X,XX
+- Margem bruta por unidade: R$ X,XX (valor líquido ML − custo total)
+- Margem percentual: X%
+
+REGRA DE VIABILIDADE: Para ser viável, o custo total de importação por unidade deve ser no máximo 60% do valor líquido recebido na plataforma (margem mínima de 40%).
+
+## 📈 Projeção Simplificada de Retorno
+
+Gere uma tabela com as métricas coletadas e os custos estimados:
+
+| Descrição | Valor |
+|-----------|-------|
+| Preço de venda (mercado) | R$ X,XX |
+| Vendas mensais médias | X |
+| Receita bruta mensal | R$ X,XX |
+| (-) Comissão ML (X%) | R$ X,XX |
+| (-) Imposto (X%) | R$ X,XX |
+| Receita líquida mensal | R$ X,XX |
+| (-) Custo de importação (X un × R$ X,XX) | R$ X,XX |
+| Lucro bruto mensal estimado | R$ X,XX |
+
+Use os percentuais reais do AvantPro para comissão ML e imposto. Se não disponíveis, use as médias de mercado: comissão ML ~13% + imposto ~7%.
 
 ## 💡 Oportunidades Estratégicas
 
-Identifique:
+Identifique com base nos dados:
 
-- Possíveis melhorias no produto
-- Kits/bundles possíveis
-- Upsells
-- Variações interessantes
-- Estratégias de posicionamento
+- Possíveis melhorias no produto (qualidade, acabamento, funcionalidades)
+- Kits e bundles viáveis (ex: produto + acessório)
+- Upsells e cross-sells
+- Variações de cor, tamanho ou modelo
+- Estratégias de posicionamento (preço, qualidade, volume)
+- Canais de venda complementares (Shopee, Amazon, loja própria)
 
 ## 📈 Score Final
 
@@ -104,23 +175,38 @@ Atribua notas de 0 a 10 para cada critério:
 | Critério | Nota |
 |----------|------|
 | Demanda | /10 |
-| Margem | /10 |
+| Margem potencial | /10 |
 | Concorrência | /10 |
-| Escalabilidade | /10 |
-| Facilidade operacional | /10 |
+| Diferenciação possível | /10 |
+| Facilidade de importação | /10 |
 | Potencial de lucro | /10 |
 
-**Score Final:** (média ponderada, nota única de 0 a 10 — DEVE ser igual ao valor informado no "Resumo para Esteira")
+**Score Final:** (média aritmética — DEVE ser igual ao valor informado no "Resumo para Esteira")
+
+## ⚠️ Gatilhos de Alerta
+
+Emita alertas automáticos quando:
+
+- 🚨 **Conversão baixa**: taxa de conversão < 8% (indica baixa atratividade do anúncio ou produto)
+- 🚨 **Concorrente dominante**: concorrente principal com estoque > 100 unidades E preço muito agressivo (< 70% do valor de mercado)
+- 🚨 **Demanda em queda**: anúncio com > 1 ano E vendas mensais em declínio nos últimos meses
+- 🚨 **Margem inviável**: valor líquido recebido por venda < custo total de importação + margem de segurança de 30%
+- 🚨 **Risco de certificação**: produto que exige Anatel/INMETRO sem certificação disponível no fornecedor
+- 🚨 **Estoque baixo do concorrente**: pode ser oportunidade OU sinal de produto problemático (avalie o contexto)
+- ✅ **Sinal positivo**: anúncio com < 90 dias E vendas crescentes (indica produto em ascensão)
+- ✅ **Sinal positivo**: conversão > 12% (indica forte interesse do público e boa qualidade do anúncio)
 
 ## ✅ Conclusão Final
 
-Forneça uma conclusão objetiva informando:
+Forneça uma conclusão objetiva:
 
-- Se vale importar ou não
-- Nível de risco
-- Potencial de escala
-- Melhor estratégia de venda
-- Recomendação final`,
+- **Veredito:** VIÁVEL / INVÁVEL / NECESSITA AVALIAÇÃO (explique)
+- **Nível de risco:** Baixo / Médio / Alto
+- **Potencial de escala:** Baixo / Médio / Alto
+- **Investimento inicial estimado:** R$ X,XX (primeiro lote + frete + impostos)
+- **Tempo estimado para retorno:** X meses
+- **Melhor estratégia de venda:** (preço, diferenciação, volume, marca)
+- **Recomendação final:** (próximos passos concretos)`
   },
   {
     id: "top5-fornecedores-alibaba",
