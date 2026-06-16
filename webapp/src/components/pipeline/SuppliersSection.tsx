@@ -39,11 +39,12 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
-  const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos">("todos")
+  const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos" | "inviavel">("todos")
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredSuppliers = suppliers.filter(s => {
-    const matchesStatus = statusFilter === "todos" || (s.negotiationStatus || "aguardando_resposta") === statusFilter
+    const matchesStatus = statusFilter === "todos"
+      || (statusFilter === "inviavel" ? s.viable === false : (s.negotiationStatus || "aguardando_resposta") === statusFilter)
     const matchesSearch = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesStatus && matchesSearch
   })
@@ -153,6 +154,24 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             >
               Todos ({suppliers.length})
             </button>
+            {/* Filtro: Inviável */}
+            {(() => {
+              const inviavelCount = suppliers.filter(s => s.viable === false).length
+              if (inviavelCount === 0) return null
+              return (
+                <button
+                  onClick={() => setStatusFilter("inviavel")}
+                  className={`text-[11px] px-2 py-1 rounded-lg border transition-colors flex items-center gap-1 ${
+                    statusFilter === "inviavel"
+                      ? "border-red-700 bg-red-900/40 text-red-300"
+                      : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-red-800 hover:text-red-400"
+                  }`}
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  Inviável ({inviavelCount})
+                </button>
+              )
+            })()}
             {(Object.keys(STATUS_CONFIG) as NegotiationStatus[]).map(key => {
               const count = suppliers.filter(s => (s.negotiationStatus || "aguardando_resposta") === key).length
               if (count === 0) return null
