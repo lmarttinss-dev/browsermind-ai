@@ -124,21 +124,50 @@ Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
 
 - Tamanho e peso: classifique como Ideal / Viável / Problemático
 - Risco alfandegário: Baixo / Médio / Alto
-- Categoria tarifária provável:
-- Necessidade de certificação (Anatel, INMETRO, etc.):
+- Categoria NCM provável:
+- Alíquota de Imposto de Importação (II) estimada para este NCM:
+- Necessidade de certificação (Anatel, INMETRO, MAPA, etc.):
+
+### Logística de Importação (B2B via Courier)
+
+Para importações via Alibaba B2B, considere as transportadoras courier internacionais:
+
+- **DHL Express**: ideal para cargas até 50 kg, entrega porta a porta em 3-7 dias úteis, desembaraço incluso
+- **FedEx International Priority**: cargas até 68 kg, 2-5 dias úteis, boa cobertura na China
+- **UPS Worldwide Express**: cargas até 70 kg, 2-5 dias úteis, rastreamento detalhado
+- **Frete marítimo (LCL/FCL)**: para pedidos acima de 100 kg ou 0,5 m³, menor custo por kg mas prazo de 30-60 dias
+- **Frete aéreo consolidado**: meio termo entre courier e marítimo, 7-15 dias, ideal para 30-200 kg
+
+Estime o custo do frete com base em:
+- Peso e dimensões estimadas do produto
+- Modal mais adequado (courier para amostras e pequenos lotes; aéreo/marítimo para volumes maiores)
+- Custo aproximado por kg: courier (US$ 8-15/kg), aéreo (US$ 4-8/kg), marítimo (US$ 0,50-2/kg)
 
 ### Cálculo de rentabilidade para o importador
 
-Compare o custo total de importação estimado com o valor líquido recebido na plataforma:
+Compare o custo total de importação (landed cost) com o valor líquido recebido na plataforma:
 
-- Valor líquido por venda (ML): R$ X,XX (extraído do AvantPro)
-- Custo de importação estimado por unidade (produto + frete): R$ X,XX
-- Imposto de importação estimado (60% sobre produto + frete): R$ X,XX
-- Custo total de importação por unidade: R$ X,XX
-- Margem bruta por unidade: R$ X,XX (valor líquido ML − custo total)
+- Preço FOB do produto (fornecedor Alibaba): US$ X,XX / unidade
+- MOQ (pedido mínimo) do fornecedor: X unidades
+- Frete internacional estimado (DHL/FedEx/UPS): US$ X,XX (total) → US$ X,XX / unidade
+- Valor CIF (produto + frete): US$ X,XX / unidade
+- Imposto de Importação (II): X% sobre CIF = US$ X,XX
+- ICMS-ST (se aplicável): X% = R$ X,XX
+- Despesas aduaneiras (despachante, taxas): R$ X,XX
+- Custo total de importação por unidade (landed cost): R$ X,XX
+- Valor líquido por venda no ML: R$ X,XX (extraído do AvantPro)
+- Margem bruta por unidade: R$ X,XX (valor líquido ML − landed cost)
 - Margem percentual: X%
 
-REGRA DE VIABILIDADE: Para ser viável, o custo total de importação por unidade deve ser no máximo 60% do valor líquido recebido na plataforma (margem mínima de 40%).
+REGRA DE VIABILIDADE: O landed cost por unidade deve ser no máximo 60% do valor líquido recebido na plataforma (margem mínima de 40%). Para produtos de ticket baixo (< R$ 50), o frete via courier pode inviabilizar — considere frete marítimo ou aéreo consolidado para diluir o custo por unidade.
+
+### Negociação com fornecedores Alibaba
+
+- Solicitar cotação FOB (Free on Board) — nunca aceitar apenas o preço de lista
+- Negociar MOQ flexível para primeiro pedido (amostra/teste)
+- Confirmar se o fornecedor trabalha com DHL/FedEx/UPS colet account (você paga o frete direto)
+- Verificar incoterms: FOB é o mais comum para B2B Chinês, EXW exige coordenação extra
+- Prazo de produção estimado: X dias após confirmação do pedido
 
 ## 📈 Projeção Simplificada de Retorno
 
