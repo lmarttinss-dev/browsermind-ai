@@ -10,9 +10,11 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     id: "importacao-simplificada",
     name: "Análise para Importação Simplificada",
     description: "Relatório completo de viabilidade do produto para importação simplificada",
-    content: `Analise a viabilidade deste produto para importação simplificada e gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
+    content: `Analise a viabilidade de importação simplificada deste produto com base nas métricas do AvantPro visíveis na página. Gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
 
 IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatamente no formato abaixo. Esses campos são extraídos automaticamente pelo sistema.
+
+PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 # Template do Relatório
 
@@ -22,8 +24,8 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 
 - Nome: (nome completo do produto)
 - Categoria: (categoria principal > subcategoria)
-- Preço atual: R$ (valor no formato brasileiro, ex: 49,90)
-- Vendas mensais estimadas: (número inteiro, ex: 1.200)
+- Preço atual: R$ (valor no formato brasileiro, ex: 69,00)
+- Vendas mensais estimadas: (número inteiro, ex: 223)
 - Concorrência: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
 - Potencial de margem: (percentual ou faixa, ex: 35-45%)
 - Score Final: (nota de 0 a 10 representando viabilidade geral)
@@ -35,67 +37,216 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 - Nome:
 - URL:
 - Categoria:
-- Preço atual:
-- Data do anúncio:
+- Preço de venda atual (R$):
+- Data de criação do anúncio:
 - Dias ativo:
-- Loja/Vendedor:
-- Reputação do vendedor:
+- Loja / Vendedor:
+- Reputação do vendedor (MercadoLíder, Platinum, etc.):
+- Posição no ranking da categoria:
+- Selos e destaques (MAIS VENDIDO, OFERTA DO DIA, etc.):
+- Avaliação média (estrelas):
+- Quantidade de avaliações/opiniões:
 
-## 📊 Métricas do Mercado Livre
+## 📊 Métricas do AvantPro (extraídas do DOM)
 
-- Total de vendas:
+Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
+
+- Preço de venda atual:
+- Estoque disponível:
+- Total vendido (histórico):
 - Vendas por dia:
-- Vendas mensais estimadas:
-- Faturamento mensal estimado:
-- Número de visitas:
-- Taxa de conversão estimada:
-- Quantidade de avaliações:
-- Nota média:
-- Tendência de crescimento:
+- Vendas mensais (unidades/mês):
+- Visitas ao anúncio:
+- Taxa de conversão (%):
+- Receita mensal estimada: vendas mensais × preço de venda (calcule: R$ X,XX)
+- Faturamento total do vendedor (se disponível):
+- Ticket médio da loja (se disponível):
 
-## ⭐ Análise de Qualidade
+### 💰 Dados financeiros do vendedor (se disponíveis no AvantPro)
 
-Avalie:
+- Imposto por venda: R$ X,XX (X%)
+- Comissão Mercado Livre por venda: R$ X,XX (X%)
+- Valor líquido recebido por venda: R$ X,XX (X%)
+- Custo fixo por venda na plataforma: (imposto + comissão)
 
-- Qualidade percebida do produto
-- Principais elogios nas avaliações
-- Principais reclamações
-- Frequência de problemas relatados
-- Potencial de recompra
-- Risco de devolução/reembolso
+## 🔥 Análise de Demanda e Concorrência
 
-## 🔥 Análise de Demanda
+### Demanda
 
-Avalie:
+- Vendas diárias: interprete o ritmo (ex: 7/dia = giro consistente)
+- Volume mensal: classifique como Baixo (<50), Médio (50-200), Alto (200-500) ou Muito Alto (>500)
+- Taxa de conversão: classifique como Baixa (<5%), Média (5-10%), Alta (10-15%) ou Muito Alta (>15%)
+- Tendência: interprete se a demanda está crescendo, estável ou caindo com base nos dados
 
-- Nível de demanda atual
-- Potencial de viralização
-- Competitividade da categoria
-- Saturação do mercado
-- Potencial para anúncios pagos
-- Público-alvo provável
+### Concorrência
+
+- Quantos produtos semelhantes aparecem na página:
+- Faixa de preços dos concorrentes (mínimo — máximo):
+- Onde este produto se posiciona na faixa (entrada, meio, topo):
+- Concorrente principal: nome, preço e diferencial
+- Barreiras de entrada identificadas:
+
+### Análise de posicionamento
+
+- Se o produto está na faixa mais competitiva (R$ 19–R$ 45): ALERTA — exige custo de importação muito baixo para competir
+- Se está acima de R$ 60: oportunidade de margem, mas exige diferenciação (qualidade, marca, avaliações)
+- Se estoque do concorrente está baixo (<5 unidades): possível janela de oportunidade para novos entrantes
+
+## ⭐ Forças e Fraquezas do Vendedor Atual
+
+### Forças
+
+- Selos e reputação (MercadoLíder, +1000 vendas, bom atendimento)
+- Tempo de mercado e estabilidade
+- Qualidade do anúncio (fotos, descrição, vídeos)
+
+### Fraquezas
+
+- Fotos insuficientes ou de baixa resolução (oportunidade de diferenciação)
+- Descrição pobre ou incompleta
+- Estoque limitado ou rupturas frequentes
+- Tempo de entrega elevado
+- Ausência de variações (cores, tamanhos)
+
+### Oportunidades de diferenciação para o importador
+
+- Fotos profissionais em alta resolução
+- Descrição rica com especificações detalhadas
+- Vídeos demonstrativos
+- Maior estoque e disponibilidade imediata
+- Variações de cor/modelo
+- Embalagem diferenciada
+- Atendimento pós-venda superior
 
 ## 🚚 Viabilidade para Importação Simplificada
 
-Avalie:
+### Características do produto para importação
 
-- Facilidade de importação
-- Tamanho/peso ideal para importação
-- Risco alfandegário
-- Potencial de margem
-- Facilidade logística
-- Possibilidade de diferenciação
-- Complexidade operacional
+- Tamanho e peso: classifique como Ideal / Viável / Problemático
+- Risco alfandegário: Baixo / Médio / Alto
+- Categoria NCM provável:
+- Alíquota de Imposto de Importação (II) estimada para este NCM:
+- Necessidade de certificação (Anatel, INMETRO, MAPA, etc.):
+
+### Logística de Importação (B2B via Courier)
+
+Para importações via Alibaba B2B, considere as transportadoras courier internacionais:
+
+- **DHL Express**: ideal para cargas até 50 kg, entrega porta a porta em 3-7 dias úteis, desembaraço incluso
+- **FedEx International Priority**: cargas até 68 kg, 2-5 dias úteis, boa cobertura na China
+- **UPS Worldwide Express**: cargas até 70 kg, 2-5 dias úteis, rastreamento detalhado
+- **Frete marítimo (LCL/FCL)**: para pedidos acima de 100 kg ou 0,5 m³, menor custo por kg mas prazo de 30-60 dias
+- **Frete aéreo consolidado**: meio termo entre courier e marítimo, 7-15 dias, ideal para 30-200 kg
+
+Estime o custo do frete com base em:
+- Peso e dimensões estimadas do produto
+- Modal mais adequado (courier para amostras e pequenos lotes; aéreo/marítimo para volumes maiores)
+- Custo aproximado por kg: courier (US$ 8-15/kg), aéreo (US$ 4-8/kg), marítimo (US$ 0,50-2/kg)
+
+### Cálculo de rentabilidade para o importador
+
+Compare o custo total de importação (landed cost) com o valor líquido recebido na plataforma:
+
+- Preço FOB do produto (fornecedor Alibaba): US$ X,XX / unidade
+- MOQ (pedido mínimo) do fornecedor: X unidades
+- Frete internacional estimado (DHL/FedEx/UPS): US$ X,XX (total) → US$ X,XX / unidade
+- Valor CIF (produto + frete): US$ X,XX / unidade
+- Imposto de Importação (II): X% sobre CIF = US$ X,XX
+- ICMS-ST (se aplicável): X% = R$ X,XX
+- Despesas aduaneiras (despachante, taxas): R$ X,XX
+- Custo total de importação por unidade (landed cost): R$ X,XX
+- Valor líquido por venda no ML: R$ X,XX (extraído do AvantPro)
+- Margem bruta por unidade: R$ X,XX (valor líquido ML − landed cost)
+- Margem percentual: X%
+
+REGRA DE VIABILIDADE: O landed cost por unidade deve ser no máximo 60% do valor líquido recebido na plataforma (margem mínima de 40%). Para produtos de ticket baixo (< R$ 50), o frete via courier pode inviabilizar — considere frete marítimo ou aéreo consolidado para diluir o custo por unidade.
+
+### Negociação com fornecedores Alibaba
+
+- Solicitar cotação FOB (Free on Board) — nunca aceitar apenas o preço de lista
+- Negociar MOQ flexível para primeiro pedido (amostra/teste)
+- Confirmar se o fornecedor trabalha com DHL/FedEx/UPS colet account (você paga o frete direto)
+- Verificar incoterms: FOB é o mais comum para B2B Chinês, EXW exige coordenação extra
+- Prazo de produção estimado: X dias após confirmação do pedido
+
+## 📈 Projeção Simplificada de Retorno
+
+Gere uma tabela com as métricas coletadas e os custos estimados:
+
+| Descrição | Valor |
+|-----------|-------|
+| Preço de venda (mercado) | R$ X,XX |
+| Vendas mensais médias | X |
+| Receita bruta mensal | R$ X,XX |
+| (-) Comissão ML (X%) | R$ X,XX |
+| (-) Imposto (X%) | R$ X,XX |
+| Receita líquida mensal | R$ X,XX |
+| (-) Custo de importação (X un × R$ X,XX) | R$ X,XX |
+| Lucro bruto mensal estimado | R$ X,XX |
+
+Use os percentuais reais do AvantPro para comissão ML e imposto. Se não disponíveis, use as médias de mercado: comissão ML ~13% + imposto ~7%.
 
 ## 💡 Oportunidades Estratégicas
 
-Identifique:
+### 🎯 Estratégias de Diferenciação
 
-- Possíveis melhorias no produto
-- Kits/bundles possíveis
-- Upsells
-- Variações interessantes
-- Estratégias de posicionamento
+Com base nos pontos fracos do vendedor atual e nas características do produto, sugira estratégias concretas de diferenciação:
+
+- **Qualidade do anúncio**: número de fotos ideal, resolução mínima (HD/4K), ângulos necessários, fotos de uso real
+- **Conteúdo**: descrição rica com bullet points, tabela de especificações, comparação com concorrentes, FAQ
+- **Mídia**: vídeo demonstrativo, vídeo de unboxing, GIFs de uso, tour 360°
+- **Embalagem**: diferenciação visual, proteção extra, brindes (adesivo, cartão de agradecimento, manual em PT-BR)
+- **Garantia**: prazo estendido, política de troca facilitada, suporte pós-venda via WhatsApp
+- **Entrega**: Full vs. envio próprio, prazo menor que a média, rastreamento proativo
+- **Preço**: estratégia de penetração (preço baixo inicial) vs. skimming (preço premium com diferenciação)
+
+### 📦 Sugestão de Kits e Bundles
+
+Proponha combinações de produtos que aumentem o ticket médio e a margem:
+
+- **Kit econômico**: produto + item complementar de baixo custo (ex: case, película, suporte)
+- **Kit completo**: produto + 2-3 acessórios essenciais (ex: capa + película + carregador)
+- **Kit premium**: produto + acessórios premium + embalagem diferenciada (ex: case de luxo + película de vidro + cabo trançado)
+- **Kit recarga**: produto + insumos de reposição (ex: refil, lâminas, filtros)
+- **Kit presente**: produto + embalagem para presente + cartão personalizado
+
+Para cada kit sugerido, estime:
+- Preço de venda sugerido
+- Custo total dos itens (importação)
+- Margem estimada do kit
+
+### 🔄 Upsells e Cross-sells
+
+- **Upsell imediato**: versão superior do mesmo produto (ex: mais memória, material premium, cor exclusiva)
+- **Cross-sell na oferta**: acessório relacionado na mesma compra (ex: comprou película → oferecer capa)
+- **Cross-sell pós-venda**: e-mail/whatsapp após entrega oferecendo complemento com desconto
+- **Recorrência**: produto de consumo que gera recompra (ex: película que trinca, refil, reposição)
+
+### 🎨 Variações de Produto
+
+Sugira variações que o fornecedor consegue entregar:
+
+- Cores e acabamentos alternativos
+- Tamanhos/versões (mini, padrão, pro)
+- Materiais diferentes (plástico, metal, silicone, couro)
+- Versões com e sem acessórios
+- Embalagem padrão vs. premium
+
+### 📊 Estratégias de Posicionamento
+
+- **Líder em preço**: menor preço da categoria, volume alto, margem baixa
+- **Diferenciação por qualidade**: preço médio-alto, fotos premium, marca própria
+- **Especialista de nicho**: foco em subcategoria específica (ex: só películas para iPhone)
+- **Marca própria**: criar identidade visual, logotipo, embalagem personalizada
+
+### 🌐 Canais de Venda
+
+- **Mercado Livre**: canal principal, uso de Full, anúncios pagos (Product Ads)
+- **Shopee**: canal complementar, frete grátis, cupons
+- **Amazon**: para produtos de maior valor agregado e marca própria
+- **Loja própria / Shopify**: margem maior, controle total, remarketing
+- **Atacado**: venda para lojistas, marketplaces B2B
+- **Redes sociais**: Instagram Shopping, TikTok Shop, grupos de WhatsApp/Telegram
 
 ## 📈 Score Final
 
@@ -104,23 +255,38 @@ Atribua notas de 0 a 10 para cada critério:
 | Critério | Nota |
 |----------|------|
 | Demanda | /10 |
-| Margem | /10 |
+| Margem potencial | /10 |
 | Concorrência | /10 |
-| Escalabilidade | /10 |
-| Facilidade operacional | /10 |
+| Diferenciação possível | /10 |
+| Facilidade de importação | /10 |
 | Potencial de lucro | /10 |
 
-**Score Final:** (média ponderada, nota única de 0 a 10 — DEVE ser igual ao valor informado no "Resumo para Esteira")
+**Score Final:** (média aritmética — DEVE ser igual ao valor informado no "Resumo para Esteira")
+
+## ⚠️ Gatilhos de Alerta
+
+Emita alertas automáticos quando:
+
+- 🚨 **Conversão baixa**: taxa de conversão < 8% (indica baixa atratividade do anúncio ou produto)
+- 🚨 **Concorrente dominante**: concorrente principal com estoque > 100 unidades E preço muito agressivo (< 70% do valor de mercado)
+- 🚨 **Demanda em queda**: anúncio com > 1 ano E vendas mensais em declínio nos últimos meses
+- 🚨 **Margem inviável**: valor líquido recebido por venda < custo total de importação + margem de segurança de 30%
+- 🚨 **Risco de certificação**: produto que exige Anatel/INMETRO sem certificação disponível no fornecedor
+- 🚨 **Estoque baixo do concorrente**: pode ser oportunidade OU sinal de produto problemático (avalie o contexto)
+- ✅ **Sinal positivo**: anúncio com < 90 dias E vendas crescentes (indica produto em ascensão)
+- ✅ **Sinal positivo**: conversão > 12% (indica forte interesse do público e boa qualidade do anúncio)
 
 ## ✅ Conclusão Final
 
-Forneça uma conclusão objetiva informando:
+Forneça uma conclusão objetiva:
 
-- Se vale importar ou não
-- Nível de risco
-- Potencial de escala
-- Melhor estratégia de venda
-- Recomendação final`,
+- **Veredito:** VIÁVEL / INVÁVEL / NECESSITA AVALIAÇÃO (explique)
+- **Nível de risco:** Baixo / Médio / Alto
+- **Potencial de escala:** Baixo / Médio / Alto
+- **Investimento inicial estimado:** R$ X,XX (primeiro lote + frete + impostos)
+- **Tempo estimado para retorno:** X meses
+- **Melhor estratégia de venda:** (preço, diferenciação, volume, marca)
+- **Recomendação final:** (próximos passos concretos)`
   },
   {
     id: "top5-fornecedores-alibaba",
