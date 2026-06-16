@@ -159,14 +159,65 @@ Use os percentuais reais do AvantPro para comissão ML e imposto. Se não dispon
 
 ## 💡 Oportunidades Estratégicas
 
-Identifique com base nos dados:
+### 🎯 Estratégias de Diferenciação
 
-- Possíveis melhorias no produto (qualidade, acabamento, funcionalidades)
-- Kits e bundles viáveis (ex: produto + acessório)
-- Upsells e cross-sells
-- Variações de cor, tamanho ou modelo
-- Estratégias de posicionamento (preço, qualidade, volume)
-- Canais de venda complementares (Shopee, Amazon, loja própria)
+Com base nos pontos fracos do vendedor atual e nas características do produto, sugira estratégias concretas de diferenciação:
+
+- **Qualidade do anúncio**: número de fotos ideal, resolução mínima (HD/4K), ângulos necessários, fotos de uso real
+- **Conteúdo**: descrição rica com bullet points, tabela de especificações, comparação com concorrentes, FAQ
+- **Mídia**: vídeo demonstrativo, vídeo de unboxing, GIFs de uso, tour 360°
+- **Embalagem**: diferenciação visual, proteção extra, brindes (adesivo, cartão de agradecimento, manual em PT-BR)
+- **Garantia**: prazo estendido, política de troca facilitada, suporte pós-venda via WhatsApp
+- **Entrega**: Full vs. envio próprio, prazo menor que a média, rastreamento proativo
+- **Preço**: estratégia de penetração (preço baixo inicial) vs. skimming (preço premium com diferenciação)
+
+### 📦 Sugestão de Kits e Bundles
+
+Proponha combinações de produtos que aumentem o ticket médio e a margem:
+
+- **Kit econômico**: produto + item complementar de baixo custo (ex: case, película, suporte)
+- **Kit completo**: produto + 2-3 acessórios essenciais (ex: capa + película + carregador)
+- **Kit premium**: produto + acessórios premium + embalagem diferenciada (ex: case de luxo + película de vidro + cabo trançado)
+- **Kit recarga**: produto + insumos de reposição (ex: refil, lâminas, filtros)
+- **Kit presente**: produto + embalagem para presente + cartão personalizado
+
+Para cada kit sugerido, estime:
+- Preço de venda sugerido
+- Custo total dos itens (importação)
+- Margem estimada do kit
+
+### 🔄 Upsells e Cross-sells
+
+- **Upsell imediato**: versão superior do mesmo produto (ex: mais memória, material premium, cor exclusiva)
+- **Cross-sell na oferta**: acessório relacionado na mesma compra (ex: comprou película → oferecer capa)
+- **Cross-sell pós-venda**: e-mail/whatsapp após entrega oferecendo complemento com desconto
+- **Recorrência**: produto de consumo que gera recompra (ex: película que trinca, refil, reposição)
+
+### 🎨 Variações de Produto
+
+Sugira variações que o fornecedor consegue entregar:
+
+- Cores e acabamentos alternativos
+- Tamanhos/versões (mini, padrão, pro)
+- Materiais diferentes (plástico, metal, silicone, couro)
+- Versões com e sem acessórios
+- Embalagem padrão vs. premium
+
+### 📊 Estratégias de Posicionamento
+
+- **Líder em preço**: menor preço da categoria, volume alto, margem baixa
+- **Diferenciação por qualidade**: preço médio-alto, fotos premium, marca própria
+- **Especialista de nicho**: foco em subcategoria específica (ex: só películas para iPhone)
+- **Marca própria**: criar identidade visual, logotipo, embalagem personalizada
+
+### 🌐 Canais de Venda
+
+- **Mercado Livre**: canal principal, uso de Full, anúncios pagos (Product Ads)
+- **Shopee**: canal complementar, frete grátis, cupons
+- **Amazon**: para produtos de maior valor agregado e marca própria
+- **Loja própria / Shopify**: margem maior, controle total, remarketing
+- **Atacado**: venda para lojistas, marketplaces B2B
+- **Redes sociais**: Instagram Shopping, TikTok Shop, grupos de WhatsApp/Telegram
 
 ## 📈 Score Final
 
