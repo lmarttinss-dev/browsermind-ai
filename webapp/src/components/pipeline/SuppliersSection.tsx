@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
@@ -39,13 +39,55 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
-  const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos">("todos")
+  type SortOption = "default" | "total-asc" | "total-desc"
+  const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos" | "inviavel">("todos")
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState<SortOption>("default")
+
+  // Helper: extrai o custo total (produto + frete) da última cotação
+  const getTotalCost = (s: Supplier): number | null => {
+    const q = s.quotes?.length > 0 ? s.quotes[s.quotes.length - 1] : null
+    if (!q) return null
+    const parse = (v: string) => {
+      if (!v) return null
+      const cleaned = v.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+      const num = parseFloat(cleaned)
+      return isNaN(num) ? null : num
+    }
+    const a = parse(q.totalProductCost)
+    const b = parse(q.totalShippingCost)
+    if (a === null && b === null) return null
+    return (a || 0) + (b || 0)
+  }
 
   const filteredSuppliers = suppliers.filter(s => {
-    const matchesStatus = statusFilter === "todos" || (s.negotiationStatus || "aguardando_resposta") === statusFilter
+    const matchesStatus = statusFilter === "todos"
+      || (statusFilter === "inviavel" ? s.viable === false : (s.negotiationStatus || "aguardando_resposta") === statusFilter)
     const matchesSearch = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesStatus && matchesSearch
+  })
+
+  const sortedSuppliers = [...filteredSuppliers].sort((a, b) => {
+    switch (sortBy) {
+      case "total-asc": {
+        const ca = getTotalCost(a)
+        const cb = getTotalCost(b)
+        if (ca === null && cb === null) return 0
+        if (ca === null) return 1
+        if (cb === null) return -1
+        return ca - cb
+      }
+      case "total-desc": {
+        const ca = getTotalCost(a)
+        const cb = getTotalCost(b)
+        if (ca === null && cb === null) return 0
+        if (ca === null) return 1
+        if (cb === null) return -1
+        return cb - ca
+      }
+      default:
+        return 0
+    }
   })
 
   const handleCapture = async () => {
@@ -130,16 +172,42 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
         </div>
       ) : (
         <>
-          {/* Campo de busca por nome */}
-          <div className="relative mb-3 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Buscar fornecedor pelo nome..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
-            />
+          {/* Campo de busca + Ordenação */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="relative max-w-xs flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Buscar fornecedor pelo nome..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSortBy(sortBy === "total-asc" ? "default" : "total-asc")}
+                className={`flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
+                  sortBy === "total-asc"
+                    ? "border-emerald-600 bg-emerald-900/30 text-emerald-300"
+                    : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:text-gray-300"
+                }`}
+              >
+                <ArrowUp className="w-3 h-3" />
+                Menor custo
+              </button>
+              <button
+                onClick={() => setSortBy(sortBy === "total-desc" ? "default" : "total-desc")}
+                className={`flex items-center gap-1 text-[11px] px-2 py-1.5 rounded-lg border transition-colors ${
+                  sortBy === "total-desc"
+                    ? "border-emerald-600 bg-emerald-900/30 text-emerald-300"
+                    : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:text-gray-300"
+                }`}
+              >
+                <ArrowDown className="w-3 h-3" />
+                Maior custo
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -153,6 +221,24 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             >
               Todos ({suppliers.length})
             </button>
+            {/* Filtro: Inviável */}
+            {(() => {
+              const inviavelCount = suppliers.filter(s => s.viable === false).length
+              if (inviavelCount === 0) return null
+              return (
+                <button
+                  onClick={() => setStatusFilter("inviavel")}
+                  className={`text-[11px] px-2 py-1 rounded-lg border transition-colors flex items-center gap-1 ${
+                    statusFilter === "inviavel"
+                      ? "border-red-700 bg-red-900/40 text-red-300"
+                      : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-red-800 hover:text-red-400"
+                  }`}
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  Inviável ({inviavelCount})
+                </button>
+              )
+            })()}
             {(Object.keys(STATUS_CONFIG) as NegotiationStatus[]).map(key => {
               const count = suppliers.filter(s => (s.negotiationStatus || "aguardando_resposta") === key).length
               if (count === 0) return null
@@ -175,45 +261,70 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
           </div>
 
           <div className="grid gap-2">
-            {filteredSuppliers.map((supplier) => {
+            {sortedSuppliers.map((supplier) => {
               const index = suppliers.indexOf(supplier)
-            const status = supplier.negotiationStatus || "aguardando_resposta"
-            const statusConfig = STATUS_CONFIG[status]
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
+            const isNotViable = supplier.viable === false
 
             return (
               <button
                 key={`${supplier.url}-${index}`}
                 onClick={() => navigate(`/pipeline/${productId}/supplier/${index}`)}
-                className="w-full p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-gray-500 hover:bg-gray-800/50 transition-colors text-left group"
+                className={`w-full p-3 rounded-lg border transition-colors text-left group ${
+                  isNotViable
+                    ? "bg-red-950/30 border-red-800/60 hover:border-red-700 hover:bg-red-950/50"
+                    : "bg-gray-900/50 border-gray-700 hover:border-gray-500 hover:bg-gray-800/50"
+                }`}
               >
+                {/* Banner de inviabilidade */}
+                {isNotViable && (
+                  <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-red-900/40 border border-red-700/60 rounded text-[10px] font-semibold text-red-300 uppercase tracking-wider">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                    Fornecedor sem viabilidade
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
+                    {/* Linha 1: Nome + Rating + Trade Assurance */}
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-200 truncate">{supplier.name}</span>
+                      <span className={`text-sm font-medium truncate ${isNotViable ? "text-red-300 line-through" : "text-gray-200"}`}>{supplier.name}</span>
                       {supplier.tradeAssurance && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${statusConfig.color} ${statusConfig.bgColor} ${statusConfig.borderColor}`}>
-                        <StatusIcon status={status} />
-                        {statusConfig.label}
-                      </div>
-                      {supplier.unitPrice && (
-                        <span className="text-emerald-400 font-medium">{supplier.unitPrice}</span>
-                      )}
-                      {supplier.moq && (
-                        <span className="text-gray-500">MOQ: {supplier.moq}</span>
+                        <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isNotViable ? "text-red-600" : "text-emerald-400"}`} />
                       )}
                       {supplier.rating > 0 && (
-                        <span className="text-gray-500 flex items-center gap-0.5">
+                        <span className="text-xs text-gray-400 flex items-center gap-0.5 ml-auto flex-shrink-0">
                           <Star className="w-3 h-3 text-yellow-500" />
                           {supplier.rating}
                         </span>
                       )}
-                      {supplier.quotes?.length > 0 && (
-                        <span className="text-blue-400">{supplier.quotes.length} cotação(ões)</span>
+                    </div>
+
+                    {/* Linha 2: Custo total + cotação recebida (sútil) */}
+                    <div className="flex items-center gap-2 text-xs">
+                      {latestQuote ? (
+                        <span className="text-emerald-400 font-medium">
+                          {(() => {
+                            const parseCurrency = (v: string): number | null => {
+                              if (!v) return null
+                              const cleaned = v.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+                              const num = parseFloat(cleaned)
+                              return isNaN(num) ? null : num
+                            }
+                            const a = parseCurrency(latestQuote.totalProductCost)
+                            const b = parseCurrency(latestQuote.totalShippingCost)
+                            if (a === null && b === null) return null
+                            const total = (a || 0) + (b || 0)
+                            return `US$ ${total.toFixed(2)}`
+                          })() || "—"}
+                        </span>
+                      ) : (
+                        <span className="text-gray-600">Sem cotação</span>
+                      )}
+                      {supplier.negotiationStatus === "cotacao_recebida" && (
+                        <span className="text-[10px] text-blue-400/60 flex items-center gap-0.5">
+                          <Mail className="w-2.5 h-2.5" />
+                          Cotação recebida
+                        </span>
                       )}
                     </div>
                   </div>

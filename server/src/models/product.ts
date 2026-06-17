@@ -38,6 +38,7 @@ export type Supplier = {
   certifications: string
   report: string
   capturedAt: Date
+  viable: boolean
   negotiationStatus: NegotiationStatus
   quotes: SupplierQuote[]
   negotiationStartedAt?: Date
@@ -90,6 +91,7 @@ const supplierSchema = new Schema({
   certifications: { type: String, default: "" },
   report: { type: String, default: "" },
   capturedAt: { type: Date, default: Date.now },
+  viable: { type: Boolean, default: true },
   negotiationStatus: { type: String, enum: NEGOTIATION_STATUSES, default: "aguardando_resposta" },
   quotes: { type: [supplierQuoteSchema], default: [] },
   negotiationStartedAt: { type: Date },
