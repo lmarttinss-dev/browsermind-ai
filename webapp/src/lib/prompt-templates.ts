@@ -25,7 +25,7 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Nome: (nome completo do produto)
 - Categoria: (categoria principal > subcategoria)
 - Preço atual: R$ (valor no formato brasileiro, ex: 69,00)
-- Vendas mensais estimadas: (número inteiro, ex: 223)
+- Ritmo atual (vendas/mês): (número inteiro do AvantPro, ex: 223)
 - Concorrência: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
 - Potencial de margem: (percentual ou faixa, ex: 35-45%)
 - Score Final: (nota de 0 a 10 representando viabilidade geral)
@@ -55,10 +55,10 @@ Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
 - Estoque disponível:
 - Total vendido (histórico):
 - Vendas por dia:
-- Vendas mensais (unidades/mês):
+- Ritmo atual — vendas/mês (unidades/mês) — métrica principal de velocidade de venda do AvantPro:
 - Visitas ao anúncio:
 - Taxa de conversão (%):
-- Receita mensal estimada: vendas mensais × preço de venda (calcule: R$ X,XX)
+- Receita mensal estimada: Ritmo atual × preço de venda (calcule: R$ X,XX)
 - Faturamento total do vendedor (se disponível):
 - Ticket médio da loja (se disponível):
 
@@ -74,7 +74,7 @@ Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
 ### Demanda
 
 - Vendas diárias: interprete o ritmo (ex: 7/dia = giro consistente)
-- Volume mensal: classifique como Baixo (<50), Médio (50-200), Alto (200-500) ou Muito Alto (>500)
+- Volume mensal (baseado no Ritmo atual): classifique como Baixo (<50), Médio (50-200), Alto (200-500) ou Muito Alto (>500)
 - Taxa de conversão: classifique como Baixa (<5%), Média (5-10%), Alta (10-15%) ou Muito Alta (>15%)
 - Tendência: interprete se a demanda está crescendo, estável ou caindo com base nos dados
 
@@ -176,7 +176,7 @@ Gere uma tabela com as métricas coletadas e os custos estimados:
 | Descrição | Valor |
 |-----------|-------|
 | Preço de venda (mercado) | R$ X,XX |
-| Vendas mensais médias | X |
+| Ritmo atual (vendas/mês) | X |
 | Receita bruta mensal | R$ X,XX |
 | (-) Comissão ML (X%) | R$ X,XX |
 | (-) Imposto (X%) | R$ X,XX |
@@ -269,7 +269,7 @@ Emita alertas automáticos quando:
 
 - 🚨 **Conversão baixa**: taxa de conversão < 8% (indica baixa atratividade do anúncio ou produto)
 - 🚨 **Concorrente dominante**: concorrente principal com estoque > 100 unidades E preço muito agressivo (< 70% do valor de mercado)
-- 🚨 **Demanda em queda**: anúncio com > 1 ano E vendas mensais em declínio nos últimos meses
+- 🚨 **Demanda em queda**: anúncio com > 1 ano E Ritmo atual em declínio nos últimos meses
 - 🚨 **Margem inviável**: valor líquido recebido por venda < custo total de importação + margem de segurança de 30%
 - 🚨 **Risco de certificação**: produto que exige Anatel/INMETRO sem certificação disponível no fornecedor
 - 🚨 **Estoque baixo do concorrente**: pode ser oportunidade OU sinal de produto problemático (avalie o contexto)
