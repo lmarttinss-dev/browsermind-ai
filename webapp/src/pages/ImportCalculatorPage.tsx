@@ -148,14 +148,10 @@ const ImportCalculatorPage = () => {
       .finally(() => setLoadingRate(false))
   }, [])
 
-  // Quantidade real de unidades físicas a importar:
-  // quando for kit, multiplica pela quantidade de unidades por kit
-  const importQuantity = isKit ? product.quantity * kitQuantity : product.quantity
-
-  // Etapa 1 - Cálculos de importação
+  // Etapa 1 - Cálculos de importação (usa a quantidade que o usuário digitou)
   const importCalc = useMemo(
-    () => calcImport({ ...product, quantity: importQuantity }, dollarRate, COURIER_RATE),
-    [product, dollarRate, isKit, kitQuantity],
+    () => calcImport(product, dollarRate, COURIER_RATE),
+    [product, dollarRate],
   )
 
   // Custo unitário efetivo na Etapa 2: se for kit, unitCost × qtd
@@ -164,9 +160,10 @@ const ImportCalculatorPage = () => {
     return importCalc.unitCost * kitQuantity
   }, [isKit, kitQuantity, importCalc.unitCost])
 
-  // Total da importação derivado do unitCost truncado,
-  // garantindo que o display "X un × R$ Y" bata com o Montinho
-  const displayTotalImport = importQuantity * importCalc.unitCost
+  // Quantidade de itens vendáveis: quando for kit, divide pela qtd por kit
+  const saleableQuantity = isKit
+    ? Math.floor(product.quantity / kitQuantity)
+    : product.quantity
 
   // Etapa 2 - Cálculos de viabilidade de venda
   const salesCalc = useMemo(
@@ -178,13 +175,13 @@ const ImportCalculatorPage = () => {
   const investmentCalc = useMemo(
     () =>
       calcInvestment(
-        displayTotalImport,
+        importCalc.totalImport,
         effectiveUnitCost,
         sales.salePrice,
-        product.quantity,
+        saleableQuantity,
         salesCalc.totalExpenses,
       ),
-    [displayTotalImport, salesCalc, sales.salePrice, product.quantity, effectiveUnitCost],
+    [importCalc.totalImport, salesCalc, sales.salePrice, saleableQuantity, effectiveUnitCost],
   )
 
   const handleSaveCalculator = async () => {
@@ -695,7 +692,7 @@ const ImportCalculatorPage = () => {
                   R$ {formatBRL(investmentCalc.totalInvestment)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {importQuantity} un × R$ {formatBRL(importCalc.unitCost)}
+                  {product.quantity} un × R$ {formatBRL(importCalc.unitCost)}
                 </p>
               </div>
 

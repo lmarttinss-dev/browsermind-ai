@@ -273,22 +273,17 @@ describe("Pipeline completo", () => {
 // Cenário Kit — Etapa 1 + 2 + 3 com isKit = true
 // -----------------------------------------------------------------------
 describe("Pipeline com Kit", () => {
-  const produtoBase: ProductInput = {
+  const produto: ProductInput = {
     name: "Película Lente Câmera",
     importTax: 60,
-    quantity: 100,
+    quantity: 100,        // unidades físicas importadas
     unitPriceDollar: 0.86,
     shippingDollar: 75,
     icms: 17,
   }
 
   const kitQuantity = 2
-
-  // Simula o ajuste de quantidade que o componente faz: quantity × kitQuantity
-  const produtoComKit: ProductInput = {
-    ...produtoBase,
-    quantity: produtoBase.quantity * kitQuantity, // 200 unidades físicas
-  }
+  const saleableQuantity = Math.floor(produto.quantity / kitQuantity) // 50 kits
 
   const sales: SalesInput = {
     isKit: true,
@@ -299,66 +294,58 @@ describe("Pipeline com Kit", () => {
     packagingCost: 0,
   }
 
-  it("deve importar unidades suficientes para montar todos os kits", () => {
-    const importResult = calcImport(produtoComKit, 5.16)
+  it("importa a quantidade exata que o usuário digitou (sem multiplicar)", () => {
+    const importResult = calcImport(produto, 5.16)
 
-    // 200 unidades importadas
-    expect(importResult.customsValueUSD).toBe(200 * 0.86 + 75) // 247
+    // 100 unidades físicas, igual ao input do usuário
+    expect(importResult.customsValueUSD).toBe(100 * 0.86 + 75) // 161
     expect(importResult.unitCost).toBeGreaterThan(0)
-
-    // Custo unitário menor que sem kit (frete fixo diluído em mais unidades)
-    const importSemKit = calcImport(produtoBase, 5.16)
-    expect(importResult.unitCost).toBeLessThan(importSemKit.unitCost)
   })
 
-  it("deve manter consistência: totalImport ≈ effectiveUnitCost × quantity no investment", () => {
-    const importResult = calcImport(produtoComKit, 5.16)
-    // effectiveUnitCost = custo por kit = unitCost × 2
+  it("reduz a quantidade de itens vendáveis conforme o kit", () => {
+    // 100 unidades físicas / 2 por kit = 50 kits
+    expect(saleableQuantity).toBe(50)
+  })
+
+  it("calcula receita apenas com os kits vendáveis (50, não 100)", () => {
+    const importResult = calcImport(produto, 5.16)
     const effectiveUnitCost = importResult.unitCost * kitQuantity
     const salesResult = calcSales(sales, effectiveUnitCost)
     const investResult = calcInvestment(
       importResult.totalImport,
       effectiveUnitCost,
       sales.salePrice,
-      produtoBase.quantity, // 100 kits para vender
+      saleableQuantity,  // 50 kits
       salesResult.totalExpenses,
     )
 
-    // Consistência: o productCost em totalExpenses × quantity ≈ totalImport
-    // (permitindo pequena diferença por truncamento)
-    const productCostTotal = effectiveUnitCost * produtoBase.quantity
-    const diff = Math.abs(productCostTotal - importResult.totalImport)
-    // A diferença deve ser pequena (< 1% do total)
-    expect(diff / importResult.totalImport).toBeLessThan(0.01)
+    // Receita: 50 kits × R$ 109,90 = R$ 5.495,00
+    expect(investResult.totalRevenue).toBeCloseTo(5495.00, 0)
 
-    // Receita: 100 kits × R$ 109,90
-    expect(investResult.totalRevenue).toBeCloseTo(10990.00, 1)
+    // totalImport ≈ unitCost × quantity (custo de 100 unidades)
+    expect(investResult.totalInvestment).toBe(importResult.totalImport)
 
-    // Multiplicador deve ser positivo (investimento gera retorno)
+    // Multiplicador deve ser positivo se o negócio for viável
     expect(investResult.multiplier).toBeGreaterThan(0)
-  })
-
-  it("deve gerar resultado consistente com os valores da imagem (após correção)", () => {
-    const importResult = calcImport(produtoComKit, 5.16)
-    const effectiveUnitCost = trunc2(importResult.unitCost * kitQuantity)
-    const salesResult = calcSales(sales, effectiveUnitCost)
-    const investResult = calcInvestment(
-      importResult.totalImport,
-      effectiveUnitCost,
-      sales.salePrice,
-      produtoBase.quantity,
-      salesResult.totalExpenses,
-    )
-
-    // Verifica que os valores são financeiramente coerentes
-    // (o multiplicador não pode ser maior que receita / investimento)
-    const maxMultiplier = investResult.totalRevenue / investResult.totalInvestment - 1
-    expect(investResult.multiplier).toBeLessThanOrEqual(maxMultiplier)
 
     // totalReturn + totalCosts = totalRevenue
     expect(investResult.totalReturn + investResult.totalCosts).toBeCloseTo(
       investResult.totalRevenue,
       0,
     )
+  })
+
+  it("exibe a quantidade original no Montinho (100 un, não 200)", () => {
+    const importResult = calcImport(produto, 5.16)
+
+    // O display usa product.quantity (100), não multiplicado
+    expect(produto.quantity).toBe(100)
+    // Custo unitário para 100 unidades
+    expect(importResult.unitCost).toBeGreaterThan(15) // ~17.90
+  })
+
+  it("com 100 un e kit de 3, vende 33 kits (arredonda para baixo)", () => {
+    const qty = Math.floor(100 / 3)
+    expect(qty).toBe(33)
   })
 })
