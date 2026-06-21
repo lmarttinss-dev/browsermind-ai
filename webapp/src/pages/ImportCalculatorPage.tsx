@@ -148,10 +148,14 @@ const ImportCalculatorPage = () => {
       .finally(() => setLoadingRate(false))
   }, [])
 
-  // Etapa 1 - Cálculos de importação (sem interferência do kit)
+  // Quantidade real de unidades físicas a importar:
+  // quando for kit, multiplica pela quantidade de unidades por kit
+  const importQuantity = isKit ? product.quantity * kitQuantity : product.quantity
+
+  // Etapa 1 - Cálculos de importação
   const importCalc = useMemo(
-    () => calcImport(product, dollarRate, COURIER_RATE),
-    [product, dollarRate],
+    () => calcImport({ ...product, quantity: importQuantity }, dollarRate, COURIER_RATE),
+    [product, dollarRate, isKit, kitQuantity],
   )
 
   // Custo unitário efetivo na Etapa 2: se for kit, unitCost × qtd
@@ -687,7 +691,7 @@ const ImportCalculatorPage = () => {
                   R$ {formatBRL(investmentCalc.totalInvestment)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {product.quantity} un × R$ {formatBRL(importCalc.unitCost)}
+                  {importQuantity} un × R$ {formatBRL(importCalc.unitCost)}
                 </p>
               </div>
 
