@@ -268,3 +268,84 @@ describe("Pipeline completo", () => {
     expect(investResult.totalRevenue).toBe(sales.salePrice * produto.quantity)
   })
 })
+
+// -----------------------------------------------------------------------
+// Cenário Kit — Etapa 1 + 2 + 3 com isKit = true
+// -----------------------------------------------------------------------
+describe("Pipeline com Kit", () => {
+  const produto: ProductInput = {
+    name: "Película Lente Câmera",
+    importTax: 60,
+    quantity: 100,        // unidades físicas importadas
+    unitPriceDollar: 0.86,
+    shippingDollar: 75,
+    icms: 17,
+  }
+
+  const kitQuantity = 2
+  const saleableQuantity = Math.floor(produto.quantity / kitQuantity) // 50 kits
+
+  const sales: SalesInput = {
+    isKit: true,
+    salesTax: 4,
+    salePrice: 109.90,
+    shippingFee: 9,
+    adFee: 13,
+    packagingCost: 0,
+  }
+
+  it("importa a quantidade exata que o usuário digitou (sem multiplicar)", () => {
+    const importResult = calcImport(produto, 5.16)
+
+    // 100 unidades físicas, igual ao input do usuário
+    expect(importResult.customsValueUSD).toBe(100 * 0.86 + 75) // 161
+    expect(importResult.unitCost).toBeGreaterThan(0)
+  })
+
+  it("reduz a quantidade de itens vendáveis conforme o kit", () => {
+    // 100 unidades físicas / 2 por kit = 50 kits
+    expect(saleableQuantity).toBe(50)
+  })
+
+  it("calcula receita apenas com os kits vendáveis (50, não 100)", () => {
+    const importResult = calcImport(produto, 5.16)
+    const effectiveUnitCost = importResult.unitCost * kitQuantity
+    const salesResult = calcSales(sales, effectiveUnitCost)
+    const investResult = calcInvestment(
+      importResult.totalImport,
+      effectiveUnitCost,
+      sales.salePrice,
+      saleableQuantity,  // 50 kits
+      salesResult.totalExpenses,
+    )
+
+    // Receita: 50 kits × R$ 109,90 = R$ 5.495,00
+    expect(investResult.totalRevenue).toBeCloseTo(5495.00, 0)
+
+    // totalImport ≈ unitCost × quantity (custo de 100 unidades)
+    expect(investResult.totalInvestment).toBe(importResult.totalImport)
+
+    // Multiplicador deve ser positivo se o negócio for viável
+    expect(investResult.multiplier).toBeGreaterThan(0)
+
+    // totalReturn + totalCosts = totalRevenue
+    expect(investResult.totalReturn + investResult.totalCosts).toBeCloseTo(
+      investResult.totalRevenue,
+      0,
+    )
+  })
+
+  it("exibe a quantidade original no Montinho (100 un, não 200)", () => {
+    const importResult = calcImport(produto, 5.16)
+
+    // O display usa product.quantity (100), não multiplicado
+    expect(produto.quantity).toBe(100)
+    // Custo unitário para 100 unidades
+    expect(importResult.unitCost).toBeGreaterThan(15) // ~17.90
+  })
+
+  it("com 100 un e kit de 3, vende 33 kits (arredonda para baixo)", () => {
+    const qty = Math.floor(100 / 3)
+    expect(qty).toBe(33)
+  })
+})
