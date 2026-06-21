@@ -10,9 +10,11 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     id: "importacao-simplificada",
     name: "Análise para Importação Simplificada",
     description: "Relatório completo de viabilidade do produto para importação simplificada",
-    content: `Analise a viabilidade deste produto para importação simplificada e gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
+    content: `Analise a viabilidade de importação simplificada deste produto com base nas métricas do AvantPro visíveis na página. Gere um relatório padronizado em Markdown. Inclua a URL do produto analisado.
 
 IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatamente no formato abaixo. Esses campos são extraídos automaticamente pelo sistema.
+
+PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 # Template do Relatório
 
@@ -24,6 +26,7 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 - Categoria: (categoria principal > subcategoria)
 - Preço atual: R$ (valor no formato brasileiro, ex: 49,90)
 - Vendas mensais estimadas: (número inteiro, ex: 1.200)
+- Ritmo atual (vendas/mês): (número inteiro do AvantPro, ex: 1.200)
 - Concorrência: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
 - Potencial de margem: (percentual ou faixa, ex: 35-45%)
 - Score Final: (nota de 0 a 10 representando viabilidade geral)
@@ -46,6 +49,7 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 - Total de vendas:
 - Vendas por dia:
 - Vendas mensais estimadas:
+- Ritmo atual (vendas/mês) — métrica principal de velocidade de venda do AvantPro:
 - Faturamento mensal estimado:
 - Número de visitas:
 - Taxa de conversão estimada:
