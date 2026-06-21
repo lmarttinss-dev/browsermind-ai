@@ -164,6 +164,10 @@ const ImportCalculatorPage = () => {
     return importCalc.unitCost * kitQuantity
   }, [isKit, kitQuantity, importCalc.unitCost])
 
+  // Total da importação derivado do unitCost truncado,
+  // garantindo que o display "X un × R$ Y" bata com o Montinho
+  const displayTotalImport = importQuantity * importCalc.unitCost
+
   // Etapa 2 - Cálculos de viabilidade de venda
   const salesCalc = useMemo(
     () => calcSales(sales, effectiveUnitCost),
@@ -174,13 +178,13 @@ const ImportCalculatorPage = () => {
   const investmentCalc = useMemo(
     () =>
       calcInvestment(
-        importCalc.totalImport,
+        displayTotalImport,
         effectiveUnitCost,
         sales.salePrice,
         product.quantity,
         salesCalc.totalExpenses,
       ),
-    [importCalc, salesCalc, sales.salePrice, product.quantity, effectiveUnitCost],
+    [displayTotalImport, salesCalc, sales.salePrice, product.quantity, effectiveUnitCost],
   )
 
   const handleSaveCalculator = async () => {
