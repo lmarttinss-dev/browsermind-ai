@@ -25,6 +25,7 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Nome: (nome completo do produto)
 - Categoria: (categoria principal > subcategoria)
 - Preço atual: R$ (valor no formato brasileiro, ex: 69,00)
+- Vendas mensais estimadas: (número inteiro, ex: 223)
 - Ritmo atual (vendas/mês): (número inteiro do AvantPro, ex: 223)
 - Concorrência: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
 - Potencial de margem: (percentual ou faixa, ex: 35-45%)
@@ -55,6 +56,7 @@ Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
 - Estoque disponível:
 - Total vendido (histórico):
 - Vendas por dia:
+- Vendas mensais (unidades/mês) — total vendido no mês pelo AvantPro:
 - Ritmo atual — vendas/mês (unidades/mês) — métrica principal de velocidade de venda do AvantPro:
 - Visitas ao anúncio:
 - Taxa de conversão (%):
