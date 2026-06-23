@@ -23,7 +23,7 @@ const COMPETITION_COLORS: Record<string, string> = {
   Saturado: "text-red-400 bg-red-900/30 border-red-800",
 }
 
-type Tab = "produto" | "fornecedores"
+type Tab = "produto" | "fornecedores" | "mercado"
 
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -216,6 +216,22 @@ export const ProductDetailPage = () => {
             </span>
           )}
         </button>
+        <button
+          onClick={() => setActiveTab("mercado")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "mercado"
+              ? "border-blue-500 text-blue-400"
+              : "border-transparent text-gray-400 hover:text-gray-300"
+          }`}
+        >
+          <TrendingUp className="w-4 h-4" />
+          Mercado
+          {product.marketReport && (
+            <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded-full">
+              ✓
+            </span>
+          )}
+        </button>
 
       </div>
 
@@ -314,6 +330,47 @@ export const ProductDetailPage = () => {
             supplierReport={product.supplierReport || ""}
             onUpdate={handleSuppliersUpdate}
           />
+        )}
+
+        {activeTab === "mercado" && (
+          <div className="p-5">
+            {product.marketReport ? (
+              <>
+                <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Relatório de Mercado
+                </h3>
+                <div className="prose prose-invert max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code({ className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || "")
+                        if (match && match[1] === "mermaid") {
+                          return <MermaidRenderer chart={String(children)} />
+                        }
+                        return (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        )
+                      },
+                    }}
+                  >
+                    {product.marketReport}
+                  </ReactMarkdown>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-16">
+                <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">Nenhum relatório de mercado disponível.</p>
+                <p className="text-gray-600 text-xs mt-1">
+                  Execute uma análise de oferta, demanda e concorrência e vincule a este produto.
+                </p>
+              </div>
+            )}
+          </div>
         )}
 
 

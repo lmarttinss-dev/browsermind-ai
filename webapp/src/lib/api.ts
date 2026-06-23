@@ -112,6 +112,13 @@ export const api = {
       body: JSON.stringify(calcResult),
     }),
 
+  // Market Report
+  updateMarketReport: (id: string, report: string) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}/market-report`, {
+      method: "PATCH",
+      body: JSON.stringify({ report }),
+    }),
+
   // Compare
   comparePipelineProducts: (model: string, stage: PipelineStage = "triagem", forceRefresh = false) =>
     request<ComparisonResponse>("/api/pipeline/compare", {
@@ -194,6 +201,7 @@ export type PipelineProduct = {
   order: number;
   suppliers: Supplier[];
   supplierReport: string;
+  marketReport: string;
   isKit: boolean
   kitItems: KitItem[]
   createdAt: string;

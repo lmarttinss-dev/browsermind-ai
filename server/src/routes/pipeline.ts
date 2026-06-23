@@ -138,3 +138,25 @@ router.patch("/:id/calculator", async (req, res) => {
     res.status(500).json({ error: "Erro ao salvar resultado da calculadora" })
   }
 })
+
+// Salvar relatório de análise de mercado no produto
+router.patch("/:id/market-report", async (req, res) => {
+  try {
+    const { report } = req.body
+
+    if (!report || typeof report !== "string") {
+      return res.status(400).json({ error: "Relatório é obrigatório" })
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: { marketReport: report } },
+      { new: true }
+    )
+
+    if (!product) return res.status(404).json({ error: "Produto não encontrado" })
+    res.json({ success: true, product })
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao salvar relatório de mercado" })
+  }
+})

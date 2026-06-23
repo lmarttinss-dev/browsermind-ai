@@ -1,12 +1,14 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useStore } from "@/store/useStore";
-import { MODELS } from "@/lib/api";
+import { api, MODELS, type PipelineProduct } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
 import { sanitizeFilename, extractProductSlugFromResponse } from "@/lib/utils";
-import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download } from "lucide-react";
+import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
+
+const MARKET_TEMPLATE_ID = "analise-oferta-demanda-concorrencia"
 
 export function ChatPanel() {
   const {
@@ -20,10 +22,45 @@ export function ChatPanel() {
   } = useStore();
 
   const [activeTemplate, setActiveTemplate] = useState("")
+  const [pipelineProducts, setPipelineProducts] = useState<PipelineProduct[]>([])
+  const [selectedProductId, setSelectedProductId] = useState("")
+  const [isSavingReport, setIsSavingReport] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
+  const prevLoadingRef = useRef(isLoading)
+
+  // Carrega produtos da esteira quando o template de mercado é selecionado
+  useEffect(() => {
+    if (activeTemplate === MARKET_TEMPLATE_ID && pipelineProducts.length === 0) {
+      api.getPipelineProducts().then((res) => {
+        const all = Object.values(res.products).flat() as PipelineProduct[]
+        setPipelineProducts(all)
+      }).catch(() => {})
+    }
+  }, [activeTemplate, pipelineProducts.length])
+
+  // Salva relatório no produto após análise concluir
+  useEffect(() => {
+    const wasLoading = prevLoadingRef.current
+    prevLoadingRef.current = isLoading
+
+    if (wasLoading && !isLoading && response && activeTemplate === MARKET_TEMPLATE_ID && selectedProductId) {
+      setIsSavingReport(true)
+      api.updateMarketReport(selectedProductId, response)
+        .then(() => {
+          const product = pipelineProducts.find(p => p._id === selectedProductId)
+          setSaveSuccess(`Relatório salvo em "${product?.title}"`)
+        })
+        .catch((err) => {
+          console.error("Erro ao salvar relatório de mercado:", err)
+        })
+        .finally(() => setIsSavingReport(false))
+    }
+  }, [isLoading, response, activeTemplate, selectedProductId, pipelineProducts])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
+      setSaveSuccess(null)
       analyzePage(activeTemplate || undefined);
     }
   };
@@ -34,6 +71,8 @@ export function ChatPanel() {
     if (template) {
       setPrompt(template.content);
       setActiveTemplate(templateId)
+      setSelectedProductId("")
+      setSaveSuccess(null)
     }
   };
 
@@ -84,6 +123,25 @@ export function ChatPanel() {
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
 
+        {/* Product selector for market analysis template */}
+        {activeTemplate === MARKET_TEMPLATE_ID && (
+          <div className="relative">
+            <select
+              value={selectedProductId}
+              onChange={(e) => { setSelectedProductId(e.target.value); setSaveSuccess(null) }}
+              className="w-full appearance-none bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            >
+              <option value="">Vincular a um produto da esteira (opcional)...</option>
+              {pipelineProducts.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.title.replace(/\*+/g, "")} ({p.stage})
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" />
+          </div>
+        )}
+
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -95,7 +153,7 @@ export function ChatPanel() {
 
         <div className="flex gap-2">
           <button
-            onClick={() => analyzePage(activeTemplate || undefined)}
+            onClick={() => { setSaveSuccess(null); analyzePage(activeTemplate || undefined) }}
             disabled={isLoading || !prompt.trim()}
             className="flex-1 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
           >
@@ -113,6 +171,20 @@ export function ChatPanel() {
             </button>
           )}
         </div>
+
+        {/* Save status indicator */}
+        {isSavingReport && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-600">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            Salvando relatório no produto...
+          </div>
+        )}
+        {saveSuccess && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-600">
+            <Check className="w-3 h-3" />
+            {saveSuccess}
+          </div>
+        )}
       </div>
 
       {/* Response */}

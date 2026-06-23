@@ -61,6 +61,7 @@ export type PipelineProduct = Document & {
   order: number
   suppliers: Supplier[]
   supplierReport: string
+  marketReport: string
   isKit: boolean
   kitItems: KitItem[]
   createdAt: Date
@@ -120,6 +121,7 @@ const productSchema = new Schema<PipelineProduct>(
     order: { type: Number, default: 0 },
     suppliers: { type: [supplierSchema], default: [] },
     supplierReport: { type: String, default: "" },
+    marketReport: { type: String, default: "" },
     isKit: { type: Boolean, default: false },
     kitItems: { type: [kitItemSchema], default: [] },
   },
