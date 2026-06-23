@@ -123,7 +123,7 @@ export function ChatPanel() {
         {/* Template selector */}
         <div className="relative">
           <select
-            value=""
+            value={activeTemplate}
             onChange={(e) => applyTemplate(e.target.value)}
             className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 pr-8 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
           >
