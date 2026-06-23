@@ -87,32 +87,31 @@ export const ProductDetailPage = () => {
   }
 
   const handleOpenCopyModal = async () => {
+    if (!product?.analysisReport) {
+      setError("Este produto não possui relatório de análise para copiar.")
+      return
+    }
     setShowCopyModal(true)
     setCopySuccess(false)
     setCopySearch("")
     try {
       const res = await api.getPipelineProducts()
       const all = Object.values(res.products).flat() as PipelineProduct[]
-      // Filtra apenas produtos com relatório de análise e que não sejam o atual
-      setCopyProducts(all.filter((p) => p._id !== product?._id))
+      setCopyProducts(all.filter((p) => p._id !== product._id))
     } catch {
       setCopyProducts([])
     }
   }
 
-  const handleCopyAnalysis = async (sourceId: string) => {
-    if (!product) return
+  const handleCopyAnalysis = async (destId: string) => {
+    if (!product?.analysisReport) return
     setIsCopying(true)
     try {
-      const source = await api.getPipelineProduct(sourceId)
-      if (source.product.analysisReport) {
-        const updated = await api.updatePipelineProduct(product._id, {
-          analysisReport: source.product.analysisReport,
-        })
-        setProduct(updated.product)
-        setCopySuccess(true)
-        setTimeout(() => setShowCopyModal(false), 800)
-      }
+      const updated = await api.updatePipelineProduct(destId, {
+        analysisReport: product.analysisReport,
+      })
+      setCopySuccess(true)
+      setTimeout(() => setShowCopyModal(false), 800)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao copiar análise")
     } finally {
@@ -526,7 +525,12 @@ export const ProductDetailPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-gray-800 rounded-xl border border-gray-700 w-full max-w-lg max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
-              <h3 className="text-base font-semibold text-gray-100">Copiar análise de outro produto</h3>
+              <div>
+                <h3 className="text-base font-semibold text-gray-100">Copiar análise para outro produto</h3>
+                <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[320px]">
+                  Origem: {product.title.replace(/\*+/g, "")}
+                </p>
+              </div>
               <button
                 onClick={() => setShowCopyModal(false)}
                 className="p-1 text-gray-400 hover:text-gray-200 rounded-lg hover:bg-gray-700 transition-colors"
@@ -546,7 +550,7 @@ export const ProductDetailPage = () => {
               />
               {copyProducts.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-8">
-                  Nenhum outro produto com análise disponível na esteira.
+                  Nenhum outro produto na esteira.
                 </p>
               ) : (() => {
                 const filtered = copySearch.trim()
