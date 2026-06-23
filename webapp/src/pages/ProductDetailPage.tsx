@@ -37,6 +37,7 @@ export const ProductDetailPage = () => {
   const [copyProducts, setCopyProducts] = useState<PipelineProduct[]>([])
   const [isCopying, setIsCopying] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [copySearch, setCopySearch] = useState("")
 
   useEffect(() => {
     if (!id) return
@@ -88,6 +89,7 @@ export const ProductDetailPage = () => {
   const handleOpenCopyModal = async () => {
     setShowCopyModal(true)
     setCopySuccess(false)
+    setCopySearch("")
     try {
       const res = await api.getPipelineProducts()
       const all = Object.values(res.products).flat() as PipelineProduct[]
@@ -533,13 +535,38 @@ export const ProductDetailPage = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
+              {/* Campo de busca */}
+              <input
+                type="text"
+                value={copySearch}
+                onChange={(e) => setCopySearch(e.target.value)}
+                placeholder="Buscar produto..."
+                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 mb-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                autoFocus
+              />
               {copyProducts.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-8">
                   Nenhum outro produto com análise disponível na esteira.
                 </p>
-              ) : (
-                <div className="space-y-2">
-                  {copyProducts.map((p) => (
+              ) : (() => {
+                const filtered = copySearch.trim()
+                  ? copyProducts.filter((p) =>
+                      p.title.toLowerCase().includes(copySearch.toLowerCase()) ||
+                      (p.category && p.category.toLowerCase().includes(copySearch.toLowerCase()))
+                    )
+                  : copyProducts
+
+                if (filtered.length === 0) {
+                  return (
+                    <p className="text-sm text-gray-500 text-center py-8">
+                      Nenhum produto encontrado para "{copySearch}".
+                    </p>
+                  )
+                }
+
+                return (
+                  <div className="space-y-2">
+                    {filtered.map((p) => (
                     <button
                       key={p._id}
                       onClick={() => handleCopyAnalysis(p._id)}
@@ -565,7 +592,8 @@ export const ProductDetailPage = () => {
                     </button>
                   ))}
                 </div>
-              )}
+                )
+              })()}
             </div>
             <div className="px-5 py-3 border-t border-gray-700 text-center">
               {copySuccess ? (
