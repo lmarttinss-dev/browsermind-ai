@@ -441,11 +441,19 @@ export class PlaywrightManager {
               if (!href || href === "#" || href.startsWith("javascript:")) return;
               if (href.startsWith("//")) href = "https:" + href;
               else if (href.startsWith("/")) href = window.location.origin + href;
-              // Remover query string para URLs do Alibaba product-detail
-              if (href.includes("/product-detail/")) {
-                href = href.split("?")[0];
+              // Remover query string e fragmento para URLs de produto do Mercado Livre e Alibaba
+              if (href.includes("/product-detail/") || href.includes("/up/MLB") || href.includes("/p/MLB")) {
+                href = href.split("?")[0].split("#")[0];
               }
-              const text = (a.textContent || "").trim().slice(0, 200);
+              let text = (a.textContent || "").trim().slice(0, 200);
+              // Se o link não tem texto (ex: carrossel de imagens), usar alt da imagem ou aria-label
+              if (!text) {
+                const img = a.querySelector("img");
+                if (img) {
+                  text = (img.getAttribute("alt") || img.getAttribute("aria-label") || "").trim().slice(0, 200);
+                }
+                if (!text) text = a.getAttribute("aria-label") || "";
+              }
               if (!text || seen.has(href)) return;
               seen.add(href);
               result.push({ text, href });

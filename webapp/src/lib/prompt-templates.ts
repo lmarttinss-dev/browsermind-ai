@@ -592,6 +592,40 @@ Seu objetivo é analisar os dados fornecidos e produzir um relatório estratégi
 
 ---
 
+# ⚠️ FORMATO DA RESPOSTA — LEIA ANTES DE COMEÇAR
+
+> 🚨 **INEGOCIÁVEL**: O formato da sua resposta DEVE seguir ESTRITAMENTE a estrutura abaixo. Não improvise títulos, não mude a ordem das seções, não omita nenhuma seção obrigatória.
+
+## Primeira linha do relatório (EXATA, copie literalmente)
+
+Sua resposta DEVE começar exatamente assim:
+
+\`\`\`
+# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
+**Categoria:** [NOME DA CATEGORIA]
+**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**Data da análise:** [DATA]
+\`\`\`
+
+**🚨 REGRA CRÍTICA — LEIA COM ATENÇÃO:**
+- **QUEBRE AS LINHAS**: Categoria, URL e Data DEVEM ficar cada um em sua própria linha (3 linhas separadas). Use Enter entre cada campo.
+- **ANTI-EXEMPLO (NUNCA faça isto):** \`**Categoria:** Capas **URL:** https://... **Data:** 23 de Junho\` ← TUDO EM UMA LINHA = **PROIBIDO**
+- **EXEMPLO CORRETO (sempre faça isto):** a Categoria na linha 2, a URL na linha 3, a Data na linha 4 — cada uma em sua própria linha
+- O título é EXATAMENTE \`# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre\`
+- A URL da categoria DEVE ser a URL completa do Mercado Livre, em formato de link Markdown \`[URL](URL)\` para abrir em nova aba
+- A data DEVE estar no formato "DD de Mês de AAAA"
+- NÃO invente um título diferente (ex: "Relatório de Market Intelligence" está PROIBIDO)
+
+## Estrutura geral
+
+- A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
+- Use emojis nos cabeçalhos: 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
+- Use tabelas Markdown para dados comparativos (NÃO use listas)
+- Use **negrito** para valores numéricos e classificações
+- Use > para alertas e insights
+
+---
+
 # Objetivos da Análise
 
 Determinar:
@@ -614,6 +648,8 @@ Determinar:
 ## Categoria
 
 **[INSERIR NOME DA CATEGORIA]**
+
+**URL da categoria:** **[INSERIR URL COMPLETA]** — use sempre a URL completa do Mercado Livre (ex: \`https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares\`), nunca apenas o path relativo.
 
 ---
 
@@ -1027,13 +1063,271 @@ Considere que:
 
 Forneça respostas objetivas, quantitativas e estratégicas.
 
-### Uso de Gráficos Mermaid
+---
 
-Sempre que relevante, inclua gráficos em Mermaid para visualização dos dados. Use blocos de código com \`\`\`mermaid. Tipos de gráficos disponíveis:
+# 📐 FORMATO DE SAÍDA OBRIGATÓRIO
+
+> ⚠️ **CRÍTICO**: Siga ESTRITAMENTE o formato abaixo. Não invente seções diferentes, não altere a ordem, não use estilos alternativos. A consistência do formato é obrigatória.
+
+## Estrutura Geral
+
+- Use emojis nos cabeçalhos de seção EXATAMENTE como especificado abaixo.
+- Use tabelas Markdown para dados comparativos (não use listas onde tabelas são especificadas).
+- Use negrito para destacar **valores numéricos** e **classificações**.
+- Use citações (>) para alertas, notas e insights estratégicos.
+- Use blocos de código \`\`\`mermaid para gráficos.
+
+## Cabeçalho do Relatório
+
+O relatório DEVE começar exatamente com este formato:
+
+\`\`\`
+# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
+**Categoria:** [NOME]
+**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**Data da análise:** [DATA]
+
+---
+
+## 📊 Métricas da Categoria (AvantPro)
+[Aqui vai a tabela de métricas — SEMPRE em formato de tabela Markdown de 2 colunas: Métrica | Valor]
+\`\`\`
+
+### Regras do Cabeçalho
+
+- **🚨 QUEBRA DE LINHA OBRIGATÓRIA**: Categoria, URL e Data DEVEM estar em linhas separadas. Use Enter (quebra de linha) entre cada campo. NUNCA coloque os três na mesma linha.
+- **ANTI-EXEMPLO (PROIBIDO):** \`**Categoria:** X **URL:** Y **Data:** Z\` — tudo na mesma linha.
+- **EXEMPLO CORRETO:** cada campo \`**Categoria:**\`, \`**URL:**\` e \`**Data da análise:**\` em sua própria linha, um abaixo do outro.
+- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
+- **Data da análise**: Use a data atual no formato "DD de Mês de AAAA".
+
+## Seções Obrigatórias (na ordem)
+
+### 📊 Métricas da Categoria (AvantPro)
+
+> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o cabeçalho, ANTES da Tarefa 1.
+
+Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coletados". Formato: tabela Markdown de 2 colunas (Métrica | Valor), com **negrito** nos valores numéricos. NÃO omita esta seção — ela é a base de toda a análise.
+
+### 🧭 Tarefa 1 — Análise da Demanda
+
+Deve conter OBRIGATORIAMENTE as subseções abaixo, nesta ordem:
+
+#### 📈 Volume e Validação
+Parágrafo(s) analisando a demanda. Destaque anúncios mais relevantes em bullet points com **negrito** nos nomes dos vendedores e números.
+
+#### 🎯 Classificação da Demanda: **[CLASSIFICAÇÃO]**
+Formato: "**ALTA**", "**MÉDIA**", "**BAIXA**", "**MUITO ALTA**" ou "**MUITO BAIXA**"
+
+#### 📝 Justificativa
+Parágrafo(s) explicando a classificação.
+
+#### 📊 Métricas de Oportunidade da Categoria
+SEMPRE em formato de tabela Markdown de 3 colunas:
+
+\`\`\`
+| Indicador | Valor | Análise |
+|-----------|-------|---------|
+| **Índice de Oportunidade** | **[BAIXO/MÉDIO/ALTO]** | [análise] |
+| **Receita média por vendedor** | **R$ [valor]** | [análise] |
+| **Vendedores com medalhas** | **[X] de [Y] ([Z]%)** | [análise] |
+\`\`\`
+
+#### 🌡️ Dinâmica e Sazonalidade
+SEMPRE em formato de tabela Markdown de 2 colunas:
+
+\`\`\`
+| Indicador | Valor |
+|-----------|-------|
+| Tendência de vendas | **[Crescente/Estável/Declinante]** |
+| Sazonalidade identificada | **[Sim/Não]** |
+| Mês mais forte | **[MÊS]** |
+| Mês mais fraco | **[MÊS]** |
+| Impacto de feriados | **[descrição]** |
+| Risco de "estoque parado" | **[Baixo/Médio/Alto]** |
+\`\`\`
+
+#### Gráfico de Sazonalidade
+Bloco \`\`\`mermaid com xychart-beta. Inclua legenda interpretativa abaixo do gráfico em citação (>).
+
+---
+
+### 🛡️ Tarefa 2 — Análise da Concorrência
+
+#### 🏢 Estrutura Competitiva
+Tabela Markdown com top vendedores (Vendedor | Vendas Estimadas | Participação | Ritmo Atual /mês).
+
+#### 🩺 Sinais de Categoria Saudável
+Tabela Markdown de 3 colunas: Indicador | Valor | Análise.
+
+#### 🚀 Vendedores de Destaque
+Subseções:
+
+##### Crescimento Acelerado
+Bullet points com **nome do vendedor** em negrito, localização, ritmo de vendas, dias de anúncio, estratégia.
+
+##### Para Monitoramento Contínuo
+Bullet points com **nome do vendedor**.
+
+#### 🎯 Classificação da Concorrência: **[CLASSIFICAÇÃO]**
+
+#### 📝 Justificativa
+Parágrafo(s).
+
+---
+
+### 📊 Tarefa 3 — Análise de Concentração de Mercado
+
+#### 📈 Participação de Mercado
+Tabela Markdown: Grupo | Participação.
+
+#### Gráfico de Concentração
+Bloco \`\`\`mermaid com pie chart.
+
+#### 🧩 Tipo de Mercado: **[PULVERIZADO/MODERADAMENTE CONCENTRADO/ALTAMENTE CONCENTRADO]**
+
+#### 📋 Análise
+Subseções:
+
+##### Riscos
+Bullet points.
+
+##### Vantagens
+Bullet points.
+
+##### Dependência
+Parágrafo.
+
+---
+
+### 🚪 Tarefa 4 — Oportunidade de Entrada
+
+#### ✅ Existe espaço para novos vendedores?
+**SIM** ou **NÃO**, seguido de bullet points com subnichos/oportunidades.
+
+#### 🏆 O líder domina por:
+Tabela Markdown: Fator | Peso (com ✅ ou ❌).
+
+#### 🎯 Um novo vendedor conseguiria competir através de:
+Bullet points com **negrito** no início de cada item.
+
+---
+
+### 💰 Tarefa 5 — Potencial de Lucro
+
+#### 📊 Análise de Margem
+Tabela Markdown: Fator | Valor.
+
+#### 🎯 Classificação do Potencial de Lucro: **[CLASSIFICAÇÃO]**
+
+#### 📝 Justificativa
+Parágrafo(s).
+
+---
+
+### 🎯 Tarefa 6 — Score de Oportunidade
+
+Tabela Markdown: Critério | Nota | Justificativa.
+
+#### 📊 Score Final
+
+\`\`\`
+### **Score Final = ([notas]) / [quantidade] = [resultado]**
+\`\`\`
+
+Tabela de interpretação: Nota | Interpretação.
+
+---
+
+### 🧭 Tarefa 7 — Estratégia Recomendada
+
+#### 🎯 **[ESTRATÉGIA EM NEGRITO E CAIXA ALTA]**
+
+#### 📝 Justificativa Detalhada
+Parágrafo(s) com bullet points numerados de caminhos possíveis.
+
+---
+
+### 📅 Tarefa 8 — Plano de Ataque de 30 Dias
+
+Uma subseção por semana (\`#### 📆 Semana 1 — [TÍTULO]\`), cada uma com tabela Markdown: Dia | Ação.
+
+---
+
+### 🔍 Estratégia de SEO
+
+#### 🏷️ Título Ideal
+Citação (>) com o título exato entre aspas.
+
+#### 🔑 Palavras-chave Secundárias
+Bullet points com \`código\` em cada keyword.
+
+#### 📋 Estratégia de Atributos
+Bullet points com **negrito** no nome do atributo.
+
+#### 📚 Estratégia de Catálogo
+Parágrafo com recomendação clara.
+
+---
+
+### 🎨 Estratégia de Imagens
+
+#### 📸 Quantidade
+Número.
+
+#### 🎞️ Sequência Ideal do Carrossel
+Lista numerada de 1 a N.
+
+#### 🧲 Gatilhos de Conversão
+Bullet points com **negrito** no tipo de gatilho.
+
+---
+
+### 💲 Estratégia de Precificação
+
+#### 💰 Preços Recomendados
+Tabela Markdown: Estratégia | Preço | Margem Estimada.
+
+#### ⚔️ Estratégia Contra Líderes
+Bullet points.
+
+---
+
+### 📋 Conclusão Executiva
+
+Lista numerada de 1 a 6 respondendo exatamente:
+
+1. **Vale a pena entrar?** [resposta]
+2. **Principal risco:** [resposta]
+3. **Principal oportunidade:** [resposta]
+4. **Estratégia recomendada:** [resposta]
+5. **Nota final do produto:** [X/10] — [interpretação]
+6. **Potencial de crescimento:** [resposta]
+
+Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores de investimento e projeção]).
+
+---
+
+## Regras de Consistência
+
+1. **TODAS as tabelas** devem usar formato Markdown com \`|\` e alinhamento consistente.
+2. **TODOS os valores numéricos** devem estar em **negrito**.
+3. **TODAS as classificações** (Alta/Média/Baixa) devem estar em **negrito**.
+4. **TODOS os alertas/insights** devem usar citação (>).
+5. **NUNCA** invente seções fora das especificadas acima.
+6. **NUNCA** altere a ordem das seções.
+7. **NUNCA** omita uma seção obrigatória.
+8. Use emojis EXATAMENTE como especificado nos cabeçalhos.
+
+### Regra de URLs
+
+- **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
+
+### Uso de Gráficos Mermaid
 
 - **xychart-beta**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
 - **pie**: gráfico de pizza para distribuição (market share, concentração)
 
-Coloque os gráficos próximos aos dados que eles representam, não todos no final.`,
+Coloque os gráficos próximos aos dados que eles representam.`,
   },
 ]
