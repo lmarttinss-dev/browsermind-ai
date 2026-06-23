@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -33,6 +33,11 @@ export const ProductDetailPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("produto")
   const [showSupplierSelector, setShowSupplierSelector] = useState(false)
+  const [showCopyModal, setShowCopyModal] = useState(false)
+  const [copyProducts, setCopyProducts] = useState<PipelineProduct[]>([])
+  const [isCopying, setIsCopying] = useState(false)
+  const [copySuccess, setCopySuccess] = useState(false)
+  const [copySearch, setCopySearch] = useState("")
 
   useEffect(() => {
     if (!id) return
@@ -79,6 +84,45 @@ export const ProductDetailPage = () => {
   const handleSuppliersUpdate = (suppliers: Supplier[], supplierReport: string) => {
     if (!product) return
     setProduct({ ...product, suppliers, supplierReport })
+  }
+
+  const handleOpenCopyModal = async () => {
+    if (!product?.analysisReport) {
+      setError("Este produto não possui relatório de análise para copiar.")
+      return
+    }
+    setShowCopyModal(true)
+    setCopySuccess(false)
+    setCopySearch("")
+    try {
+      const res = await api.getPipelineProducts()
+      const all = Object.values(res.products).flat() as PipelineProduct[]
+      setCopyProducts(all.filter((p) => p._id !== product._id))
+    } catch {
+      setCopyProducts([])
+    }
+  }
+
+  const handleCopyAnalysis = async (destId: string) => {
+    if (!product?.analysisReport) return
+    setIsCopying(true)
+    try {
+      await api.updatePipelineProduct(destId, {
+        analysisReport: product.analysisReport,
+        price: product.price,
+        score: product.score,
+        monthlySales: product.monthlySales,
+        competitionLevel: product.competitionLevel,
+        potentialMargin: product.potentialMargin,
+        analyzedAt: new Date().toISOString(),
+      })
+      setCopySuccess(true)
+      setTimeout(() => setShowCopyModal(false), 800)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao copiar análise")
+    } finally {
+      setIsCopying(false)
+    }
   }
 
   if (isLoading) {
@@ -143,6 +187,12 @@ export const ProductDetailPage = () => {
         >
           <Calculator className="w-3.5 h-3.5" />
           Calcular Viabilidade
+        </button>        <button
+          onClick={handleOpenCopyModal}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-purple-700/50 hover:bg-purple-700 text-purple-300 rounded-lg transition-colors"
+        >
+          <Copy className="w-3.5 h-3.5" />
+          Copiar análise
         </button>        <button
           onClick={handleDelete}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
@@ -471,6 +521,104 @@ export const ProductDetailPage = () => {
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal copiar análise de outro produto */}
+      {showCopyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
+              <div>
+                <h3 className="text-base font-semibold text-gray-100">Copiar análise para outro produto</h3>
+                <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[320px]">
+                  Origem: {product.title.replace(/\*+/g, "")}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCopyModal(false)}
+                className="p-1 text-gray-400 hover:text-gray-200 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Campo de busca */}
+              <input
+                type="text"
+                value={copySearch}
+                onChange={(e) => setCopySearch(e.target.value)}
+                placeholder="Buscar produto..."
+                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 mb-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                autoFocus
+              />
+              {copyProducts.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  Nenhum outro produto na esteira.
+                </p>
+              ) : (() => {
+                const filtered = copySearch.trim()
+                  ? copyProducts.filter((p) =>
+                      p.title.toLowerCase().includes(copySearch.toLowerCase()) ||
+                      (p.category && p.category.toLowerCase().includes(copySearch.toLowerCase()))
+                    )
+                  : copyProducts
+
+                if (filtered.length === 0) {
+                  return (
+                    <p className="text-sm text-gray-500 text-center py-8">
+                      Nenhum produto encontrado para "{copySearch}".
+                    </p>
+                  )
+                }
+
+                return (
+                  <div className="space-y-2">
+                    {filtered.map((p) => (
+                    <button
+                      key={p._id}
+                      onClick={() => handleCopyAnalysis(p._id)}
+                      disabled={isCopying}
+                      className="w-full text-left px-4 py-3 bg-gray-700/30 hover:bg-gray-700 border border-gray-600 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-200 truncate">{p.title.replace(/\*+/g, "")}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-gray-500">
+                              {STAGE_LABELS[p.stage].label}
+                            </span>
+                            {p.category && (
+                              <span className="text-[10px] text-gray-600 truncate">{p.category.replace(/\*+/g, "")}</span>
+                            )}
+                          </div>
+                        </div>
+                        {isCopying && (
+                          <Loader2 className="w-4 h-4 animate-spin text-purple-400 flex-shrink-0 ml-2" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                )
+              })()}
+            </div>
+            <div className="px-5 py-3 border-t border-gray-700 text-center">
+              {copySuccess ? (
+                <p className="text-xs text-emerald-400 flex items-center justify-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" />
+                  Análise copiada com sucesso!
+                </p>
+              ) : (
+                <button
+                  onClick={() => setShowCopyModal(false)}
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
             </div>
           </div>
         </div>
