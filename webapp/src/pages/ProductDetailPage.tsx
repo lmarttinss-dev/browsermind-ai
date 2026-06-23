@@ -114,6 +114,7 @@ export const ProductDetailPage = () => {
         monthlySales: product.monthlySales,
         competitionLevel: product.competitionLevel,
         potentialMargin: product.potentialMargin,
+        analyzedAt: new Date().toISOString(),
       })
       setCopySuccess(true)
       setTimeout(() => setShowCopyModal(false), 800)
