@@ -679,13 +679,13 @@ Determinar:
 
 ## Anúncios Encontrados
 
-> ⚠️ **COMO EXTRAIR O LINK DO ANÚNCIO (LEIA ANTES):**
-> Os links dos produtos estão na seção \`Links:\` dos dados extraídos da página. Para encontrar o link de cada anúncio:
-> 1. Na seção \`Links:\`, procure URLs que contenham \`/up/MLB\` (padrão de produto do Mercado Livre)
-> 2. Links com texto vindo do \`alt\` da imagem (ex: "Capa Para Galaxy S26 Ultra...") são os links do carrossel de produtos
-> 3. Use a URL exatamente como aparece — ela já está limpa (sem \`?\` ou \`#\`)
-> 4. Exemplo de link de produto: \`[Capa Para Galaxy S26 Ultra Anti Impacto E Suporte Retrátil](https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra-anti-impacto-e-suporte-retratil/up/MLBU3860078725)\`
-> 5. Se houver múltiplos links \`/up/MLB\`, use os primeiros N correspondentes ao número de anúncios que você está listando
+> ⚠️ **COMO ENCONTRAR OS LINKS DOS ANÚNCIOS:**
+> Os links dos produtos estão na seção \`Links:\` dos dados extraídos. Siga este processo:
+> 1. Na seção \`Links:\`, filtre todas as linhas cuja URL contenha \`/MLB\` (padrão de ID de produto do Mercado Livre)
+> 2. Priorize links com texto (ex: nome do produto no \`alt\` da imagem do carrossel). Se não houver, use links com \`[nome do produto](url)\` que aparecem em outras partes
+> 3. Cada link de produto segue o formato: \`[Nome do Produto](https://www.mercadolivre.com.br/slug-do-produto/up/MLBXXXXXXXXXX)\` ou \`[Nome](https://www.mercadolivre.com.br/slug/p/MLBXXXXXXXXXX)\`
+> 4. **NUNCA** invente links. Se não encontrar links \`/MLB\` nos dados extraídos, indique explicitamente "⚠️ Links não disponíveis na extração" e use os dados que conseguiu extrair
+> 5. Exemplo: \`[Capa Para Galaxy S26 Ultra Anti Impacto E Suporte Retrátil](https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra-anti-impacto-e-suporte-retratil/up/MLBU3860078725)\`
 
 ### Anúncio 1
 

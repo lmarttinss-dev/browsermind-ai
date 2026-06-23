@@ -442,7 +442,7 @@ export class PlaywrightManager {
               if (href.startsWith("//")) href = "https:" + href;
               else if (href.startsWith("/")) href = window.location.origin + href;
               // Remover query string e fragmento para URLs de produto do Mercado Livre e Alibaba
-              if (href.includes("/product-detail/") || href.includes("/up/MLB")) {
+              if (href.includes("/product-detail/") || href.includes("/up/MLB") || href.includes("/p/MLB")) {
                 href = href.split("?")[0].split("#")[0];
               }
               let text = (a.textContent || "").trim().slice(0, 200);
