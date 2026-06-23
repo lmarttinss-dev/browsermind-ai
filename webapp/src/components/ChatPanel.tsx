@@ -226,6 +226,9 @@ export function ChatPanel() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
+                  a: ({ href, children }) => (
+                    <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+                  ),
                   code({ className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || "")
                     if (match && match[1] === "mermaid") {

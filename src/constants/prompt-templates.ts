@@ -257,12 +257,14 @@ Sua resposta DEVE começar exatamente assim:
 
 \`\`\`
 # 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
-**Categoria:** [NOME DA CATEGORIA] **URL:** https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA] **Data da análise:** [DATA]
+**Categoria:** [NOME DA CATEGORIA]
+**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**Data da análise:** [DATA]
 \`\`\`
 
 **Regras da primeira linha:**
 - O título é EXATAMENTE \`# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre\`
-- A URL da categoria DEVE ser a URL completa do Mercado Livre, SEM backticks (crases) ao redor — escreva como texto puro para que o Markdown a torne clicável
+- A URL da categoria DEVE ser a URL completa do Mercado Livre, em formato de link Markdown \`[URL](URL)\` para abrir em nova aba
 - A data DEVE estar no formato "DD de Mês de AAAA"
 - NÃO invente um título diferente (ex: "Relatório de Market Intelligence" está PROIBIDO)
 
@@ -737,7 +739,9 @@ O relatório DEVE começar exatamente com este formato:
 
 \`\`\`
 # 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
-**Categoria:** [NOME] **URL:** https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA] **Data da análise:** [DATA]
+**Categoria:** [NOME]
+**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**Data da análise:** [DATA]
 
 ---
 
@@ -747,7 +751,7 @@ O relatório DEVE começar exatamente com este formato:
 
 ### Regras do Cabeçalho
 
-- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — escreva a URL diretamente como texto puro para que o Markdown a torne um link clicável automaticamente.
+- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
 - **Data da análise**: Use a data atual no formato "DD de Mês de AAAA".
 
 ## Seções Obrigatórias (na ordem)
