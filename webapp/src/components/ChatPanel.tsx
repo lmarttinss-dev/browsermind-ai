@@ -10,6 +10,17 @@ import { MermaidRenderer } from "@/components/MermaidRenderer";
 
 const MARKET_TEMPLATE_ID = "analise-oferta-demanda-concorrencia"
 
+/** Garante que o cabeçalho do relatório tenha Categoria, URL e Data em linhas separadas */
+function normalizeMarketReportHeader(report: string): string {
+  // Quebra Categoria + URL + Data que estejam na mesma linha após o título
+  // Ex: **Categoria:** X **URL:** Y **Data da análise:** Z
+  // → cada campo em sua própria linha
+  return report.replace(
+    /(\*\*Categoria:\*\*[^\n]+?)\s+(\*\*URL:\*\*[^\n]+?)\s+(\*\*Data da análise:\*\*[^\n]*)/,
+    "$1\n$2\n$3"
+  )
+}
+
 export function ChatPanel() {
   const {
     prompt, setPrompt,
@@ -45,7 +56,8 @@ export function ChatPanel() {
 
     if (wasLoading && !isLoading && response && activeTemplate === MARKET_TEMPLATE_ID && selectedProductId) {
       setIsSavingReport(true)
-      api.updateMarketReport(selectedProductId, response)
+      const normalizedReport = normalizeMarketReportHeader(response)
+      api.updateMarketReport(selectedProductId, normalizedReport)
         .then(() => {
           const product = pipelineProducts.find(p => p._id === selectedProductId)
           setSaveSuccess(`Relatório salvo em "${product?.title}"`)

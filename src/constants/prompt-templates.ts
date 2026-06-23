@@ -262,7 +262,10 @@ Sua resposta DEVE começar exatamente assim:
 **Data da análise:** [DATA]
 \`\`\`
 
-**Regras da primeira linha:**
+**🚨 REGRA CRÍTICA — LEIA COM ATENÇÃO:**
+- **QUEBRE AS LINHAS**: Categoria, URL e Data DEVEM ficar cada um em sua própria linha (3 linhas separadas). Use Enter entre cada campo.
+- **ANTI-EXEMPLO (NUNCA faça isto):** \`**Categoria:** Capas **URL:** https://... **Data:** 23 de Junho\` ← TUDO EM UMA LINHA = **PROIBIDO**
+- **EXEMPLO CORRETO (sempre faça isto):** a Categoria na linha 2, a URL na linha 3, a Data na linha 4 — cada uma em sua própria linha
 - O título é EXATAMENTE \`# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre\`
 - A URL da categoria DEVE ser a URL completa do Mercado Livre, em formato de link Markdown \`[URL](URL)\` para abrir em nova aba
 - A data DEVE estar no formato "DD de Mês de AAAA"
@@ -751,6 +754,9 @@ O relatório DEVE começar exatamente com este formato:
 
 ### Regras do Cabeçalho
 
+- **🚨 QUEBRA DE LINHA OBRIGATÓRIA**: Categoria, URL e Data DEVEM estar em linhas separadas. Use Enter (quebra de linha) entre cada campo. NUNCA coloque os três na mesma linha.
+- **ANTI-EXEMPLO (PROIBIDO):** \`**Categoria:** X **URL:** Y **Data:** Z\` — tudo na mesma linha.
+- **EXEMPLO CORRETO:** cada campo \`**Categoria:**\`, \`**URL:**\` e \`**Data da análise:**\` em sua própria linha, um abaixo do outro.
 - **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
 - **Data da análise**: Use a data atual no formato "DD de Mês de AAAA".
 
