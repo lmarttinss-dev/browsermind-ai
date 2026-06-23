@@ -1155,7 +1155,7 @@ Bloco \`\`\`mermaid com xychart-beta. Inclua legenda interpretativa abaixo do gr
 ### 🛡️ Tarefa 2 — Análise da Concorrência
 
 #### 🏢 Estrutura Competitiva
-Tabela Markdown com top vendedores (Vendedor | Link do Anúncio | Vendas Estimadas | Participação | Ritmo Atual /mês). O link DEVE ser a URL completa do produto no Mercado Livre no formato \`https://www.mercadolivre.com.br/[slug-do-produto]/up/[MLB-ID-REAL]\` onde \`[MLB-ID-REAL]\` é o código numérico real do anúncio (ex: https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra/up/MLBU3860078725). **NUNCA** use X ou placeholder — use SEMPRE o ID verdadeiro do produto. SEM backticks, como texto puro para ser clicável no Markdown.
+Tabela Markdown com top vendedores (Vendedor | Vendas Estimadas | Participação | Ritmo Atual /mês).
 
 #### 🩺 Sinais de Categoria Saudável
 Tabela Markdown de 3 colunas: Indicador | Valor | Análise.
@@ -1164,10 +1164,10 @@ Tabela Markdown de 3 colunas: Indicador | Valor | Análise.
 Subseções:
 
 ##### Crescimento Acelerado
-Bullet points com **nome do vendedor** em negrito, localização, ritmo de vendas, dias de anúncio, link do anúncio (URL completa do Mercado Livre, SEM backticks), estratégia.
+Bullet points com **nome do vendedor** em negrito, localização, ritmo de vendas, dias de anúncio, estratégia.
 
 ##### Para Monitoramento Contínuo
-Bullet points com **nome do vendedor** e link do anúncio (URL completa, SEM backticks).
+Bullet points com **nome do vendedor**.
 
 #### 🎯 Classificação da Concorrência: **[CLASSIFICAÇÃO]**
 
@@ -1318,12 +1318,10 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 6. **NUNCA** altere a ordem das seções.
 7. **NUNCA** omita uma seção obrigatória.
 8. Use emojis EXATAMENTE como especificado nos cabeçalhos.
-9. **TODAS as referências a produtos/anúncios** devem incluir o link completo do Mercado Livre no formato \`https://www.mercadolivre.com.br/[slug-do-produto]/up/[MLB-ID-REAL]\` onde \`[MLB-ID-REAL]\` é o código numérico real do anúncio (ex: MLBU3860078725). **NUNCA** use X ou placeholder — use SEMPRE o ID verdadeiro do produto. SEM backticks.
 
 ### Regra de URLs
 
 - **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
-- **Links de produtos SEMPRE inclusos**: Ao mencionar qualquer produto ou anúncio específico, inclua o link completo do Mercado Livre no formato \`https://www.mercadolivre.com.br/[slug-do-produto]/up/[MLB-ID-REAL]\` onde \`[MLB-ID-REAL]\` é o código numérico real do anúncio (ex: MLBU3860078725). Use o link exato fornecido nos "Dados Coletados". **NUNCA** use X ou placeholder — use SEMPRE o ID verdadeiro. SEM backticks — URL como texto puro para ser clicável.
 
 ### Uso de Gráficos Mermaid
 
