@@ -16,6 +16,8 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 
 PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
+⚠️  OBRIGATÓRIO: Preencha TODOS os campos listados no template sem exceção. Atenção especial para "Data de criação do anúncio" e "Dias ativo" — estes NÃO podem ser omitidos em hipótese alguma. Se o AvantPro não mostrar a data, procure no texto da página ou no HTML do anúncio. A data de criação é um dado crítico para análise de viabilidade.
+
 # Template do Relatório
 
 ## 📋 Resumo para Esteira
@@ -39,8 +41,6 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - URL:
 - Categoria:
 - Preço de venda atual (R$):
-- Data de criação do anúncio:
-- Dias ativo:
 - Loja / Vendedor:
 - Reputação do vendedor (MercadoLíder, Platinum, etc.):
 - Posição no ranking da categoria:
@@ -50,9 +50,9 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 
 ## 📊 Métricas do AvantPro (extraídas do DOM)
 
-Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
-
 - Preço de venda atual:
+- Data de criação do anúncio: (formato dd/mm/aaaa — NÃO omita)
+- Dias ativo: (calcule da data de criação até hoje — NÃO omita)
 - Estoque disponível:
 - Total vendido (histórico):
 - Vendas por dia:
@@ -62,6 +62,8 @@ Capture e estruture TODAS as métricas disponíveis no painel do AvantPro:
 - Taxa de conversão (%):
 - Receita mensal estimada: Ritmo atual × preço de venda (calcule: R$ X,XX)
 - Faturamento total do vendedor (se disponível):
+- Vendas totais do vendedor (se disponível):
+- Localização do vendedor (se disponível):
 - Ticket médio da loja (se disponível):
 
 ### 💰 Dados financeiros do vendedor (se disponíveis no AvantPro)
