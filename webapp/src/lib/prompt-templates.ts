@@ -680,12 +680,12 @@ Determinar:
 ## Anúncios Encontrados
 
 > ⚠️ **COMO EXTRAIR O LINK DO ANÚNCIO (LEIA ANTES):**
-> O link do produto NÃO está visível como texto na página. Você deve extraí-lo do DOM:
-> 1. Localize o elemento \`<div role="group" class="andes-carousel-snapped__slide andes-carousel-snapped__slide--active">\` (slide ativo do carrossel)
-> 2. Dentro dele, encontre o \`<a class="poly-component__link poly-component__link--carousel">\`
-> 3. Copie o atributo \`href\` completo
-> 4. **LIMPE A URL**: remova TUDO após o MLB ID — delete o \`#polycard_client=...\` e todos os query parameters. A URL limpa deve terminar em \`/up/MLBXXXXXXXXXX\` (sem \`#\` nem \`?\`)
-> 5. Exemplo de URL limpa: \`https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra-anti-impacto-e-suporte-retratil/up/MLBU3860078725\`
+> Os links dos produtos estão na seção \`Links:\` dos dados extraídos da página. Para encontrar o link de cada anúncio:
+> 1. Na seção \`Links:\`, procure URLs que contenham \`/up/MLB\` (padrão de produto do Mercado Livre)
+> 2. Links com texto vindo do \`alt\` da imagem (ex: "Capa Para Galaxy S26 Ultra...") são os links do carrossel de produtos
+> 3. Use a URL exatamente como aparece — ela já está limpa (sem \`?\` ou \`#\`)
+> 4. Exemplo de link de produto: \`[Capa Para Galaxy S26 Ultra Anti Impacto E Suporte Retrátil](https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra-anti-impacto-e-suporte-retratil/up/MLBU3860078725)\`
+> 5. Se houver múltiplos links \`/up/MLB\`, use os primeiros N correspondentes ao número de anúncios que você está listando
 
 ### Anúncio 1
 
