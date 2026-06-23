@@ -107,8 +107,13 @@ export const ProductDetailPage = () => {
     if (!product?.analysisReport) return
     setIsCopying(true)
     try {
-      const updated = await api.updatePipelineProduct(destId, {
+      await api.updatePipelineProduct(destId, {
         analysisReport: product.analysisReport,
+        price: product.price,
+        score: product.score,
+        monthlySales: product.monthlySales,
+        competitionLevel: product.competitionLevel,
+        potentialMargin: product.potentialMargin,
       })
       setCopySuccess(true)
       setTimeout(() => setShowCopyModal(false), 800)
