@@ -334,19 +334,10 @@ Determinar:
 
 ## Anúncios Encontrados
 
-> ⚠️ **COMO ENCONTRAR OS LINKS DOS ANÚNCIOS:**
-> Os links dos produtos estão na seção \`Links:\` dos dados extraídos. Siga este processo:
-> 1. Na seção \`Links:\`, filtre todas as linhas cuja URL contenha \`/MLB\` (padrão de ID de produto do Mercado Livre)
-> 2. Priorize links com texto (ex: nome do produto no \`alt\` da imagem do carrossel). Se não houver, use links com \`[nome do produto](url)\` que aparecem em outras partes
-> 3. Cada link de produto segue o formato: \`[Nome do Produto](https://www.mercadolivre.com.br/slug-do-produto/up/MLBXXXXXXXXXX)\` ou \`[Nome](https://www.mercadolivre.com.br/slug/p/MLBXXXXXXXXXX)\`
-> 4. **NUNCA** invente links. Se não encontrar links \`/MLB\` nos dados extraídos, indique explicitamente "⚠️ Links não disponíveis na extração" e use os dados que conseguiu extrair
-> 5. Exemplo: \`[Capa Para Galaxy S26 Ultra Anti Impacto E Suporte Retrátil](https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra-anti-impacto-e-suporte-retratil/up/MLBU3860078725)\`
-
 ### Anúncio 1
 
 | Métrica | Valor |
 |----------|---------|
-| Link do anúncio | [INSERIR URL COMPLETA DO PRODUTO] |
 | Vendas | 10.000 |
 | Participação | 70,2% |
 | Visitas | 31.846 |
@@ -359,7 +350,6 @@ Determinar:
 
 | Métrica | Valor |
 |----------|---------|
-| Link do anúncio | [INSERIR URL COMPLETA DO PRODUTO] |
 | Vendas | 1.000 |
 | Participação | 7,0% |
 | Visitas | 1.498 |
@@ -372,7 +362,6 @@ Determinar:
 
 | Métrica | Valor |
 |----------|---------|
-| Link do anúncio | [INSERIR URL COMPLETA DO PRODUTO] |
 | Vendas | 25 |
 | Participação | 0,2% |
 | Tempo de anúncio | 215 dias |
@@ -383,7 +372,6 @@ Determinar:
 
 | Métrica | Valor |
 |----------|---------|
-| Link do anúncio | [INSERIR URL COMPLETA DO PRODUTO] |
 | Vendas | 25 |
 | Participação | 0,2% |
 | Tempo de anúncio | 252 dias |
