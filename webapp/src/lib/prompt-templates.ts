@@ -1159,7 +1159,7 @@ Bloco \`\`\`mermaid com xychart-beta. Inclua legenda interpretativa abaixo do gr
 ### 🛡️ Tarefa 2 — Análise da Concorrência
 
 #### 🏢 Estrutura Competitiva
-Tabela Markdown com top vendedores (Vendedor | Link do Anúncio | Vendas Estimadas | Participação | Ritmo Atual /mês). O link DEVE ser a URL completa do produto no Mercado Livre (ex: https://produto.mercadolivre.com.br/MLB-...), SEM backticks, como texto puro para ser clicável no Markdown.
+Tabela Markdown com top vendedores (Vendedor | Link do Anúncio | Vendas Estimadas | Participação | Ritmo Atual /mês). O link DEVE ser a URL completa do produto no Mercado Livre no formato \`https://www.mercadolivre.com.br/[slug-do-produto]/up/MLBXXXXXXXXXX\` (ex: https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra/up/MLBU3860078725), SEM backticks, como texto puro para ser clicável no Markdown.
 
 #### 🩺 Sinais de Categoria Saudável
 Tabela Markdown de 3 colunas: Indicador | Valor | Análise.
@@ -1322,12 +1322,12 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 6. **NUNCA** altere a ordem das seções.
 7. **NUNCA** omita uma seção obrigatória.
 8. Use emojis EXATAMENTE como especificado nos cabeçalhos.
-9. **TODAS as referências a produtos/anúncios** devem incluir o link completo do Mercado Livre (https://produto.mercadolivre.com.br/MLB-...), SEM backticks.
+9. **TODAS as referências a produtos/anúncios** devem incluir o link completo do Mercado Livre no formato \`https://www.mercadolivre.com.br/[slug-do-produto]/up/MLBXXXXXXXXXX\` (ex: https://www.mercadolivre.com.br/capa-galaxy-s26/up/MLBU3860078725), SEM backticks.
 
 ### Regra de URLs
 
 - **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
-- **Links de produtos SEMPRE inclusos**: Ao mencionar qualquer produto ou anúncio específico, inclua o link completo do Mercado Livre (formato: https://produto.mercadolivre.com.br/MLB-...). Use o link exato fornecido nos "Dados Coletados". SEM backticks — URL como texto puro para ser clicável.
+- **Links de produtos SEMPRE inclusos**: Ao mencionar qualquer produto ou anúncio específico, inclua o link completo do Mercado Livre no formato \`https://www.mercadolivre.com.br/[slug-do-produto]/up/MLBXXXXXXXXXX\` (ex: https://www.mercadolivre.com.br/capa-para-galaxy-s26-ultra/up/MLBU3860078725). Use o link exato fornecido nos "Dados Coletados". SEM backticks — URL como texto puro para ser clicável.
 
 ### Uso de Gráficos Mermaid
 
