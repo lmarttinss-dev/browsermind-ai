@@ -122,7 +122,60 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Embalagem diferenciada
 - Atendimento pós-venda superior
 
-## 🚚 Viabilidade para Importação Simplificada
+## � Perguntas e Respostas
+
+Analise a seção de perguntas e respostas do anúncio no Mercado Livre:
+
+- Total de perguntas respondidas:
+- Principais dúvidas dos compradores (liste as 5 mais frequentes):
+- Perguntas sobre compatibilidade/dimensões:
+- Perguntas sobre qualidade e durabilidade:
+- Perguntas sobre envio e prazo de entrega:
+- Perguntas sobre garantia e devolução:
+- Perguntas não respondidas ou com resposta insatisfatória (oportunidade de diferenciação):
+- Insights para o importador: quais dúvidas frequentes indicam o que o comprador valoriza e o que falta no anúncio atual
+
+## 📝 Opiniões do Produto
+
+Analise as opiniões/avaliações dos compradores:
+
+- Nota média (estrelas):
+- Total de opiniões:
+- Distribuição das notas (5★, 4★, 3★, 2★, 1★):
+- Percentual de avaliações positivas (4★ e 5★):
+
+### ✅ Principais Elogios
+
+Liste os elogios mais recorrentes nas opiniões:
+
+- Qualidade do produto:
+- Custo-benefício:
+- Entrega (prazo e embalagem):
+- Atendimento do vendedor:
+- Outros pontos positivos:
+
+### ❌ Principais Reclamações
+
+Liste as reclamações mais recorrentes nas opiniões:
+
+- Defeitos ou problemas de qualidade:
+- Produto diferente do anúncio:
+- Atraso na entrega:
+- Embalagem inadequada:
+- Pós-venda ruim:
+- Outros pontos negativos:
+
+### 📊 Análise para o Importador
+
+Com base nas opiniões, identifique:
+
+- O que os compradores MAIS valorizam (para priorizar no produto importado):
+- O que os compradores MAIS reclamam (para evitar/corrigir no produto importado):
+- Oportunidades de diferenciação baseadas nas reclamações do concorrente:
+- Palavras-chave e termos que os compradores usam (para otimizar título e descrição):
+- Risco de insatisfação e devolução (se as reclamações forem graves ou frequentes):
+
+## �🚚 Viabilidade para Importação Simplificada
 
 ### Características do produto para importação
 
