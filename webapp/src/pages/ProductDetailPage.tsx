@@ -110,6 +110,7 @@ export const ProductDetailPage = () => {
     try {
       await api.updatePipelineProduct(destId, {
         analysisReport: product.analysisReport,
+        url: product.url,
         price: product.price,
         score: product.score,
         monthlySales: product.monthlySales,
