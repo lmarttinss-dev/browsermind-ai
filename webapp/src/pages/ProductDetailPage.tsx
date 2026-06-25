@@ -38,6 +38,7 @@ export const ProductDetailPage = () => {
   const [isCopying, setIsCopying] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [copySearch, setCopySearch] = useState("")
+  const [urlCopied, setUrlCopied] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -172,15 +173,18 @@ export const ProductDetailPage = () => {
         </button>
         <div className="flex-1" />
         {product.url && (
-          <a
-            href={product.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(product.url!)
+              setUrlCopied(true)
+              setTimeout(() => setUrlCopied(false), 1500)
+              window.open(product.url!, "_blank", "noopener,noreferrer")
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Abrir no ML
-          </a>
+            {urlCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <ExternalLink className="w-3.5 h-3.5" />}
+            {urlCopied ? "URL copiada!" : "Abrir no ML"}
+          </button>
         )}        <button
           onClick={handleOpenCalculator}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-amber-700/50 hover:bg-amber-700 text-amber-300 rounded-lg transition-colors"
