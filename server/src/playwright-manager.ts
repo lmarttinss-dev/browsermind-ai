@@ -393,54 +393,51 @@ export class PlaywrightManager {
       || /produto\.mercadolivre\.com\.br\/MLB/.test(url)
 
     if (isMlProductPage) {
-      // 1. Tenta expandir opiniões/avaliações
-      const reviewTriggers = [
-        "Ver todas as opiniões",
-        "Ver opiniões",
-        "Ver todas as avaliações",
-        "Ver avaliações",
-        "Opiniões dos compradores",
-      ]
-      for (const trigger of reviewTriggers) {
-        try {
-          const btn = page.getByText(trigger, { exact: false }).first()
-          if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await btn.click({ timeout: 3000 })
-            console.log(`✅ extractPageContent: clicou em "${trigger}"`)
-            await page.waitForTimeout(2500) // Aguarda modal/lazy-load
-            break
-          }
-        } catch {
-          // Tenta próximo texto
-        }
-      }
+      // Auto-expande seções de opiniões e perguntas via page.evaluate (mais robusto que getByText)
+      const expandResult = await page.evaluate(() => {
+        const clicked: string[] = []
 
-      // 2. Tenta expandir perguntas e respostas
-      const qaTriggers = [
-        "Ver perguntas",
-        "Ver todas as perguntas",
-        "Perguntas e respostas",
-        "Perguntas",
-      ]
-      for (const trigger of qaTriggers) {
-        try {
-          const btn = page.getByText(trigger, { exact: false }).first()
-          if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await btn.click({ timeout: 3000 })
-            console.log(`✅ extractPageContent: clicou em "${trigger}"`)
-            await page.waitForTimeout(2500) // Aguarda modal/lazy-load
-            break
+        // Helper: procura e clica em elemento com texto visível (case-insensitive)
+        const findAndClick = (texts: string[]): boolean => {
+          for (const el of Array.from(document.querySelectorAll("button, a, span, div, [role=button]"))) {
+            const txt = (el.textContent || "").trim().toLowerCase()
+            for (const t of texts) {
+              if (txt.includes(t.toLowerCase()) && txt.length < 100) {
+                try {
+                  el.scrollIntoView({ behavior: "instant", block: "center" })
+                  el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))
+                  // Também tenta .click() nativo como fallback
+                  ;(el as HTMLElement).click()
+                  return true
+                } catch { /* continua */ }
+              }
+            }
           }
-        } catch {
-          // Tenta próximo texto
+          return false
         }
-      }
 
-      // Aguarda a rede estabilizar após abrir modais
-      try {
-        await page.waitForLoadState("networkidle", { timeout: 5000 })
-      } catch {
-        // Timeout aceitável, continua com a extração
+        // 1. Opiniões/Avaliações
+        if (findAndClick(["ver todas as opiniões", "ver opiniões", "ver todas as avaliações", "ver avaliações", "opiniões dos compradores"])) {
+          clicked.push("opiniões")
+        }
+
+        // 2. Perguntas e Respostas
+        if (findAndClick(["ver perguntas", "ver todas as perguntas", "perguntas e respostas", "perguntas"])) {
+          clicked.push("perguntas")
+        }
+
+        return clicked
+      })
+
+      if (expandResult.length > 0) {
+        console.log(`✅ extractPageContent: expandiu ${expandResult.join(" e ")}`)
+        // Aguarda o conteúdo dos modais carregar
+        await page.waitForTimeout(3000)
+        try {
+          await page.waitForLoadState("networkidle", { timeout: 8000 })
+        } catch {
+          // Timeout aceitável
+        }
       }
     }
 
