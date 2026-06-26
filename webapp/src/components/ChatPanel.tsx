@@ -3,7 +3,7 @@ import { useStore } from "@/store/useStore";
 import { api, MODELS, type PipelineProduct } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
 import { sanitizeFilename, extractProductSlugFromResponse } from "@/lib/utils";
-import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Check } from "lucide-react";
+import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Check, MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
@@ -24,6 +24,7 @@ function normalizeMarketReportHeader(report: string): string {
 export function ChatPanel() {
   const {
     prompt, setPrompt,
+    qnaContent, setQnaContent,
     selectedModel, setSelectedModel,
     response, isLoading, error,
     pendingActions, analyzePage, executeActions,
@@ -37,6 +38,7 @@ export function ChatPanel() {
   const [selectedProductId, setSelectedProductId] = useState("")
   const [isSavingReport, setIsSavingReport] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
+  const [showQnaInput, setShowQnaInput] = useState(false)
   const prevLoadingRef = useRef(isLoading)
 
   // Carrega produtos da esteira quando o template de mercado é selecionado
@@ -153,6 +155,33 @@ export function ChatPanel() {
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" />
           </div>
         )}
+
+        {/* Q&A / Opiniões — conteúdo extra fornecido pelo usuário */}
+        <div>
+          <button
+            onClick={() => setShowQnaInput(!showQnaInput)}
+            className={`flex items-center gap-2 text-xs font-medium transition-colors ${
+              qnaContent ? "text-purple-600" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            Perguntas, Respostas e Opiniões (colar do ML)
+            {qnaContent && (
+              <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">
+                preenchido
+              </span>
+            )}
+          </button>
+          {showQnaInput && (
+            <textarea
+              value={qnaContent}
+              onChange={(e) => setQnaContent(e.target.value)}
+              placeholder="Cole aqui o conteúdo das perguntas e respostas (Q&A) e opiniões dos clientes visíveis na página do anúncio do Mercado Livre..."
+              className="mt-2 w-full h-28 resize-none bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              disabled={isLoading}
+            />
+          )}
+        </div>
 
         <textarea
           value={prompt}
