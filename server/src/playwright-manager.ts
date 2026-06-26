@@ -407,7 +407,7 @@ export class PlaywrightManager {
           if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
             await btn.click({ timeout: 3000 })
             console.log(`✅ extractPageContent: clicou em "${trigger}"`)
-            await page.waitForTimeout(1500) // Aguarda modal/lazy-load
+            await page.waitForTimeout(2500) // Aguarda modal/lazy-load
             break
           }
         } catch {
@@ -428,7 +428,7 @@ export class PlaywrightManager {
           if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
             await btn.click({ timeout: 3000 })
             console.log(`✅ extractPageContent: clicou em "${trigger}"`)
-            await page.waitForTimeout(1500) // Aguarda modal/lazy-load
+            await page.waitForTimeout(2500) // Aguarda modal/lazy-load
             break
           }
         } catch {

@@ -87,7 +87,46 @@ async function getActiveTab(): Promise<chrome.tabs.Tab> {
 }
 
 // Inline extraction function injected directly into the page
-function extractPageInline() {
+async function extractPageInline() {
+  // Auto-expande seções de opiniões e perguntas em páginas do Mercado Livre
+  // Esses dados são lazy-load em modais — sem clique não entram na extração
+  const isMlPage = /mercadolivre\.com\.br/.test(window.location.href)
+
+  const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
+
+  if (isMlPage) {
+    // 1. Tenta expandir opiniões/avaliações
+    const reviewTexts = [
+      "Ver todas as opiniões", "Ver opiniões",
+      "Ver todas as avaliações", "Ver avaliações",
+      "Opiniões dos compradores",
+    ]
+    for (const text of reviewTexts) {
+      const el = Array.from(document.querySelectorAll("button, a, span, div"))
+        .find(e => (e.textContent || "").trim().toLowerCase().includes(text.toLowerCase()))
+      if (el && (el as HTMLElement).offsetParent !== null) {
+        (el as HTMLElement).click()
+        await sleep(2000) // Aguarda modal e lazy-load
+        break
+      }
+    }
+
+    // 2. Tenta expandir perguntas e respostas
+    const qaTexts = [
+      "Ver perguntas", "Ver todas as perguntas",
+      "Perguntas e respostas", "Perguntas",
+    ]
+    for (const text of qaTexts) {
+      const el = Array.from(document.querySelectorAll("button, a, span, div"))
+        .find(e => (e.textContent || "").trim().toLowerCase().includes(text.toLowerCase()))
+      if (el && (el as HTMLElement).offsetParent !== null) {
+        (el as HTMLElement).click()
+        await sleep(2000) // Aguarda modal e lazy-load
+        break
+      }
+    }
+  }
+
   const IGNORED = new Set([
     "SCRIPT", "STYLE", "NOSCRIPT", "SVG", "PATH", "IFRAME",
     "OBJECT", "EMBED", "LINK", "META", "HEAD",
