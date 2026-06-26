@@ -132,48 +132,36 @@ Se os botões de opiniões/perguntas não estiverem visíveis ou o conteúdo já
 - Embalagem diferenciada
 - Atendimento pós-venda superior
 
-## � Perguntas e Respostas
+## 💬 Perguntas e Respostas
 
-Analise a seção de perguntas e respostas do anúncio no Mercado Livre:
+⚠️  Se NÃO houver perguntas no conteúdo extraído, responda APENAS: "Nenhuma pergunta encontrada para este produto."
 
-- Total de perguntas respondidas:
-- Principais dúvidas dos compradores (liste as 5 mais frequentes):
-- Perguntas sobre compatibilidade/dimensões:
-- Perguntas sobre qualidade e durabilidade:
-- Perguntas sobre envio e prazo de entrega:
-- Perguntas sobre garantia e devolução:
+Caso haja perguntas, analise:
+
+- Total de perguntas e quantas foram respondidas:
+- Top 5 dúvidas mais frequentes (transcreva as perguntas reais):
+- O que os compradores mais perguntam sobre (compatibilidade, qualidade, envio, garantia):
 - Perguntas não respondidas ou com resposta insatisfatória (oportunidade de diferenciação):
-- Insights para o importador: quais dúvidas frequentes indicam o que o comprador valoriza e o que falta no anúncio atual
+- Insights para o importador: o que as dúvidas revelam sobre preocupações dos compradores e gaps no anúncio atual
 
 ## 📝 Opiniões do Produto
 
-Analise as opiniões/avaliações dos compradores:
+⚠️  Se NÃO houver opiniões no conteúdo extraído, responda APENAS: "Nenhuma opinião encontrada para este produto."
 
-- Nota média (estrelas):
-- Total de opiniões:
-- Distribuição das notas (5★, 4★, 3★, 2★, 1★):
-- Percentual de avaliações positivas (4★ e 5★):
+Caso haja opiniões, analise:
 
-### ✅ Principais Elogios
+- Nota média (estrelas) e total de opiniões:
+- Distribuição das notas: quantos % 5★, 4★, 3★, 2★, 1★:
 
-Liste os elogios mais recorrentes nas opiniões:
+### ✅ Principais Elogios (transcreva trechos reais)
 
-- Qualidade do produto:
-- Custo-benefício:
-- Entrega (prazo e embalagem):
-- Atendimento do vendedor:
-- Outros pontos positivos:
+- O que os compradores mais elogiam (cite exemplos reais das opiniões):
+- Pontos recorrentes de satisfação:
 
-### ❌ Principais Reclamações
+### ❌ Principais Reclamações (transcreva trechos reais)
 
-Liste as reclamações mais recorrentes nas opiniões:
-
-- Defeitos ou problemas de qualidade:
-- Produto diferente do anúncio:
-- Atraso na entrega:
-- Embalagem inadequada:
-- Pós-venda ruim:
-- Outros pontos negativos:
+- O que os compradores mais reclamam (cite exemplos reais das opiniões):
+- Problemas recorrentes:
 
 ### 📊 Análise para o Importador
 

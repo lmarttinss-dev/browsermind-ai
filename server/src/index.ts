@@ -384,17 +384,17 @@ app.post("/api/analyze", async (req, res) => {
               : "",
             `\nContent:\n${extracted.visibleText}`,
           ].filter(Boolean).join("\n");
-
-          // Anexa conteúdo adicional informado manualmente pelo usuário (ex: opiniões, perguntas)
-          if (additionalContent && additionalContent.trim()) {
-            content += "\n\n--- CONTEÚDO ADICIONAL (informado manualmente) ---\n" + additionalContent.trim()
-          }
         }
       } catch { /* ignore */ }
     }
 
+    // Monta mensagem: trunca o conteúdo base primeiro, depois anexa o adicional por inteiro
+    const MAX_BASE = 25000
+    const baseContent = content.slice(0, MAX_BASE)
+    const extraContent = additionalContent?.trim()
+
     const userMessage = content
-      ? `Conteúdo da página:\n${content.slice(0, 30000)}\n\nPrompt: ${prompt}`
+      ? `Conteúdo da página:\n${baseContent}${extraContent ? "\n\n--- CONTEÚDO ADICIONAL (informado manualmente) ---\n" + extraContent : ""}\n\nPrompt: ${prompt}`
       : prompt;
 
     let aiResponse: string;
