@@ -35,7 +35,7 @@ export const api = {
   // AI Proxy
   setKeys: (keys: Record<string, string>) => request<{ success: boolean; configured: string[] }>("/api/keys", { method: "POST", body: JSON.stringify({ keys }) }),
   getKeys: () => request<{ configured: string[] }>("/api/keys"),
-  analyze: (params: { prompt: string; model: string; pageContent?: string; screenshot?: string; templateId?: string }) =>
+  analyze: (params: { prompt: string; model: string; pageContent?: string; additionalContent?: string; screenshot?: string; templateId?: string }) =>
     request<{ success: boolean; response: string; actions?: BrowserAction[]; pipelineProductId?: string }>("/api/analyze", { method: "POST", body: JSON.stringify(params) }),
 
   // AvantPro

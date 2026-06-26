@@ -3,7 +3,7 @@ import { useStore } from "@/store/useStore";
 import { api, MODELS, type PipelineProduct } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
 import { sanitizeFilename, extractProductSlugFromResponse } from "@/lib/utils";
-import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Check } from "lucide-react";
+import { Send, Play, Loader2, ChevronDown, ChevronRight, Settings, Trash2, Download, Link2, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
@@ -30,6 +30,7 @@ export function ChatPanel() {
     history, restoreEntry, clearHistory,
     setShowSettings,
     browserTitle,
+    additionalContent, setAdditionalContent,
   } = useStore();
 
   const [activeTemplate, setActiveTemplate] = useState("")
@@ -37,6 +38,7 @@ export function ChatPanel() {
   const [selectedProductId, setSelectedProductId] = useState("")
   const [isSavingReport, setIsSavingReport] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
+  const [showExtraContent, setShowExtraContent] = useState(false)
   const prevLoadingRef = useRef(isLoading)
 
   // Carrega produtos da esteira quando o template de mercado é selecionado
@@ -152,6 +154,24 @@ export function ChatPanel() {
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" />
           </div>
+        )}
+
+        {/* Conteúdo extra da página (opiniões, perguntas, etc.) */}
+        <button
+          onClick={() => setShowExtraContent(!showExtraContent)}
+          className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          {showExtraContent ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          Conteúdo extra da página (opiniões, perguntas, etc.)
+        </button>
+        {showExtraContent && (
+          <textarea
+            value={additionalContent}
+            onChange={(e) => setAdditionalContent(e.target.value)}
+            placeholder="Cole aqui o conteúdo extraído manualmente da página (opiniões, perguntas e respostas, descrição completa, etc.)&#10;&#10;Este conteúdo será anexado aos dados extraídos automaticamente pelo Playwright."
+            className="w-full h-24 resize-none bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            disabled={isLoading}
+          />
         )}
 
         <textarea

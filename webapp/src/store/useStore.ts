@@ -27,6 +27,7 @@ interface AppState {
   isLoading: boolean;
   error: string | null;
   showSettings: boolean;
+  additionalContent: string;
 
   // Browser
   serverOnline: boolean;
@@ -55,6 +56,7 @@ interface AppState {
   setPrompt: (prompt: string) => void;
   setSelectedModel: (model: ModelId) => void;
   setShowSettings: (show: boolean) => void;
+  setAdditionalContent: (content: string) => void;
   setAutoRefreshScreenshot: (v: boolean) => void;
   setExtensionPaths: (paths: string[]) => void;
   setUserDataDir: (dir: string) => void;
@@ -84,6 +86,7 @@ export const useStore = create<AppState>((set, get) => ({
   isLoading: false,
   error: null,
   showSettings: false,
+  additionalContent: "",
 
   serverOnline: false,
   browserActive: false,
@@ -108,6 +111,7 @@ export const useStore = create<AppState>((set, get) => ({
   setPrompt: (prompt) => set({ prompt }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
   setShowSettings: (showSettings) => set({ showSettings }),
+  setAdditionalContent: (additionalContent) => set({ additionalContent }),
   setAutoRefreshScreenshot: (autoRefreshScreenshot) => set({ autoRefreshScreenshot }),
   setExtensionPaths: (extensionPaths) => set({ extensionPaths }),
   setUserDataDir: (userDataDir) => set({ userDataDir }),
@@ -184,7 +188,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   analyzePage: async (templateId?: string) => {
-    const { prompt, selectedModel } = get();
+    const { prompt, selectedModel, additionalContent } = get();
     if (!prompt.trim()) {
       set({ error: "Digite um prompt" });
       return;
@@ -193,7 +197,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true, error: null, response: "", pendingActions: [] });
 
     try {
-      const res = await api.analyze({ prompt, model: selectedModel, templateId });
+      const res = await api.analyze({ prompt, model: selectedModel, templateId, additionalContent: additionalContent || undefined });
 
       if (res.success) {
         const entry: HistoryEntry = {

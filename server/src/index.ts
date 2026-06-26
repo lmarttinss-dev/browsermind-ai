@@ -297,10 +297,11 @@ Diretrizes:
 
 app.post("/api/analyze", async (req, res) => {
   try {
-    const { prompt, model, pageContent, screenshot, templateId } = req.body as {
+    const { prompt, model, pageContent, additionalContent, screenshot, templateId } = req.body as {
       prompt: string;
       model: string;
       pageContent?: string;
+      additionalContent?: string;
       screenshot?: string;
       templateId?: string;
     };
@@ -383,6 +384,11 @@ app.post("/api/analyze", async (req, res) => {
               : "",
             `\nContent:\n${extracted.visibleText}`,
           ].filter(Boolean).join("\n");
+
+          // Anexa conteúdo adicional informado manualmente pelo usuário (ex: opiniões, perguntas)
+          if (additionalContent && additionalContent.trim()) {
+            content += "\n\n--- CONTEÚDO ADICIONAL (informado manualmente) ---\n" + additionalContent.trim()
+          }
         }
       } catch { /* ignore */ }
     }
