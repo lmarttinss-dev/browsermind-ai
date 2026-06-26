@@ -393,21 +393,39 @@ export class PlaywrightManager {
       || /produto\.mercadolivre\.com\.br\/MLB/.test(url)
 
     if (isMlProductPage) {
-      // Auto-expande seções de opiniões e perguntas via page.evaluate (mais robusto que getByText)
+      console.log("🔄 extractPageContent: tentando expandir opiniões/perguntas...")
+
+      // 1. Primeiro scrolla a página inteira para trigger lazy-load de todas as seções
+      await page.evaluate(() => {
+        const step = window.innerHeight * 0.8
+        const total = document.body.scrollHeight
+        for (let y = step; y < total; y += step) {
+          window.scrollTo({ top: y, behavior: "instant" })
+        }
+        window.scrollTo({ top: 0, behavior: "instant" })
+      })
+      await page.waitForTimeout(1500)
+
+      // 2. Tenta encontrar e clicar nos gatilhos de opiniões e perguntas
       const expandResult = await page.evaluate(() => {
         const clicked: string[] = []
 
-        // Helper: procura e clica em elemento com texto visível (case-insensitive)
-        const findAndClick = (texts: string[]): boolean => {
-          for (const el of Array.from(document.querySelectorAll("button, a, span, div, [role=button]"))) {
-            const txt = (el.textContent || "").trim().toLowerCase()
-            for (const t of texts) {
-              if (txt.includes(t.toLowerCase()) && txt.length < 100) {
+        // Helper: procura elemento por palavra-chave no texto e clica
+        const findAndClick = (keywords: string[]): boolean => {
+          // Busca AMPLA: qualquer elemento que possa ser clicável
+          const all = Array.from(document.querySelectorAll(
+            "a, button, span, div, h2, h3, h4, p, li, [role=button], [onclick], [class*=review], [class*=opinion], [class*=question], [class*=rating], [class*=reviews], [class*=comments], [class*=see-more], [class*=show-more], [class*=ver-tod], [class*=ver-mais]"
+          ))
+          for (const el of all) {
+            const txt = (el.textContent || "").toLowerCase().replace(/\s+/g, " ").trim()
+            // Pula elementos com texto muito curto ou muito longo
+            if (txt.length < 3 || txt.length > 500) continue
+            for (const kw of keywords) {
+              if (txt.includes(kw)) {
                 try {
-                  el.scrollIntoView({ behavior: "instant", block: "center" })
-                  el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))
-                  // Também tenta .click() nativo como fallback
+                  ;(el as HTMLElement).scrollIntoView({ behavior: "instant", block: "center" })
                   ;(el as HTMLElement).click()
+                  el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))
                   return true
                 } catch { /* continua */ }
               }
@@ -416,29 +434,39 @@ export class PlaywrightManager {
           return false
         }
 
-        // 1. Opiniões/Avaliações
-        if (findAndClick(["ver todas as opiniões", "ver opiniões", "ver todas as avaliações", "ver avaliações", "opiniões dos compradores"])) {
+        // Opiniões: tenta grupos de palavras-chave em ordem de especificidade
+        if (
+          findAndClick(["ver todas as opiniões", "ver opiniões"]) ||
+          findAndClick(["ver todas as avaliações", "ver avaliações"]) ||
+          findAndClick(["opiniões dos compradores", "opiniões sobre o produto"]) ||
+          findAndClick(["avaliações dos compradores", "avaliações sobre o produto"]) ||
+          findAndClick(["ver mais opiniões", "mais opiniões"])
+        ) {
           clicked.push("opiniões")
         }
 
-        // 2. Perguntas e Respostas
-        if (findAndClick(["ver perguntas", "ver todas as perguntas", "perguntas e respostas", "perguntas"])) {
+        // Perguntas: tenta grupos de palavras-chave
+        if (
+          findAndClick(["ver todas as perguntas", "ver perguntas"]) ||
+          findAndClick(["perguntas e respostas", "perguntas ao vendedor"]) ||
+          findAndClick(["perguntas dos compradores", "perguntas frequentes"]) ||
+          findAndClick(["ver mais perguntas", "mais perguntas"])
+        ) {
           clicked.push("perguntas")
         }
 
         return clicked
       })
 
+      console.log(`🔍 extractPageContent: expandiu [${expandResult.join(", ")}]`)
+
+      // 3. Aguarda conteúdo dos modais carregar
       if (expandResult.length > 0) {
-        console.log(`✅ extractPageContent: expandiu ${expandResult.join(" e ")}`)
-        // Aguarda o conteúdo dos modais carregar
         await page.waitForTimeout(3000)
-        try {
-          await page.waitForLoadState("networkidle", { timeout: 8000 })
-        } catch {
-          // Timeout aceitável
-        }
       }
+      try {
+        await page.waitForLoadState("networkidle", { timeout: 8000 })
+      } catch { /* timeout ok */ }
     }
 
     const extractionScript = `
