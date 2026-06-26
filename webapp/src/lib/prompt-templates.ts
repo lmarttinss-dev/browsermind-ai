@@ -18,6 +18,8 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 
 ⚠️  OBRIGATÓRIO: Preencha TODOS os campos listados no template sem exceção. Atenção especial para "Data de criação do anúncio" e "Dias ativo" — estes NÃO podem ser omitidos em hipótese alguma. Se o AvantPro não mostrar a data, procure no texto da página ou no HTML do anúncio. A data de criação é um dado crítico para análise de viabilidade.
 
+💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Análise de Qualidade, Forças/Fraquezas, Diferenciação, Score Final).
+
 # Template do Relatório
 
 ## 📋 Resumo para Esteira
@@ -122,7 +124,38 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Embalagem diferenciada
 - Atendimento pós-venda superior
 
-## 🚚 Viabilidade para Importação Simplificada
+## � Análise de Perguntas, Respostas e Opiniões dos Clientes
+
+> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página.
+
+### 📝 Perguntas e Respostas (Q&A)
+
+- Principais dúvidas dos compradores:
+- Qualidade das respostas do vendedor (ágeis, completas, evasivas):
+- Tempo médio de resposta do vendedor:
+- Perguntas sem resposta:
+- Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
+- Oportunidades: informações que o vendedor NÃO está fornecendo e que você pode incluir no seu anúncio
+
+### ⭐ Opiniões e Avaliações
+
+- Nota média (se disponível):
+- Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
+- Principais elogios (cite trechos literais):
+- Principais reclamações (cite trechos literais):
+- Problemas recorrentes (defeito, tamanho errado, atraso na entrega, produto diferente da foto):
+- Potencial de recompra (clientes comprariam novamente?):
+- Risco de devolução (qual % dos compradores relata problemas graves?):
+
+### 🎯 Insights para Diferenciação
+
+- O que os clientes AMAM no produto (reforce no seu anúncio):
+- O que os clientes ODEIAM no produto (corrija ou alerte no seu anúncio):
+- Funcionalidades ou variações que os clientes pedem e não encontram:
+- Oportunidades de melhoria no produto: qualidade, embalagem, manual, acessórios
+- Como o vendedor atual lida com reclamações (oportunidade de atendimento superior)
+
+## �🚚 Viabilidade para Importação Simplificada
 
 ### Características do produto para importação
 

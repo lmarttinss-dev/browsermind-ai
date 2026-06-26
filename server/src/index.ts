@@ -297,12 +297,13 @@ Diretrizes:
 
 app.post("/api/analyze", async (req, res) => {
   try {
-    const { prompt, model, pageContent, screenshot, templateId } = req.body as {
+    const { prompt, model, pageContent, screenshot, templateId, qnaContent } = req.body as {
       prompt: string;
       model: string;
       pageContent?: string;
       screenshot?: string;
       templateId?: string;
+      qnaContent?: string;
     };
 
     if (!prompt) {
@@ -387,8 +388,22 @@ app.post("/api/analyze", async (req, res) => {
       } catch { /* ignore */ }
     }
 
+    // Debug: verifica se qnaContent chegou do frontend
+    if (qnaContent) {
+      console.log(`📋 Q&A recebido: ${qnaContent.length} caracteres`)
+      console.log(`📋 Primeiros 200 chars: ${qnaContent.slice(0, 200)}`)
+    } else {
+      console.log("📋 Q&A: NÃO recebido (vazio ou ausente)")
+    }
+
+    // Injeta Q&A do usuário DENTRO do content como se fosse parte da página
+    // Assim a IA trata como "conteúdo da página" e o template funciona naturalmente
+    if (qnaContent) {
+      content = `========================== PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO) ==========================\n${qnaContent.slice(0, 15000)}\n========================== FIM DAS PERGUNTAS E RESPOSTAS ==========================\n\n${content}`
+    }
+
     const userMessage = content
-      ? `Conteúdo da página:\n${content.slice(0, 30000)}\n\nPrompt: ${prompt}`
+      ? `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}`
       : prompt;
 
     let aiResponse: string;

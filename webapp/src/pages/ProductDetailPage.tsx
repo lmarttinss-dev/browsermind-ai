@@ -109,9 +109,12 @@ export const ProductDetailPage = () => {
     setIsCopying(true)
     try {
       await api.updatePipelineProduct(destId, {
+        title: product.title,
         analysisReport: product.analysisReport,
         url: product.url,
+        imageUrl: product.imageUrl,
         price: product.price,
+        category: product.category,
         score: product.score,
         monthlySales: product.monthlySales,
         competitionLevel: product.competitionLevel,

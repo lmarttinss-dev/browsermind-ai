@@ -16,6 +16,8 @@ IMPORTANTE: O relatório DEVE começar com o bloco "Resumo para Esteira" exatame
 
 PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
+💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório.
+
 # Template do Relatório
 
 ## 📋 Resumo para Esteira
@@ -68,7 +70,22 @@ Avalie:
 - Potencial de recompra
 - Risco de devolução/reembolso
 
-## 🔥 Análise de Demanda
+## � Análise de Perguntas, Respostas e Opiniões dos Clientes
+
+> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página.
+
+- Principais dúvidas dos compradores
+- Qualidade das respostas do vendedor (ágeis, completas, evasivas)
+- Tempo médio de resposta
+- Perguntas sem resposta
+- Temas recorrentes (tamanho, material, compatibilidade)
+- Nota média das avaliações e distribuição (5⭐/4⭐/3⭐/2⭐/1⭐)
+- Principais elogios (cite trechos)
+- Principais reclamações recorrentes
+- O que os clientes AMAM e ODEIAM no produto
+- Oportunidades de diferenciação baseadas no feedback real dos clientes
+
+## �🔥 Análise de Demanda
 
 Avalie:
 

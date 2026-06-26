@@ -22,6 +22,7 @@ export interface HistoryEntry {
 interface AppState {
   // UI
   prompt: string;
+  qnaContent: string;
   selectedModel: ModelId;
   response: string;
   isLoading: boolean;
@@ -53,6 +54,7 @@ interface AppState {
 
   // Setters
   setPrompt: (prompt: string) => void;
+  setQnaContent: (qnaContent: string) => void;
   setSelectedModel: (model: ModelId) => void;
   setShowSettings: (show: boolean) => void;
   setAutoRefreshScreenshot: (v: boolean) => void;
@@ -79,6 +81,7 @@ interface AppState {
 
 export const useStore = create<AppState>((set, get) => ({
   prompt: "",
+  qnaContent: "",
   selectedModel: "gemini-flash-2.5",
   response: "",
   isLoading: false,
@@ -106,6 +109,7 @@ export const useStore = create<AppState>((set, get) => ({
   avantproLoading: false,
 
   setPrompt: (prompt) => set({ prompt }),
+  setQnaContent: (qnaContent) => set({ qnaContent }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
   setShowSettings: (showSettings) => set({ showSettings }),
   setAutoRefreshScreenshot: (autoRefreshScreenshot) => set({ autoRefreshScreenshot }),
@@ -184,7 +188,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   analyzePage: async (templateId?: string) => {
-    const { prompt, selectedModel } = get();
+    const { prompt, qnaContent, selectedModel } = get();
     if (!prompt.trim()) {
       set({ error: "Digite um prompt" });
       return;
@@ -193,7 +197,14 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true, error: null, response: "", pendingActions: [] });
 
     try {
-      const res = await api.analyze({ prompt, model: selectedModel, templateId });
+      // Debug: confirma que qnaContent está saindo da store
+      if (qnaContent) {
+        console.log(`📋 [Frontend] Enviando Q&A: ${qnaContent.length} caracteres. Primeiros 100: "${qnaContent.slice(0, 100)}"`)
+      } else {
+        console.log("📋 [Frontend] Q&A vazio/ausente — NÃO será enviado")
+      }
+
+      const res = await api.analyze({ prompt, model: selectedModel, templateId, qnaContent: qnaContent || undefined });
 
       if (res.success) {
         const entry: HistoryEntry = {
