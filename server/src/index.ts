@@ -388,14 +388,6 @@ app.post("/api/analyze", async (req, res) => {
       } catch { /* ignore */ }
     }
 
-    // Debug: verifica se qnaContent chegou do frontend
-    if (qnaContent) {
-      console.log(`📋 Q&A recebido: ${qnaContent.length} caracteres`)
-      console.log(`📋 Primeiros 200 chars: ${qnaContent.slice(0, 200)}`)
-    } else {
-      console.log("📋 Q&A: NÃO recebido (vazio ou ausente)")
-    }
-
     // Injeta Q&A do usuário DENTRO do content como se fosse parte da página
     // Assim a IA trata como "conteúdo da página" e o template funciona naturalmente
     if (qnaContent) {

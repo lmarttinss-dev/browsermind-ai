@@ -197,13 +197,6 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true, error: null, response: "", pendingActions: [] });
 
     try {
-      // Debug: confirma que qnaContent está saindo da store
-      if (qnaContent) {
-        console.log(`📋 [Frontend] Enviando Q&A: ${qnaContent.length} caracteres. Primeiros 100: "${qnaContent.slice(0, 100)}"`)
-      } else {
-        console.log("📋 [Frontend] Q&A vazio/ausente — NÃO será enviado")
-      }
-
       const res = await api.analyze({ prompt, model: selectedModel, templateId, qnaContent: qnaContent || undefined });
 
       if (res.success) {
