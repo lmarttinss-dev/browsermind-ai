@@ -18,6 +18,16 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 
 ⚠️  OBRIGATÓRIO: Preencha TODOS os campos listados no template sem exceção. Atenção especial para "Data de criação do anúncio" e "Dias ativo" — estes NÃO podem ser omitidos em hipótese alguma. Se o AvantPro não mostrar a data, procure no texto da página ou no HTML do anúncio. A data de criação é um dado crítico para análise de viabilidade.
 
+▶️  ANTES de gerar o relatório, execute estas ações para garantir que os dados estejam carregados no DOM:
+
+1. Clique em "Ver todas as opiniões" ou "Opiniões dos compradores" (seletor: button ou link que contenha o texto "opiniões" ou "avaliações")
+2. Aguarde o modal de opiniões carregar (1-2 segundos)
+3. Clique em "Ver perguntas e respostas" ou "Perguntas" (seletor: button ou link que contenha o texto "perguntas")
+4. Aguarde o modal de perguntas carregar (1-2 segundos)
+5. Agora sim, extraia o conteúdo completo da página (incluindo os modais abertos) e gere o relatório
+
+Se os botões de opiniões/perguntas não estiverem visíveis ou o conteúdo já estiver expandido na página, prossiga diretamente com o relatório.
+
 # Template do Relatório
 
 ## 📋 Resumo para Esteira
