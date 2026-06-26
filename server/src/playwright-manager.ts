@@ -386,6 +386,64 @@ export class PlaywrightManager {
   }> {
     const page = await this.getPage();
 
+    // Auto-expande seções de opiniões e perguntas em páginas do Mercado Livre
+    // Esses dados são carregados via lazy-load em modais — sem clique não entram na extração
+    const url = page.url()
+    const isMlProductPage = /mercadolivre\.com\.br\/(.*\/p\/MLB|MLB[-\d])/.test(url)
+      || /produto\.mercadolivre\.com\.br\/MLB/.test(url)
+
+    if (isMlProductPage) {
+      // 1. Tenta expandir opiniões/avaliações
+      const reviewTriggers = [
+        "Ver todas as opiniões",
+        "Ver opiniões",
+        "Ver todas as avaliações",
+        "Ver avaliações",
+        "Opiniões dos compradores",
+      ]
+      for (const trigger of reviewTriggers) {
+        try {
+          const btn = page.getByText(trigger, { exact: false }).first()
+          if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await btn.click({ timeout: 3000 })
+            console.log(`✅ extractPageContent: clicou em "${trigger}"`)
+            await page.waitForTimeout(1500) // Aguarda modal/lazy-load
+            break
+          }
+        } catch {
+          // Tenta próximo texto
+        }
+      }
+
+      // 2. Tenta expandir perguntas e respostas
+      const qaTriggers = [
+        "Ver perguntas",
+        "Ver todas as perguntas",
+        "Perguntas e respostas",
+        "Perguntas",
+      ]
+      for (const trigger of qaTriggers) {
+        try {
+          const btn = page.getByText(trigger, { exact: false }).first()
+          if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await btn.click({ timeout: 3000 })
+            console.log(`✅ extractPageContent: clicou em "${trigger}"`)
+            await page.waitForTimeout(1500) // Aguarda modal/lazy-load
+            break
+          }
+        } catch {
+          // Tenta próximo texto
+        }
+      }
+
+      // Aguarda a rede estabilizar após abrir modais
+      try {
+        await page.waitForLoadState("networkidle", { timeout: 5000 })
+      } catch {
+        // Timeout aceitável, continua com a extração
+      }
+    }
+
     const extractionScript = `
       (() => {
         const IGNORED = new Set([
