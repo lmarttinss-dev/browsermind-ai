@@ -653,7 +653,7 @@ Sua resposta DEVE começar exatamente assim:
 
 ## Estrutura geral
 
-- A primeira seção após o cabeçalho DEVE ser \`## 📑 Sumário\` com links de ancoragem para todas as seções do relatório, seguido imediatamente por \`## 📊 Métricas da Categoria (AvantPro)\` — NUNCA pule estas seções
+- A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
 - Use emojis nos cabeçalhos: 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
@@ -1173,25 +1173,6 @@ O relatório DEVE começar exatamente com este formato:
 
 ---
 
-## � Sumário
-
-- [📊 Métricas da Categoria (AvantPro)](#métricas-da-categoria-avantpro)
-- [🧭 Tarefa 1 — Análise da Demanda](#tarefa-1--análise-da-demanda)
-- [🛡️ Tarefa 2 — Análise da Concorrência](#tarefa-2--análise-da-concorrência)
-- [📊 Tarefa 3 — Análise de Concentração de Mercado](#tarefa-3--análise-de-concentração-de-mercado)
-- [🚪 Tarefa 4 — Oportunidade de Entrada](#tarefa-4--oportunidade-de-entrada)
-- [💰 Tarefa 5 — Potencial de Lucro](#tarefa-5--potencial-de-lucro)
-- [🎯 Tarefa 6 — Score de Oportunidade](#tarefa-6--score-de-oportunidade)
-- [🧭 Tarefa 7 — Estratégia Recomendada](#tarefa-7--estratégia-recomendada)
-- [📅 Tarefa 8 — Plano de Ataque de 30 Dias](#tarefa-8--plano-de-ataque-de-30-dias)
-- [🔍 Estratégia de SEO](#estratégia-de-seo)
-- [🎨 Estratégia de Imagens](#estratégia-de-imagens)
-- [💲 Estratégia de Precificação](#estratégia-de-precificação)
-- [💲 Sugestão de Precificação para Venda](#sugestão-de-precificação-para-venda)
-- [📋 Conclusão Executiva](#conclusão-executiva)
-
----
-
 ## �📊 Métricas da Categoria (AvantPro)
 [Aqui vai a tabela de métricas — SEMPRE em formato de tabela Markdown de 2 colunas: Métrica | Valor]
 \`\`\`
@@ -1211,33 +1192,6 @@ O relatório DEVE começar exatamente com este formato:
 > ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o cabeçalho, ANTES da Tarefa 1.
 
 Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coletados". Formato: tabela Markdown de 2 colunas (Métrica | Valor), com **negrito** nos valores numéricos. NÃO omita esta seção — ela é a base de toda a análise.
-
-### 📑 Sumário
-
-> ⚠️ **OBRIGATÓRIO**: Inclua um sumário com links de ancoragem logo após o cabeçalho do relatório, antes da seção de Métricas. Cada item deve linkar para a seção correspondente usando o formato \`[texto](#anchor-slug)\`. Os anchors seguem o padrão: texto em minúsculo, sem emojis, espaços e caracteres especiais substituídos por hífens.
-
-Lista com links Markdown para cada seção obrigatória. Formato:
-
-\`\`\`markdown
-## 📑 Sumário
-
-- [📊 Métricas da Categoria (AvantPro)](#métricas-da-categoria-avantpro)
-- [🧭 Tarefa 1 — Análise da Demanda](#tarefa-1--análise-da-demanda)
-- [🛡️ Tarefa 2 — Análise da Concorrência](#tarefa-2--análise-da-concorrência)
-- [📊 Tarefa 3 — Análise de Concentração de Mercado](#tarefa-3--análise-de-concentração-de-mercado)
-- [🚪 Tarefa 4 — Oportunidade de Entrada](#tarefa-4--oportunidade-de-entrada)
-- [💰 Tarefa 5 — Potencial de Lucro](#tarefa-5--potencial-de-lucro)
-- [🎯 Tarefa 6 — Score de Oportunidade](#tarefa-6--score-de-oportunidade)
-- [🧭 Tarefa 7 — Estratégia Recomendada](#tarefa-7--estratégia-recomendada)
-- [📅 Tarefa 8 — Plano de Ataque de 30 Dias](#tarefa-8--plano-de-ataque-de-30-dias)
-- [🔍 Estratégia de SEO](#estratégia-de-seo)
-- [🎨 Estratégia de Imagens](#estratégia-de-imagens)
-- [💲 Estratégia de Precificação](#estratégia-de-precificação)
-- [💲 Sugestão de Precificação para Venda](#sugestão-de-precificação-para-venda)
-- [📋 Conclusão Executiva](#conclusão-executiva)
-\`\`\`
-
----
 
 ### 🧭 Tarefa 1 — Análise da Demanda
 
