@@ -653,7 +653,7 @@ Sua resposta DEVE começar exatamente assim:
 
 ## Estrutura geral
 
-- A primeira seção após o cabeçalho DEVE ser `## 📑 Sumário` com links de ancoragem para todas as seções do relatório, seguido imediatamente por `## 📊 Métricas da Categoria (AvantPro)` — NUNCA pule estas seções
+- A primeira seção após o cabeçalho DEVE ser \`## 📑 Sumário\` com links de ancoragem para todas as seções do relatório, seguido imediatamente por \`## 📊 Métricas da Categoria (AvantPro)\` — NUNCA pule estas seções
 - Use emojis nos cabeçalhos: 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
