@@ -1218,7 +1218,7 @@ Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coleta
 
 Lista com links Markdown para cada seção obrigatória. Formato:
 
-```markdown
+\`\`\`markdown
 ## 📑 Sumário
 
 - [📊 Métricas da Categoria (AvantPro)](#métricas-da-categoria-avantpro)
@@ -1235,7 +1235,7 @@ Lista com links Markdown para cada seção obrigatória. Formato:
 - [💲 Estratégia de Precificação](#estratégia-de-precificação)
 - [💲 Sugestão de Precificação para Venda](#sugestão-de-precificação-para-venda)
 - [📋 Conclusão Executiva](#conclusão-executiva)
-```
+\`\`\`
 
 ---
 
