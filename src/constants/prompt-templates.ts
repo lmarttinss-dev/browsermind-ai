@@ -851,7 +851,7 @@ Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coleta
 
 ### 📑 Sumário
 
-> ⚠️ **OBRIGATÓRIO**: Inclua um sumário com links de ancoragem logo após o cabeçalho do relatório, antes da seção de Métricas. Cada item deve linkar para a seção correspondente usando o formato `[texto](#anchor-slug)`. Os anchors seguem o padrão: texto em minúsculo, sem emojis, espaços e caracteres especiais substituídos por hífens.
+> ⚠️ **OBRIGATÓRIO**: Inclua um sumário com links de ancoragem logo após o cabeçalho do relatório, antes da seção de Métricas. Cada item deve linkar para a seção correspondente usando o formato \`[texto](#anchor-slug)\`. Os anchors seguem o padrão: texto em minúsculo, sem emojis, espaços e caracteres especiais substituídos por hífens.
 
 Lista com links Markdown para cada seção obrigatória. Formato:
 
