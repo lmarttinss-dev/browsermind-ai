@@ -429,7 +429,7 @@ Analise a tendência de longo prazo (até 24 meses) para distinguir se a categor
 Gere um gráfico de barras com as vendas mensais estimadas (últimos 12 meses). Use blocos de código com linguagem \`mermaid\`:
 
 \`\`\`mermaid
-xychart-beta
+xychart
     title "Vendas Mensais Estimadas (12 meses)"
     x-axis [Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez]
     y-axis "Unidades" 0 --> 5000
@@ -820,7 +820,7 @@ SEMPRE em formato de tabela Markdown de 2 colunas:
 \`\`\`
 
 #### Gráfico de Sazonalidade
-Bloco \`\`\`mermaid com xychart-beta. Inclua legenda interpretativa abaixo do gráfico em citação (>).
+Bloco \`\`\`mermaid com xychart. Inclua legenda interpretativa abaixo do gráfico em citação (>).
 
 ---
 
@@ -997,7 +997,7 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 
 ### Uso de Gráficos Mermaid
 
-- **xychart-beta**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
+- **xychart**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
 - **pie**: gráfico de pizza para distribuição (market share, concentração)
 
 Coloque os gráficos próximos aos dados que eles representam.`,
