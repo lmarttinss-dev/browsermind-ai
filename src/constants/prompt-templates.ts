@@ -698,6 +698,55 @@ Defina:
 
 ---
 
+# 💲 Sugestão de Precificação para Venda
+
+Com base na análise da concorrência, determine o preço ideal de venda:
+
+## Análise das Faixas de Preço da Concorrência
+
+- Faixa de entrada (menores preços praticados): R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+- Faixa intermediária: R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+- Faixa premium: R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+
+## Posicionamento Recomendado
+
+Escolha uma estratégia e justifique:
+
+- **Entrada (preço mais baixo):** competir por volume, margens menores, risco de guerra de preços
+- **Intermediário (preço médio):** equilíbrio entre volume e margem, diferencial no anúncio/produto
+- **Premium (preço acima da média):** qualidade superior, marca, embalagem, atendimento — exige diferenciação clara
+
+## Preço Sugerido
+
+| Estratégia | Preço Sugerido | Margem Estimada | Volume Esperado (un./mês) | Faturamento Projetado |
+|------------|---------------|-----------------|--------------------------|----------------------|
+| Entrada | R$ X,XX | X% | X | R$ X.XXX,XX |
+| Competitivo | R$ X,XX | X% | X | R$ X.XXX,XX |
+| Premium | R$ X,XX | X% | X | R$ X.XXX,XX |
+
+## Simulação de Rentabilidade
+
+Considerando o custo total de importação por unidade (landed cost) e as taxas da plataforma:
+
+| Preço de Venda | Custo por Unidade | Taxas ML (X%) | Lucro Líquido/Un. | Margem Líquida |
+|---------------|-------------------|---------------|-------------------|---------------|
+| R$ X,XX | R$ X,XX | R$ X,XX | R$ X,XX | X% |
+
+## Estratégia de Precificação Psicológica
+
+- Preço com final .90 ou .99: (ex: R$ 49,90 em vez de R$ 50,00)
+- Preço âncora: (ex: risque o preço antigo e mostre o novo com desconto)
+- Atacado/combo: (ex: leve 2 por R$ 89,90 — cada um sai a R$ 44,95)
+- Gatilho de escassez: (ex: "últimas unidades a este preço")
+
+## Cronograma de Ajuste de Preços
+
+- **Lançamento:** preço X% abaixo do mercado para gerar primeiras vendas e avaliações
+- **Crescimento:** ajuste gradual até o preço competitivo após X avaliações positivas
+- **Maturidade:** preço premium após consolidar reputação (X vendas/mês)
+
+---
+
 # Conclusão Executiva
 
 Produza uma conclusão final de até 10 linhas contendo:
@@ -965,7 +1014,29 @@ Bullet points.
 
 ---
 
-### 📋 Conclusão Executiva
+### � Sugestão de Precificação para Venda
+
+#### 📊 Análise das Faixas de Preço da Concorrência
+Tabela Markdown: Faixa | Intervalo de Preço | Concorrentes | % do Mercado.
+
+#### 🎯 Posicionamento Recomendado
+**ESTRATÉGIA EM NEGRITO** com parágrafo justificando a escolha com base nos dados da concorrência.
+
+#### 💰 Preço Sugerido por Estratégia
+Tabela Markdown: Estratégia | Preço Sugerido | Margem Estimada | Volume Esperado (un./mês) | Faturamento Projetado.
+
+#### 🧮 Simulação de Rentabilidade
+Tabela Markdown: Preço de Venda | Custo/Un. (landed cost) | Taxas ML | Lucro Líquido/Un. | Margem Líquida.
+
+#### 🧠 Precificação Psicológica
+Bullet points com **negrito** no tipo de gatilho (preço .90/.99, âncora, combo, escassez).
+
+#### 📅 Cronograma de Ajuste de Preços
+Tabela Markdown: Fase | Preço | Objetivo | Gatilho para Mudança.
+
+---
+
+### �📋 Conclusão Executiva
 
 Lista numerada de 1 a 6 respondendo exatamente:
 
