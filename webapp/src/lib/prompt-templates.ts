@@ -638,7 +638,7 @@ Sua resposta DEVE começar exatamente assim:
 \`\`\`
 # 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
 **Categoria:** [NOME DA CATEGORIA]
-**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**URL:** [https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA])
 **Data da análise:** [DATA]
 \`\`\`
 
@@ -684,7 +684,7 @@ Determinar:
 
 **[INSERIR NOME DA CATEGORIA]**
 
-**URL da categoria:** **[INSERIR URL COMPLETA]** — use sempre a URL completa do Mercado Livre (ex: \`https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares\`), nunca apenas o path relativo.
+**URL da categoria:** **[INSERIR URL COMPLETA]** — use sempre a URL completa do Mercado Livre (ex: \`https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares\`), nunca apenas o path relativo.
 
 ---
 
@@ -1168,7 +1168,7 @@ O relatório DEVE começar exatamente com este formato:
 \`\`\`
 # 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
 **Categoria:** [NOME]
-**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**URL:** [https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA])
 **Data da análise:** [DATA]
 
 ---
@@ -1182,7 +1182,7 @@ O relatório DEVE começar exatamente com este formato:
 - **🚨 QUEBRA DE LINHA OBRIGATÓRIA**: Categoria, URL e Data DEVEM estar em linhas separadas. Use Enter (quebra de linha) entre cada campo. NUNCA coloque os três na mesma linha.
 - **ANTI-EXEMPLO (PROIBIDO):** \`**Categoria:** X **URL:** Y **Data:** Z\` — tudo na mesma linha.
 - **EXEMPLO CORRETO:** cada campo \`**Categoria:**\`, \`**URL:**\` e \`**Data da análise:**\` em sua própria linha, um abaixo do outro.
-- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
+- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
 - **Data da análise**: Use a data atual no formato "DD de Mês de AAAA".
 
 ## Seções Obrigatórias (na ordem)
@@ -1427,7 +1427,7 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 
 ### Regra de URLs
 
-- **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
+- **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
 
 ### Uso de Gráficos Mermaid
 
