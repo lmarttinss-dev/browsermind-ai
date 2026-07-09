@@ -100,10 +100,6 @@ Avalie:
   - Entre 180 e 365 dias com vendas consistentes → demanda CONSOLIDADA
   - Mais de 365 dias → demanda MADURA, verifique se o ritmo ainda é relevante
   - Cruze a idade do anúncio com o Ritmo atual: anúncio jovem (< 180 dias) com alto volume é o melhor indicador de oportunidade
-- Análise de Medalhas dos vendedores (extraia os filtros do AvantPro: Sem medalha, Mercado Líder, Gold, Platinum):
-  - Predomínio de "Sem medalha" → concorrência AMADORA, baixa barreira de entrada
-  - Predomínio de "Mercado Líder" → concorrência ESTABELECIDA, categoria saudável
-  - Alta concentração de Gold + Platinum → concorrência PROFISSIONAL, exige diferenciação forte
 
 ## 🚚 Viabilidade para Importação Simplificada
 
@@ -485,22 +481,6 @@ Três condições que, quando verdadeiras simultaneamente, indicam oportunidade 
 - **Receita total da categoria:** R$ (≥ R$ 5 milhões é sinal positivo de mercado aquecido)
 - **Monopolização pelos top sellers:** (% do mercado — < 20% é saudável, > 50% é perigoso)
 - **Concentração de marcas:** (nenhuma marca domina a prateleira | 1-2 marcas fortes | muitas marcas estabelecidas — ideal: nenhuma marca isolada domina)
-
-### Análise de Medalhas (filtros do AvantPro)
-
-> O AvantPro exibe a distribuição de medalhas dos vendedores na categoria. Use os dados da tabela de métricas para interpretar o nível de profissionalização da concorrência.
-
-- **Sem medalha:** vendedores sem reputação (iniciantes ou baixo volume) — muitos sinalizam categoria ACESSÍVEL
-- **Mercado Líder:** vendedores com bom volume e reputação — predomínio indica concorrência ESTABELECIDA mas saudável
-- **Mercado Gold:** vendedores de alto nível — presença significativa indica concorrência PROFISSIONAL
-- **Mercado Platinum:** vendedores elite — muitos indicam categoria dominada por players FORTES
-
-Interprete a proporção:
-
-- Predomínio de "Sem medalha" → concorrência AMADORA, baixa barreira de entrada, oportunidade para profissionalizar
-- Predomínio de "Mercado Líder" → categoria SAUDÁVEL com espaço para novos entrantes qualificados
-- Alta concentração de Gold + Platinum → barreira ELEVADA, exige diferenciação forte e investimento
-- Muitos Platinum → categoria dominada por ELITE, entrada arriscada sem estratégia clara
 
 ### Vendedores de Destaque
 
