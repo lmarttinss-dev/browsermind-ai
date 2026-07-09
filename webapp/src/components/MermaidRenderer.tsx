@@ -24,6 +24,8 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const idRef = useRef(`mermaid-${++mermaidIdCounter}`)
+  // Track the last successfully rendered chart to skip re-renders
+  const lastRenderedRef = useRef<string>("")
 
   // Memoriza a normalização para evitar recálculo em cada render
   const normalizedChart = useMemo(() =>
@@ -35,6 +37,9 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
   )
 
   useEffect(() => {
+    // Skip re-render if chart content hasn't changed
+    if (normalizedChart === lastRenderedRef.current) return
+
     let cancelled = false
 
     async function render() {
@@ -45,11 +50,13 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
         const mermaid = (await import("mermaid")).default
 
         if (!cancelled && containerRef.current) {
-          // Limpa o container antes de renderizar para evitar flicker
-          containerRef.current.innerHTML = ""
           const { svg } = await mermaid.render(idRef.current, normalizedChart)
           if (!cancelled && containerRef.current) {
-            containerRef.current.innerHTML = svg
+            // Only update DOM if content actually changed
+            if (containerRef.current.innerHTML !== svg) {
+              containerRef.current.innerHTML = svg
+            }
+            lastRenderedRef.current = normalizedChart
             setError(null)
           }
         }
