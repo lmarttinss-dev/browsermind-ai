@@ -111,6 +111,58 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
   - Alta concentração de Gold + Platinum → concorrência PROFISSIONAL, barreira elevada, exige diferenciação forte
   - Muitos Platinum → categoria dominada por players ELITE, entrada arriscada sem estratégia clara de diferenciação
 
+### Logística de Entrega (extraia do AvantPro)
+
+> O AvantPro mostra a distribuição dos tipos de envio usados pelos vendedores na categoria. Isso revela o nível de serviço e competitividade logística.
+
+- FULL (quantos anúncios):
+- Flex (quantos anúncios):
+- Correios (quantos anúncios):
+- Outros (quantos anúncios):
+- Interpretação:
+  - Alta proporção de FULL → categoria PROFISSIONAL, vendedores usam armazéns do Mercado Livre, entrega rápida é padrão
+  - Alta proporção de Flex → vendedores com logística própria ágil (mesmo dia/next day)
+  - Predomínio de Correios/Outros → logística FRACA na categoria, oportunidade de diferenciação com envio rápido
+  - FULL alto + Flex alto → categoria com expectativa de entrega RÁPIDA, entrar sem FULL é desvantagem competitiva
+
+### Perfil dos Vendedores (extraia do AvantPro)
+
+> O AvantPro mostra o perfil das contas na categoria. Analise o nível de profissionalização e barreiras de entrada.
+
+- Clássico (quantos vendedores):
+- Premium (quantos vendedores):
+- Oficiais (quantos vendedores):
+- Internacional (quantos vendedores):
+- ProdutoPro (quantos):
+- Interpretação:
+  - Predomínio de Clássico → vendedores INICIANTES ou de baixo volume, categoria acessível
+  - Predomínio de Premium → vendedores PROFISSIONAIS que investem em conta, concorrência mais qualificada
+  - Muitos Oficiais → lojas oficiais de marcas dominando, barreira ALTÍSSIMA para Genéricos
+  - Presença de Internacional → concorrência de importados diretos, margens podem ser mais apertadas
+  - ProdutoPro alto → categoria com anúncios de catálogo estruturado, profissionalização elevada
+
+### Indicadores de Mercado (extraia do AvantPro)
+
+> O AvantPro fornece indicadores agregados da categoria. Analise cada um para entender o aquecimento e a maturidade do mercado.
+
+- Catálogos por range (1-5 / 6-10 / 11-30 / 30+):
+- Variações (quantos anúncios com variações):
+- Oferta (quantos anúncios em oferta):
+- Frete Grátis (quantos anúncios):
+- Patrocinados (quantos anúncios):
+- Fora Catálogo vs Em Catálogo:
+- Menor preço × Maior preço (R$):
+- Menor faturamento × Maior faturamento (R$):
+- Total de vendedores:
+- Interpretação:
+  - Frete Grátis alto → EXPECTATIVA do consumidor, entrar sem frete grátis reduz conversão
+  - Patrocinados alto → categoria COMPETITIVA, vendedores investem em anúncios pagos para visibilidade
+  - Muitas Variações → produtos com múltiplas opções (cor/tamanho), vendedor com variações tem vantagem
+  - Muitas Ofertas → categoria com DESCONTOS frequentes, margem pode ser pressionada
+  - Poucos "Em Catálogo" → categoria DESORGANIZADA, oportunidade para estruturar anúncios no catálogo
+  - Amplitude de preço grande (ex: R$ 29 a R$ 129) → espaço para posicionamento em diferentes faixas
+  - Amplitude de faturamento grande → indica que há vencedores e perdedores claros na categoria
+
 ### Análise de posicionamento
 
 - Se o produto está na faixa mais competitiva (R$ 19–R$ 45): ALERTA — exige custo de importação muito baixo para competir
