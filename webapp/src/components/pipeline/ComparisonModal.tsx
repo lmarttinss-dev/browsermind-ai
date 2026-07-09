@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { X, Loader2, ArrowRight, Trophy, Check, RefreshCw, Clock } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -248,22 +248,7 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
                   <div className="prose prose-invert prose-sm max-w-none bg-gray-800 rounded-lg p-4 border border-gray-700">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{
-                        a: ({ href, children }) => (
-                          <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-                        ),
-                        code({ className, children, ...props }) {
-                          const match = /language-(\w+)/.exec(className || "")
-                          if (match && match[1] === "mermaid") {
-                            return <MermaidRenderer chart={String(children)} />
-                          }
-                          return (
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          )
-                        },
-                      }}
+                      components={markdownComponents}
                     >
                       {comparison.report}
                     </ReactMarkdown>

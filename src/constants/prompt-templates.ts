@@ -1071,6 +1071,8 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 - **xychart**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
 - **pie**: gráfico de pizza para distribuição (market share, concentração)
 
+> 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`"\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`""\` (smart quotes) — elas quebram o parser do Mermaid e causam erro de renderização. Exemplo correto: \`title "Vendas Mensais"\`, NUNCA \`title "Vendas Mensais"\`.
+
 Coloque os gráficos próximos aos dados que eles representam.`,
   },
 ]
