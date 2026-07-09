@@ -130,6 +130,23 @@ export const ProductDetailPage = () => {
     }
   }
 
+  const markdownComponents = useMemo(() => ({
+    a: ({ href, children }: any) => (
+      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    ),
+    code({ className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "")
+      if (match && match[1] === "mermaid") {
+        return <MermaidRenderer chart={String(children)} />
+      }
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    },
+  }), [])
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -163,23 +180,6 @@ export const ProductDetailPage = () => {
   const potentialMargin = product.potentialMargin || metrics.potentialMargin
 
   const suppliersCount = product.suppliers?.length || 0
-
-  const markdownComponents = useMemo(() => ({
-    a: ({ href, children }: any) => (
-      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-    ),
-    code({ className, children, ...props }: any) {
-      const match = /language-(\w+)/.exec(className || "")
-      if (match && match[1] === "mermaid") {
-        return <MermaidRenderer chart={String(children)} />
-      }
-      return (
-        <code className={className} {...props}>
-          {children}
-        </code>
-      )
-    },
-  }), [])
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
