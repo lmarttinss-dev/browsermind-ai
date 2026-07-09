@@ -638,7 +638,7 @@ Sua resposta DEVE começar exatamente assim:
 \`\`\`
 # 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
 **Categoria:** [NOME DA CATEGORIA]
-**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**URL:** [https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA])
 **Data da análise:** [DATA]
 \`\`\`
 
@@ -684,7 +684,7 @@ Determinar:
 
 **[INSERIR NOME DA CATEGORIA]**
 
-**URL da categoria:** **[INSERIR URL COMPLETA]** — use sempre a URL completa do Mercado Livre (ex: \`https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares\`), nunca apenas o path relativo.
+**URL da categoria:** **[INSERIR URL COMPLETA]** — use sempre a URL completa do Mercado Livre (ex: \`https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares\`), nunca apenas o path relativo.
 
 ---
 
@@ -1061,6 +1061,55 @@ Defina:
 
 ---
 
+# 💲 Sugestão de Precificação para Venda
+
+Com base na análise da concorrência, determine o preço ideal de venda:
+
+## Análise das Faixas de Preço da Concorrência
+
+- Faixa de entrada (menores preços praticados): R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+- Faixa intermediária: R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+- Faixa premium: R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+
+## Posicionamento Recomendado
+
+Escolha uma estratégia e justifique:
+
+- **Entrada (preço mais baixo):** competir por volume, margens menores, risco de guerra de preços
+- **Intermediário (preço médio):** equilíbrio entre volume e margem, diferencial no anúncio/produto
+- **Premium (preço acima da média):** qualidade superior, marca, embalagem, atendimento — exige diferenciação clara
+
+## Preço Sugerido
+
+| Estratégia | Preço Sugerido | Margem Estimada | Volume Esperado (un./mês) | Faturamento Projetado |
+|------------|---------------|-----------------|--------------------------|----------------------|
+| Entrada | R$ X,XX | X% | X | R$ X.XXX,XX |
+| Competitivo | R$ X,XX | X% | X | R$ X.XXX,XX |
+| Premium | R$ X,XX | X% | X | R$ X.XXX,XX |
+
+## Simulação de Rentabilidade
+
+Considerando o custo total de importação por unidade (landed cost) e as taxas da plataforma:
+
+| Preço de Venda | Custo por Unidade | Taxas ML (X%) | Lucro Líquido/Un. | Margem Líquida |
+|---------------|-------------------|---------------|-------------------|---------------|
+| R$ X,XX | R$ X,XX | R$ X,XX | R$ X,XX | X% |
+
+## Estratégia de Precificação Psicológica
+
+- Preço com final .90 ou .99: (ex: R$ 49,90 em vez de R$ 50,00)
+- Preço âncora: (ex: risque o preço antigo e mostre o novo com desconto)
+- Atacado/combo: (ex: leve 2 por R$ 89,90 — cada um sai a R$ 44,95)
+- Gatilho de escassez: (ex: "últimas unidades a este preço")
+
+## Cronograma de Ajuste de Preços
+
+- **Lançamento:** preço X% abaixo do mercado para gerar primeiras vendas e avaliações
+- **Crescimento:** ajuste gradual até o preço competitivo após X avaliações positivas
+- **Maturidade:** preço premium após consolidar reputação (X vendas/mês)
+
+---
+
 # Conclusão Executiva
 
 Produza uma conclusão final de até 10 linhas contendo:
@@ -1119,12 +1168,12 @@ O relatório DEVE começar exatamente com este formato:
 \`\`\`
 # 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
 **Categoria:** [NOME]
-**URL:** [https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://www.mercadolivre.com.br/[PATH-DA-CATEGORIA])
+**URL:** [https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA]](https://lista.mercadolivre.com.br/[PATH-DA-CATEGORIA])
 **Data da análise:** [DATA]
 
 ---
 
-## 📊 Métricas da Categoria (AvantPro)
+## �📊 Métricas da Categoria (AvantPro)
 [Aqui vai a tabela de métricas — SEMPRE em formato de tabela Markdown de 2 colunas: Métrica | Valor]
 \`\`\`
 
@@ -1133,7 +1182,7 @@ O relatório DEVE começar exatamente com este formato:
 - **🚨 QUEBRA DE LINHA OBRIGATÓRIA**: Categoria, URL e Data DEVEM estar em linhas separadas. Use Enter (quebra de linha) entre cada campo. NUNCA coloque os três na mesma linha.
 - **ANTI-EXEMPLO (PROIBIDO):** \`**Categoria:** X **URL:** Y **Data:** Z\` — tudo na mesma linha.
 - **EXEMPLO CORRETO:** cada campo \`**Categoria:**\`, \`**URL:**\` e \`**Data da análise:**\` em sua própria linha, um abaixo do outro.
-- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
+- **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
 - **Data da análise**: Use a data atual no formato "DD de Mês de AAAA".
 
 ## Seções Obrigatórias (na ordem)
@@ -1328,7 +1377,29 @@ Bullet points.
 
 ---
 
-### 📋 Conclusão Executiva
+### � Sugestão de Precificação para Venda
+
+#### 📊 Análise das Faixas de Preço da Concorrência
+Tabela Markdown: Faixa | Intervalo de Preço | Concorrentes | % do Mercado.
+
+#### 🎯 Posicionamento Recomendado
+**ESTRATÉGIA EM NEGRITO** com parágrafo justificando a escolha com base nos dados da concorrência.
+
+#### 💰 Preço Sugerido por Estratégia
+Tabela Markdown: Estratégia | Preço Sugerido | Margem Estimada | Volume Esperado (un./mês) | Faturamento Projetado.
+
+#### 🧮 Simulação de Rentabilidade
+Tabela Markdown: Preço de Venda | Custo/Un. (landed cost) | Taxas ML | Lucro Líquido/Un. | Margem Líquida.
+
+#### 🧠 Precificação Psicológica
+Bullet points com **negrito** no tipo de gatilho (preço .90/.99, âncora, combo, escassez).
+
+#### 📅 Cronograma de Ajuste de Preços
+Tabela Markdown: Fase | Preço | Objetivo | Gatilho para Mudança.
+
+---
+
+### �📋 Conclusão Executiva
 
 Lista numerada de 1 a 6 respondendo exatamente:
 
@@ -1356,7 +1427,7 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 
 ### Regra de URLs
 
-- **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://www.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
+- **URLs de categorias SEMPRE completas**: Use a URL completa do Mercado Livre (ex: https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). **NUNCA** use apenas o path relativo. **NUNCA** coloque a URL entre crases (backticks) — o Markdown só gera link clicável quando a URL está em texto puro, sem formatação ao redor.
 
 ### Uso de Gráficos Mermaid
 
