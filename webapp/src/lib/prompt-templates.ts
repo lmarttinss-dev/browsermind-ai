@@ -86,8 +86,7 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Análise pela idade do anúncio (use a Data de criação do AvantPro):
   - 🟢 Menos de 180 dias (6 meses) com bom ritmo de vendas → indica ALTA DEMANDA RECENTE e produto em ascensão (tendência de crescimento)
   - 🟡 Entre 180 e 365 dias com vendas consistentes → demanda CONSOLIDADA e estável
-  - 🟠 Entre 365 e 730 dias (1-2 anos) → demanda MADURA, pode estar estabilizando ou em declínio
-  - 🔴 Mais de 730 dias (2+ anos) → demanda ANTIGA, verifique se o ritmo de vendas ainda é relevante ou se o produto já passou do pico
+  - � Mais de 365 dias → demanda MADURA, verifique se o ritmo de vendas ainda é relevante ou se o produto já passou do pico
   - Cruze SEMPRE a idade do anúncio com o Ritmo atual: um anúncio jovem (< 180 dias) com alto volume de vendas é o melhor indicador de oportunidade quente
 
 ### Concorrência

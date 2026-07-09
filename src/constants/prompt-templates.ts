@@ -98,7 +98,7 @@ Avalie:
 - Análise pela idade do anúncio (use a Data do anúncio e Dias ativo):
   - Menos de 180 dias (6 meses) com bom ritmo de vendas → indica ALTA DEMANDA RECENTE e produto em ascensão
   - Entre 180 e 365 dias com vendas consistentes → demanda CONSOLIDADA
-  - Mais de 730 dias (2+ anos) → demanda MADURA, verifique se o ritmo ainda é relevante
+  - Mais de 365 dias → demanda MADURA, verifique se o ritmo ainda é relevante
   - Cruze a idade do anúncio com o Ritmo atual: anúncio jovem (< 180 dias) com alto volume é o melhor indicador de oportunidade
 
 ## 🚚 Viabilidade para Importação Simplificada
@@ -412,7 +412,7 @@ Avalie:
 - Análise pela idade dos anúncios (use o campo Tempo de anúncio em dias):
   - Anúncios com menos de 180 dias e bom volume de vendas → sinal de DEMANDA RECENTE e CRESCENTE (produto em ascensão)
   - Anúncios entre 180-365 dias → demanda CONSOLIDADA e estável
-  - Anúncios com mais de 730 dias → demanda MADURA, possível saturação ou declínio
+  - Anúncios com mais de 365 dias → demanda MADURA, possível saturação ou declínio
   - Se há MUITOS anúncios jovens (< 180 dias) na categoria → indica que a categoria está aquecida e atraindo novos vendedores
   - Se há POUCOS anúncios jovens mas vendas concentradas em anúncios antigos → barreira de entrada alta, categoria dominada por players estabelecidos
   - Cruze a idade dos anúncios com o volume de vendas: anúncios jovens com alta participação são o melhor indicador de oportunidade quente
