@@ -796,6 +796,8 @@ Analise a tendência de longo prazo (até 24 meses) para distinguir se a categor
 
 Gere um gráfico de barras com as vendas mensais estimadas (últimos 12 meses). Use blocos de código com linguagem \`mermaid\`:
 
+> 🚨 **ATENÇÃO**: No \`x-axis\`, NUNCA use \`/\` (barra) ou \`-\` (hífen). Use apenas nomes de meses abreviados (Jan, Fev, Mar...) ou ano isolado (2025, 2026). \`Jul/25\` quebra o parser! Sempre: \`x-axis [Jul, Ago, Set, Out, Nov, Dez, Jan, Fev, Mar, Abr, Mai, Jun]\`
+
 \`\`\`mermaid
 xychart
     title "Vendas Mensais Estimadas (12 meses)"
@@ -1521,6 +1523,8 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 - **pie**: gráfico de pizza para distribuição (market share, concentração)
 
 > 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`"\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`""\` (smart quotes) — elas quebram o parser do Mermaid e causam erro de renderização. Exemplo correto: \`title "Vendas Mensais"\`, NUNCA \`title "Vendas Mensais"\`.
+
+> 🚨 **X-AXIS SEM CARACTERES ESPECIAIS**: No \`x-axis\` do \`xychart\`, NUNCA use \`/\` (barra) ou \`-\` (hífen) nos labels. Use apenas nomes de meses abreviados (Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez) ou ano isolado (2025, 2026). Exemplo CORRETO: \`x-axis [Jul, Ago, Set, Out]\`. Exemplo ERRADO: \`x-axis [Jul/25, Ago/25]\` — barras quebram o parser!
 
 Coloque os gráficos próximos aos dados que eles representam.`,
   },
