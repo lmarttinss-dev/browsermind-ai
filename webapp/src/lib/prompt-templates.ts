@@ -927,17 +927,32 @@ Explique os fatores que influenciam a concorrência. Considere se a categoria es
 
 # Tarefa 3 — Análise de Concentração de Mercado
 
+> Use a métrica de **% Participação** de cada anúncio (fornecida pelo AvantPro) para calcular a concentração de mercado. Some as participações individuais para obter os totais por vendedor e por faixa (Top 3, Top 10).
+
 Calcule:
 
 ### Participação do líder
 
-(%)
+(%) — some a participação de todos os anúncios do vendedor com maior share
 
 ### Participação dos Top 3
 
-(%)
+(%) — some a participação dos 3 vendedores com maior share
 
 ### Participação dos Top 10
+
+(%) — some a participação dos 10 vendedores com maior share
+
+### Distribuição de participação por anúncio (tabela)
+
+Liste os anúncios ordenados por participação (maior → menor):
+
+| Anúncio | Vendedor | Vendas | Participação (%) | Tempo de anúncio |
+|---------|----------|--------|------------------|------------------|
+| #1 | | | | |
+| #2 | | | | |
+| #3 | | | | |
+| ... | | | | |
 
 (%)
 
