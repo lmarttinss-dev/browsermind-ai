@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Search } from "lucide-react"
 import ReactMarkdown from "react-markdown"
@@ -623,22 +623,7 @@ export const SupplierDetailPage = () => {
               <div className="prose prose-invert prose-sm max-w-none">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
-                  components={{
-                    a: ({ href, children }) => (
-                      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-                    ),
-                    code({ className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || "")
-                      if (match && match[1] === "mermaid") {
-                        return <MermaidRenderer chart={String(children)} />
-                      }
-                      return (
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      )
-                    },
-                  }}
+                  components={markdownComponents}
                 >
                   {supplier.report}
                 </ReactMarkdown>

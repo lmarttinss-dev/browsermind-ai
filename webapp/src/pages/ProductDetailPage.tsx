@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
@@ -163,6 +163,23 @@ export const ProductDetailPage = () => {
   const potentialMargin = product.potentialMargin || metrics.potentialMargin
 
   const suppliersCount = product.suppliers?.length || 0
+
+  const markdownComponents = useMemo(() => ({
+    a: ({ href, children }: any) => (
+      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    ),
+    code({ className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "")
+      if (match && match[1] === "mermaid") {
+        return <MermaidRenderer chart={String(children)} />
+      }
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    },
+  }), [])
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -352,22 +369,7 @@ export const ProductDetailPage = () => {
                   <div className="prose prose-invert max-w-none">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{
-                        a: ({ href, children }) => (
-                          <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-                        ),
-                        code({ className, children, ...props }) {
-                          const match = /language-(\w+)/.exec(className || "")
-                          if (match && match[1] === "mermaid") {
-                            return <MermaidRenderer chart={String(children)} />
-                          }
-                          return (
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          )
-                        },
-                      }}
+                      components={markdownComponents}
                     >
                       {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
                     </ReactMarkdown>
@@ -404,22 +406,7 @@ export const ProductDetailPage = () => {
                 <div className="prose prose-invert max-w-none">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
-                    components={{
-                      a: ({ href, children }) => (
-                        <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-                      ),
-                      code({ className, children, ...props }) {
-                        const match = /language-(\w+)/.exec(className || "")
-                        if (match && match[1] === "mermaid") {
-                          return <MermaidRenderer chart={String(children)} />
-                        }
-                        return (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        )
-                      },
-                    }}
+                    components={markdownComponents}
                   >
                     {product.marketReport}
                   </ReactMarkdown>

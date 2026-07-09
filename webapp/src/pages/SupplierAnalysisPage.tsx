@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ArrowLeft, Search, Loader2, ExternalLink, Clock, Link2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
@@ -87,6 +87,23 @@ export const SupplierAnalysisPage = () => {
       handleAnalyze()
     }
   }
+
+  const markdownComponents = useMemo(() => ({
+    a: ({ href, children }: any) => (
+      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    ),
+    code({ className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "")
+      if (match && match[1] === "mermaid") {
+        return <MermaidRenderer chart={String(children)} />
+      }
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    },
+  }), [])
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -246,22 +263,7 @@ export const SupplierAnalysisPage = () => {
             <div className="prose prose-invert prose-sm max-w-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                components={{
-                  a: ({ href, children }) => (
-                    <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-                  ),
-                  code({ className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || "")
-                    if (match && match[1] === "mermaid") {
-                      return <MermaidRenderer chart={String(children)} />
-                    }
-                    return (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    )
-                  },
-                }}
+                components={markdownComponents}
               >
                 {result.report}
               </ReactMarkdown>
