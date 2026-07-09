@@ -11,6 +11,12 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
   const [error, setError] = useState<string | null>(null)
   const idRef = useRef(`mermaid-${++mermaidIdCounter}`)
 
+  // Normaliza smart quotes e outros caracteres que quebram o parser do Mermaid
+  const normalizedChart = chart
+    .replace(/[\u201C\u201D]/g, '"')   // aspas curvas → aspas retas
+    .replace(/[\u2018\u2019]/g, "'")   // aspas simples curvas → retas
+    .replace(/[\u2013\u2014]/g, "-")   // em/en dash → hífen simples
+
   useEffect(() => {
     let cancelled = false
 
@@ -28,7 +34,7 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
             fontFamily: "ui-monospace, monospace",
           })
 
-          const { svg } = await mermaid.render(idRef.current, chart)
+          const { svg } = await mermaid.render(idRef.current, normalizedChart)
           if (!cancelled && containerRef.current) {
             containerRef.current.innerHTML = svg
             setError(null)
