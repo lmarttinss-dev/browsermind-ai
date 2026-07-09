@@ -97,6 +97,20 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Concorrente principal: nome, preço e diferencial
 - Barreiras de entrada identificadas:
 
+### Análise de Medalhas (extraia os filtros do AvantPro)
+
+> O AvantPro mostra a distribuição de medalhas dos vendedores na categoria: **Sem medalha**, **Mercado Líder**, **Mercado Gold** e **Mercado Platinum**. Analise a proporção entre elas para determinar o nível de profissionalização da concorrência.
+
+- Sem medalha (quantos vendedores):
+- Mercado Líder (quantos vendedores):
+- Mercado Gold (quantos vendedores):
+- Mercado Platinum (quantos vendedores):
+- Interpretação da distribuição:
+  - Predomínio de "Sem medalha" → concorrência AMADORA, baixa barreira de entrada, oportunidade para profissionalizar
+  - Predomínio de "Mercado Líder" → concorrência ESTABELECIDA, categoria saudável com espaço para novos entrantes
+  - Alta concentração de Gold + Platinum → concorrência PROFISSIONAL, barreira elevada, exige diferenciação forte
+  - Muitos Platinum → categoria dominada por players ELITE, entrada arriscada sem estratégia clara de diferenciação
+
 ### Análise de posicionamento
 
 - Se o produto está na faixa mais competitiva (R$ 19–R$ 45): ALERTA — exige custo de importação muito baixo para competir
