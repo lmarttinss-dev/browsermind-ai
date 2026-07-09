@@ -538,7 +538,7 @@ Explique:
 Gere um gráfico de pizza com a distribuição de market share entre os principais vendedores:
 
 \`\`\`mermaid
-pie showData
+pie
     title "Market Share por Vendedor"
     "Líder" : 45
     "2º Colocado" : 18
@@ -1083,7 +1083,7 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 ### Uso de Gráficos Mermaid
 
 - **xychart**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
-- **pie**: gráfico de pizza para distribuição (market share, concentração)
+- **pie**: gráfico de pizza para distribuição (market share, concentração). Use apenas \`pie\` na primeira linha, NUNCA \`pie showData\` (inválido no Mermaid v11).
 
 > 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`"\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`""\` (smart quotes) — elas quebram o parser do Mermaid e causam erro de renderização. Exemplo correto: \`title "Vendas Mensais"\`, NUNCA \`title "Vendas Mensais"\`.
 
