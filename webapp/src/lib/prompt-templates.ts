@@ -97,72 +97,6 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Concorrente principal: nome, preço e diferencial
 - Barreiras de entrada identificadas:
 
-### Análise de Medalhas (extraia os filtros do AvantPro)
-
-> O AvantPro mostra a distribuição de medalhas dos vendedores na categoria: **Sem medalha**, **Mercado Líder**, **Mercado Gold** e **Mercado Platinum**. Analise a proporção entre elas para determinar o nível de profissionalização da concorrência.
-
-- Sem medalha (quantos vendedores):
-- Mercado Líder (quantos vendedores):
-- Mercado Gold (quantos vendedores):
-- Mercado Platinum (quantos vendedores):
-- Interpretação da distribuição:
-  - Predomínio de "Sem medalha" → concorrência AMADORA, baixa barreira de entrada, oportunidade para profissionalizar
-  - Predomínio de "Mercado Líder" → concorrência ESTABELECIDA, categoria saudável com espaço para novos entrantes
-  - Alta concentração de Gold + Platinum → concorrência PROFISSIONAL, barreira elevada, exige diferenciação forte
-  - Muitos Platinum → categoria dominada por players ELITE, entrada arriscada sem estratégia clara de diferenciação
-
-### Logística de Entrega (extraia do AvantPro)
-
-> O AvantPro mostra a distribuição dos tipos de envio usados pelos vendedores na categoria. Isso revela o nível de serviço e competitividade logística.
-
-- FULL (quantos anúncios):
-- Flex (quantos anúncios):
-- Correios (quantos anúncios):
-- Outros (quantos anúncios):
-- Interpretação:
-  - Alta proporção de FULL → categoria PROFISSIONAL, vendedores usam armazéns do Mercado Livre, entrega rápida é padrão
-  - Alta proporção de Flex → vendedores com logística própria ágil (mesmo dia/next day)
-  - Predomínio de Correios/Outros → logística FRACA na categoria, oportunidade de diferenciação com envio rápido
-  - FULL alto + Flex alto → categoria com expectativa de entrega RÁPIDA, entrar sem FULL é desvantagem competitiva
-
-### Perfil dos Vendedores (extraia do AvantPro)
-
-> O AvantPro mostra o perfil das contas na categoria. Analise o nível de profissionalização e barreiras de entrada.
-
-- Clássico (quantos vendedores):
-- Premium (quantos vendedores):
-- Oficiais (quantos vendedores):
-- Internacional (quantos vendedores):
-- ProdutoPro (quantos):
-- Interpretação:
-  - Predomínio de Clássico → vendedores INICIANTES ou de baixo volume, categoria acessível
-  - Predomínio de Premium → vendedores PROFISSIONAIS que investem em conta, concorrência mais qualificada
-  - Muitos Oficiais → lojas oficiais de marcas dominando, barreira ALTÍSSIMA para Genéricos
-  - Presença de Internacional → concorrência de importados diretos, margens podem ser mais apertadas
-  - ProdutoPro alto → categoria com anúncios de catálogo estruturado, profissionalização elevada
-
-### Indicadores de Mercado (extraia do AvantPro)
-
-> O AvantPro fornece indicadores agregados da categoria. Analise cada um para entender o aquecimento e a maturidade do mercado.
-
-- Catálogos por range (1-5 / 6-10 / 11-30 / 30+):
-- Variações (quantos anúncios com variações):
-- Oferta (quantos anúncios em oferta):
-- Frete Grátis (quantos anúncios):
-- Patrocinados (quantos anúncios):
-- Fora Catálogo vs Em Catálogo:
-- Menor preço × Maior preço (R$):
-- Menor faturamento × Maior faturamento (R$):
-- Total de vendedores:
-- Interpretação:
-  - Frete Grátis alto → EXPECTATIVA do consumidor, entrar sem frete grátis reduz conversão
-  - Patrocinados alto → categoria COMPETITIVA, vendedores investem em anúncios pagos para visibilidade
-  - Muitas Variações → produtos com múltiplas opções (cor/tamanho), vendedor com variações tem vantagem
-  - Muitas Ofertas → categoria com DESCONTOS frequentes, margem pode ser pressionada
-  - Poucos "Em Catálogo" → categoria DESORGANIZADA, oportunidade para estruturar anúncios no catálogo
-  - Amplitude de preço grande (ex: R$ 29 a R$ 129) → espaço para posicionamento em diferentes faixas
-  - Amplitude de faturamento grande → indica que há vencedores e perdedores claros na categoria
-
 ### Análise de posicionamento
 
 - Se o produto está na faixa mais competitiva (R$ 19–R$ 45): ALERTA — exige custo de importação muito baixo para competir
@@ -903,6 +837,72 @@ Três condições que, quando verdadeiras simultaneamente, indicam oportunidade 
 - **Receita total da categoria:** R$ (≥ R$ 5 milhões é sinal positivo de mercado aquecido)
 - **Monopolização pelos top sellers:** (% do mercado — < 20% é saudável, > 50% é perigoso)
 - **Concentração de marcas:** (nenhuma marca domina a prateleira | 1-2 marcas fortes | muitas marcas estabelecidas — ideal: nenhuma marca isolada domina)
+
+### Análise de Medalhas (filtros do AvantPro)
+
+> O AvantPro mostra a distribuição de medalhas dos vendedores na categoria: **Sem medalha**, **Mercado Líder**, **Mercado Gold** e **Mercado Platinum**. Analise a proporção entre elas para determinar o nível de profissionalização da concorrência.
+
+- Sem medalha (quantos vendedores):
+- Mercado Líder (quantos vendedores):
+- Mercado Gold (quantos vendedores):
+- Mercado Platinum (quantos vendedores):
+- Interprete a proporção:
+  - Predomínio de "Sem medalha" → concorrência AMADORA, baixa barreira de entrada, oportunidade para profissionalizar
+  - Predomínio de "Mercado Líder" → categoria SAUDÁVEL com espaço para novos entrantes qualificados
+  - Alta concentração de Gold + Platinum → barreira ELEVADA, exige diferenciação forte e investimento
+  - Muitos Platinum → categoria dominada por ELITE, entrada arriscada sem estratégia clara
+
+### Logística de Entrega (filtros do AvantPro)
+
+> O AvantPro mostra a distribuição dos tipos de envio usados pelos vendedores na categoria.
+
+- FULL (quantos anúncios):
+- Flex (quantos anúncios):
+- Correios (quantos anúncios):
+- Outros (quantos anúncios):
+- Interprete:
+  - Alta proporção de FULL → categoria PROFISSIONAL, vendedores usam armazéns do Mercado Livre, entrega rápida é padrão
+  - Alta proporção de Flex → vendedores com logística própria ágil (mesmo dia/next day)
+  - Predomínio de Correios/Outros → logística FRACA, oportunidade de diferenciação com envio rápido
+  - FULL alto + Flex alto → expectativa de entrega RÁPIDA, entrar sem FULL é desvantagem competitiva
+
+### Perfil dos Vendedores (filtros do AvantPro)
+
+> O AvantPro mostra o perfil das contas na categoria: Clássico, Premium, Oficiais, Internacional, ProdutoPro.
+
+- Clássico (quantos vendedores):
+- Premium (quantos vendedores):
+- Oficiais (quantos vendedores):
+- Internacional (quantos vendedores):
+- ProdutoPro (quantos):
+- Interprete:
+  - Predomínio de Clássico → vendedores INICIANTES ou de baixo volume, categoria acessível
+  - Predomínio de Premium → vendedores PROFISSIONAIS que investem em conta, concorrência qualificada
+  - Muitos Oficiais → lojas oficiais de marcas dominando, barreira ALTÍSSIMA para genéricos
+  - Presença de Internacional → concorrência de importados diretos, margens mais apertadas
+  - ProdutoPro alto → anúncios de catálogo estruturado, profissionalização elevada
+
+### Indicadores de Mercado (filtros do AvantPro)
+
+> O AvantPro fornece indicadores agregados da categoria.
+
+- Catálogos por range (1-5 / 6-10 / 11-30 / 30+):
+- Variações (quantos anúncios com variações):
+- Oferta (quantos anúncios em oferta):
+- Frete Grátis (quantos anúncios):
+- Patrocinados (quantos anúncios):
+- Fora Catálogo vs Em Catálogo:
+- Menor preço × Maior preço (R$):
+- Menor faturamento × Maior faturamento (R$):
+- Total de vendedores:
+- Interprete:
+  - Frete Grátis alto → EXPECTATIVA do consumidor, entrar sem frete grátis reduz conversão
+  - Patrocinados alto → categoria COMPETITIVA, vendedores investem em anúncios pagos
+  - Muitas Variações → produtos com múltiplas opções (cor/tamanho), vendedor com variações tem vantagem
+  - Muitas Ofertas → categoria com DESCONTOS frequentes, margem pode ser pressionada
+  - Poucos "Em Catálogo" → categoria DESORGANIZADA, oportunidade para estruturar anúncios
+  - Amplitude de preço grande → espaço para posicionamento em diferentes faixas
+  - Amplitude de faturamento grande → há vencedores e perdedores claros na categoria
 
 ### Vendedores de Destaque
 
