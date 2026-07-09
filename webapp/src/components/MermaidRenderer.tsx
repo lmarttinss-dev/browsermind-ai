@@ -1,21 +1,38 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 type MermaidRendererProps = {
   chart: string
 }
 
 let mermaidIdCounter = 0
+let mermaidInitialized = false
+
+/** Garante que o Mermaid seja inicializado apenas uma vez globalmente */
+async function ensureMermaidReady() {
+  if (mermaidInitialized) return
+  const mermaid = (await import("mermaid")).default
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: "dark",
+    securityLevel: "loose",
+    fontFamily: "ui-monospace, monospace",
+  })
+  mermaidInitialized = true
+}
 
 export function MermaidRenderer({ chart }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const idRef = useRef(`mermaid-${++mermaidIdCounter}`)
 
-  // Normaliza smart quotes e outros caracteres que quebram o parser do Mermaid
-  const normalizedChart = chart
-    .replace(/[\u201C\u201D]/g, '"')   // aspas curvas → aspas retas
-    .replace(/[\u2018\u2019]/g, "'")   // aspas simples curvas → retas
-    .replace(/[\u2013\u2014]/g, "-")   // em/en dash → hífen simples
+  // Memoriza a normalização para evitar recálculo em cada render
+  const normalizedChart = useMemo(() =>
+    chart
+      .replace(/[\u201C\u201D]/g, '"')   // aspas curvas → aspas retas
+      .replace(/[\u2018\u2019]/g, "'")   // aspas simples curvas → retas
+      .replace(/[\u2013\u2014]/g, "-"),  // em/en dash → hífen simples
+    [chart]
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -24,16 +41,12 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
       if (!containerRef.current) return
 
       try {
+        await ensureMermaidReady()
         const mermaid = (await import("mermaid")).default
 
-        if (!cancelled) {
-          mermaid.initialize({
-            startOnLoad: false,
-            theme: "dark",
-            securityLevel: "loose",
-            fontFamily: "ui-monospace, monospace",
-          })
-
+        if (!cancelled && containerRef.current) {
+          // Limpa o container antes de renderizar para evitar flicker
+          containerRef.current.innerHTML = ""
           const { svg } = await mermaid.render(idRef.current, normalizedChart)
           if (!cancelled && containerRef.current) {
             containerRef.current.innerHTML = svg
@@ -53,7 +66,7 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     return () => {
       cancelled = true
     }
-  }, [chart])
+  }, [normalizedChart])
 
   if (error) {
     return (
