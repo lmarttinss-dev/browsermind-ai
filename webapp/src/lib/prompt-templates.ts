@@ -83,6 +83,11 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Volume mensal (baseado no Ritmo atual): classifique como Baixo (<50), Médio (50-200), Alto (200-500) ou Muito Alto (>500)
 - Taxa de conversão: classifique como Baixa (<5%), Média (5-10%), Alta (10-15%) ou Muito Alta (>15%)
 - Tendência: interprete se a demanda está crescendo, estável ou caindo com base nos dados
+- Análise pela idade do anúncio (use a Data de criação do AvantPro):
+  - 🟢 Menos de 180 dias (6 meses) com bom ritmo de vendas → indica ALTA DEMANDA RECENTE e produto em ascensão (tendência de crescimento)
+  - 🟡 Entre 180 e 365 dias com vendas consistentes → demanda CONSOLIDADA e estável
+  - � Mais de 365 dias → demanda MADURA, verifique se o ritmo de vendas ainda é relevante ou se o produto já passou do pico
+  - Cruze SEMPRE a idade do anúncio com o Ritmo atual: um anúncio jovem (< 180 dias) com alto volume de vendas é o melhor indicador de oportunidade quente
 
 ### Concorrência
 
@@ -791,6 +796,8 @@ Analise a tendência de longo prazo (até 24 meses) para distinguir se a categor
 
 Gere um gráfico de barras com as vendas mensais estimadas (últimos 12 meses). Use blocos de código com linguagem \`mermaid\`:
 
+> 🚨 **ATENÇÃO**: No \`x-axis\`, NUNCA use \`/\` (barra) ou \`-\` (hífen). Use apenas nomes de meses abreviados (Jan, Fev, Mar...) ou ano isolado (2025, 2026). \`Jul/25\` quebra o parser! Sempre: \`x-axis [Jul, Ago, Set, Out, Nov, Dez, Jan, Fev, Mar, Abr, Mai, Jun]\`
+
 \`\`\`mermaid
 xychart
     title "Vendas Mensais Estimadas (12 meses)"
@@ -833,6 +840,72 @@ Três condições que, quando verdadeiras simultaneamente, indicam oportunidade 
 - **Monopolização pelos top sellers:** (% do mercado — < 20% é saudável, > 50% é perigoso)
 - **Concentração de marcas:** (nenhuma marca domina a prateleira | 1-2 marcas fortes | muitas marcas estabelecidas — ideal: nenhuma marca isolada domina)
 
+### Análise de Medalhas (filtros do AvantPro)
+
+> O AvantPro mostra a distribuição de medalhas dos vendedores na categoria: **Sem medalha**, **Mercado Líder**, **Mercado Gold** e **Mercado Platinum**. Analise a proporção entre elas para determinar o nível de profissionalização da concorrência.
+
+- Sem medalha (quantos vendedores):
+- Mercado Líder (quantos vendedores):
+- Mercado Gold (quantos vendedores):
+- Mercado Platinum (quantos vendedores):
+- Interprete a proporção:
+  - Predomínio de "Sem medalha" → concorrência AMADORA, baixa barreira de entrada, oportunidade para profissionalizar
+  - Predomínio de "Mercado Líder" → categoria SAUDÁVEL com espaço para novos entrantes qualificados
+  - Alta concentração de Gold + Platinum → barreira ELEVADA, exige diferenciação forte e investimento
+  - Muitos Platinum → categoria dominada por ELITE, entrada arriscada sem estratégia clara
+
+### Logística de Entrega (filtros do AvantPro)
+
+> O AvantPro mostra a distribuição dos tipos de envio usados pelos vendedores na categoria.
+
+- FULL (quantos anúncios):
+- Flex (quantos anúncios):
+- Correios (quantos anúncios):
+- Outros (quantos anúncios):
+- Interprete:
+  - Alta proporção de FULL → categoria PROFISSIONAL, vendedores usam armazéns do Mercado Livre, entrega rápida é padrão
+  - Alta proporção de Flex → vendedores com logística própria ágil (mesmo dia/next day)
+  - Predomínio de Correios/Outros → logística FRACA, oportunidade de diferenciação com envio rápido
+  - FULL alto + Flex alto → expectativa de entrega RÁPIDA, entrar sem FULL é desvantagem competitiva
+
+### Perfil dos Vendedores (filtros do AvantPro)
+
+> O AvantPro mostra o perfil das contas na categoria: Clássico, Premium, Oficiais, Internacional, ProdutoPro.
+
+- Clássico (quantos vendedores):
+- Premium (quantos vendedores):
+- Oficiais (quantos vendedores):
+- Internacional (quantos vendedores):
+- ProdutoPro (quantos):
+- Interprete:
+  - Predomínio de Clássico → vendedores INICIANTES ou de baixo volume, categoria acessível
+  - Predomínio de Premium → vendedores PROFISSIONAIS que investem em conta, concorrência qualificada
+  - Muitos Oficiais → lojas oficiais de marcas dominando, barreira ALTÍSSIMA para genéricos
+  - Presença de Internacional → concorrência de importados diretos, margens mais apertadas
+  - ProdutoPro alto → anúncios de catálogo estruturado, profissionalização elevada
+
+### Indicadores de Mercado (filtros do AvantPro)
+
+> O AvantPro fornece indicadores agregados da categoria.
+
+- Catálogos por range (1-5 / 6-10 / 11-30 / 30+):
+- Variações (quantos anúncios com variações):
+- Oferta (quantos anúncios em oferta):
+- Frete Grátis (quantos anúncios):
+- Patrocinados (quantos anúncios):
+- Fora Catálogo vs Em Catálogo:
+- Menor preço × Maior preço (R$):
+- Menor faturamento × Maior faturamento (R$):
+- Total de vendedores:
+- Interprete:
+  - Frete Grátis alto → EXPECTATIVA do consumidor, entrar sem frete grátis reduz conversão
+  - Patrocinados alto → categoria COMPETITIVA, vendedores investem em anúncios pagos
+  - Muitas Variações → produtos com múltiplas opções (cor/tamanho), vendedor com variações tem vantagem
+  - Muitas Ofertas → categoria com DESCONTOS frequentes, margem pode ser pressionada
+  - Poucos "Em Catálogo" → categoria DESORGANIZADA, oportunidade para estruturar anúncios
+  - Amplitude de preço grande → espaço para posicionamento em diferentes faixas
+  - Amplitude de faturamento grande → há vencedores e perdedores claros na categoria
+
 ### Vendedores de Destaque
 
 - **Vendedores de crescimento acelerado:** identifique sellers que estão crescendo rápido a partir de uma base pequena — eles geralmente percebem tendências antes dos líderes de mercado e merecem ser estudados com cuidado.
@@ -856,17 +929,32 @@ Explique os fatores que influenciam a concorrência. Considere se a categoria es
 
 # Tarefa 3 — Análise de Concentração de Mercado
 
+> Use a métrica de **% Participação** de cada anúncio (fornecida pelo AvantPro) para calcular a concentração de mercado. Some as participações individuais para obter os totais por vendedor e por faixa (Top 3, Top 10).
+
 Calcule:
 
 ### Participação do líder
 
-(%)
+(%) — some a participação de todos os anúncios do vendedor com maior share
 
 ### Participação dos Top 3
 
-(%)
+(%) — some a participação dos 3 vendedores com maior share
 
 ### Participação dos Top 10
+
+(%) — some a participação dos 10 vendedores com maior share
+
+### Distribuição de participação por anúncio (tabela)
+
+Liste os anúncios ordenados por participação (maior → menor):
+
+| Anúncio | Vendedor | Vendas | Participação (%) | Tempo de anúncio |
+|---------|----------|--------|------------------|------------------|
+| #1 | | | | |
+| #2 | | | | |
+| #3 | | | | |
+| ... | | | | |
 
 (%)
 
@@ -887,7 +975,7 @@ Explique:
 Gere um gráfico de pizza com a distribuição de market share entre os principais vendedores:
 
 \`\`\`mermaid
-pie showData
+pie
     title "Market Share por Vendedor"
     "Líder" : 45
     "2º Colocado" : 18
@@ -1432,9 +1520,11 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 ### Uso de Gráficos Mermaid
 
 - **xychart**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
-- **pie**: gráfico de pizza para distribuição (market share, concentração)
+- **pie**: gráfico de pizza para distribuição (market share, concentração). Use apenas \`pie\` na primeira linha, NUNCA \`pie showData\` (inválido no Mermaid v11).
 
 > 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`"\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`""\` (smart quotes) — elas quebram o parser do Mermaid e causam erro de renderização. Exemplo correto: \`title "Vendas Mensais"\`, NUNCA \`title "Vendas Mensais"\`.
+
+> 🚨 **X-AXIS SEM CARACTERES ESPECIAIS**: No \`x-axis\` do \`xychart\`, NUNCA use \`/\` (barra) ou \`-\` (hífen) nos labels. Use apenas nomes de meses abreviados (Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez) ou ano isolado (2025, 2026). Exemplo CORRETO: \`x-axis [Jul, Ago, Set, Out]\`. Exemplo ERRADO: \`x-axis [Jul/25, Ago/25]\` — barras quebram o parser!
 
 Coloque os gráficos próximos aos dados que eles representam.`,
   },

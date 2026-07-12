@@ -50,6 +50,23 @@ export const ComparisonModal = ({ onClose }: { onClose: () => void }) => {
   const getProductById = (id: string): PipelineProduct | undefined =>
     stageProducts.find(p => p._id === id)
 
+  const markdownComponents = useMemo(() => ({
+    a: ({ href, children }: any) => (
+      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    ),
+    code({ className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "")
+      if (match && match[1] === "mermaid") {
+        return <MermaidRenderer chart={String(children)} />
+      }
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    },
+  }), [])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-gray-900 border border-gray-700 rounded-xl w-[90vw] max-w-4xl max-h-[85vh] flex flex-col shadow-2xl">

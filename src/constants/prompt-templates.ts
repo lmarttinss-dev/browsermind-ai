@@ -95,6 +95,11 @@ Avalie:
 - Saturação do mercado
 - Potencial para anúncios pagos
 - Público-alvo provável
+- Análise pela idade do anúncio (use a Data do anúncio e Dias ativo):
+  - Menos de 180 dias (6 meses) com bom ritmo de vendas → indica ALTA DEMANDA RECENTE e produto em ascensão
+  - Entre 180 e 365 dias com vendas consistentes → demanda CONSOLIDADA
+  - Mais de 365 dias → demanda MADURA, verifique se o ritmo ainda é relevante
+  - Cruze a idade do anúncio com o Ritmo atual: anúncio jovem (< 180 dias) com alto volume é o melhor indicador de oportunidade
 
 ## 🚚 Viabilidade para Importação Simplificada
 
@@ -404,6 +409,13 @@ Avalie:
 - Quantidade estimada de vendas mensais.
 - Potencial de faturamento da categoria.
 - Potencial de recorrência.
+- Análise pela idade dos anúncios (use o campo Tempo de anúncio em dias):
+  - Anúncios com menos de 180 dias e bom volume de vendas → sinal de DEMANDA RECENTE e CRESCENTE (produto em ascensão)
+  - Anúncios entre 180-365 dias → demanda CONSOLIDADA e estável
+  - Anúncios com mais de 365 dias → demanda MADURA, possível saturação ou declínio
+  - Se há MUITOS anúncios jovens (< 180 dias) na categoria → indica que a categoria está aquecida e atraindo novos vendedores
+  - Se há POUCOS anúncios jovens mas vendas concentradas em anúncios antigos → barreira de entrada alta, categoria dominada por players estabelecidos
+  - Cruze a idade dos anúncios com o volume de vendas: anúncios jovens com alta participação são o melhor indicador de oportunidade quente
 
 ### Métricas de Oportunidade da Categoria
 
@@ -427,6 +439,8 @@ Analise a tendência de longo prazo (até 24 meses) para distinguir se a categor
 ### Gráfico de Sazonalidade (Mermaid)
 
 Gere um gráfico de barras com as vendas mensais estimadas (últimos 12 meses). Use blocos de código com linguagem \`mermaid\`:
+
+> 🚨 **ATENÇÃO**: No \`x-axis\`, NUNCA use \`/\` (barra) ou \`-\` (hífen). Use apenas nomes de meses abreviados (Jan, Fev, Mar...) ou ano isolado (2025, 2026). \`Jul/25\` quebra o parser! Sempre: \`x-axis [Jul, Ago, Set, Out, Nov, Dez, Jan, Fev, Mar, Abr, Mai, Jun]\`
 
 \`\`\`mermaid
 xychart
@@ -524,7 +538,7 @@ Explique:
 Gere um gráfico de pizza com a distribuição de market share entre os principais vendedores:
 
 \`\`\`mermaid
-pie showData
+pie
     title "Market Share por Vendedor"
     "Líder" : 45
     "2º Colocado" : 18
@@ -1069,9 +1083,11 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 ### Uso de Gráficos Mermaid
 
 - **xychart**: gráfico de barras para séries temporais (vendas mensais, receita ao longo do tempo)
-- **pie**: gráfico de pizza para distribuição (market share, concentração)
+- **pie**: gráfico de pizza para distribuição (market share, concentração). Use apenas \`pie\` na primeira linha, NUNCA \`pie showData\` (inválido no Mermaid v11).
 
 > 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`"\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`""\` (smart quotes) — elas quebram o parser do Mermaid e causam erro de renderização. Exemplo correto: \`title "Vendas Mensais"\`, NUNCA \`title "Vendas Mensais"\`.
+
+> 🚨 **X-AXIS SEM CARACTERES ESPECIAIS**: No \`x-axis\` do \`xychart\`, NUNCA use \`/\` (barra) ou \`-\` (hífen) nos labels. Use apenas nomes de meses abreviados (Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez) ou ano isolado (2025, 2026). Exemplo CORRETO: \`x-axis [Jul, Ago, Set, Out]\`. Exemplo ERRADO: \`x-axis [Jul/25, Ago/25]\` — barras quebram o parser!
 
 Coloque os gráficos próximos aos dados que eles representam.`,
   },

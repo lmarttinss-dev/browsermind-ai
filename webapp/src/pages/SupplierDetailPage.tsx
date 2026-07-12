@@ -86,6 +86,23 @@ export const SupplierDetailPage = () => {
   const index = parseInt(supplierIndex || "")
   const supplier: Supplier | undefined = product?.suppliers?.[index]
 
+  const markdownComponents = useMemo(() => ({
+    a: ({ href, children }: any) => (
+      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    ),
+    code({ className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "")
+      if (match && match[1] === "mermaid") {
+        return <MermaidRenderer chart={String(children)} />
+      }
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    },
+  }), [])
+
   useEffect(() => {
     if (!id) return
     setIsLoading(true)
