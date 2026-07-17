@@ -761,6 +761,25 @@ Considerando o custo total de importação por unidade (landed cost) e as taxas 
 
 ---
 
+# 📊 Resumo de Anúncios Analisados
+
+> 🚨 **OBRIGATÓRIO**: Após todas as tarefas, inclua uma tabela resumo com TODOS os anúncios mencionados no relatório.
+
+## 🔗 Anúncios Mencionados
+
+| # | Produto | Preço | Vendedor | Link |
+|---|---------|-------|----------|------|
+| 1 | (nome completo do anúncio) | R$ (preço) | (nome da loja/vendedor) | [Abrir no ML](https://www.mercadolivre.com.br/...) |
+
+**Regras para esta seção:**
+- Liste **TODOS** os anúncios que foram analisados ou mencionados em qualquer parte do relatório
+- Use o formato de link Markdown `[Abrir no ML](URL_COMPLETA)` para que o link seja clicável
+- A URL deve ser completa, começando com `https://www.mercadolivre.com.br/`
+- Inclua nome do produto, preço e vendedor para fácil identificação
+- Isso permite que o usuário abra cada anúncio diretamente do relatório com 1 clique
+
+---
+
 # Conclusão Executiva
 
 Produza uma conclusão final de até 10 linhas contendo:
@@ -1050,7 +1069,19 @@ Tabela Markdown: Fase | Preço | Objetivo | Gatilho para Mudança.
 
 ---
 
-### �📋 Conclusão Executiva
+### 🔗 Anúncios Mencionados
+
+Tabela Markdown obrigatória com TODOS os anúncios analisados no relatório:
+
+| # | Produto | Preço | Vendedor | URL |
+|---|---------|-------|----------|-----|
+| 1 | **[Nome do produto]** | **R$ XX,XX** | **[Nome do vendedor]** | [Abrir no ML](URL_COMPLETA_DO_ANUNCIO) |
+
+> ⚠️ **OBRIGATÓRIO**: Liste TODOS os anúncios mencionados ou analisados no relatório. Use URLs completas do Mercado Livre (formato `https://www.mercadolivre.com.br/...`) em formato de link Markdown `[Abrir no ML](URL)` para que sejam clicáveis. Cada linha deve conter: nome do produto, preço, nome do vendedor e link direto para o anúncio.
+
+---
+
+### 📋 Conclusão Executiva
 
 Lista numerada de 1 a 6 respondendo exatamente:
 

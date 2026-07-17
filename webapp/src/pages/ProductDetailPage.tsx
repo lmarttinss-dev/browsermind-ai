@@ -131,9 +131,23 @@ export const ProductDetailPage = () => {
   }
 
   const markdownComponents = useMemo(() => ({
-    a: ({ href, children }: any) => (
-      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-    ),
+    a: ({ href, children }: any) => {
+      const isML = /mercadolivre\.com\.br/.test(href || "")
+      if (isML) {
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600/20 text-blue-400 rounded border border-blue-600/30 hover:bg-blue-600/30 text-xs font-medium transition-colors"
+          >
+            <ExternalLink className="w-3 h-3" />
+            {children || "Abrir anúncio"}
+          </a>
+        )
+      }
+      return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    },
     code({ className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || "")
       if (match && match[1] === "mermaid") {
