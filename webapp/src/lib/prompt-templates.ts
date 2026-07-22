@@ -735,14 +735,14 @@ Gere um gráfico de pizza com a distribuição das modalidades logísticas entre
 
 > 🚨 **ATENÇÃO**: Use apenas os rótulos: Full, Flex, Frete Grátis, Normal. Some os percentuais para garantir que totalizam ~100% (arredonde se necessário).
 
-```mermaid
+\`\`\`mermaid
 pie
     title "Perfil Logístico da Categoria"
     "Full" : 65
     "Flex" : 10
     "Frete Grátis" : 15
     "Normal" : 10
-```
+\`\`\`
 
 #### �📝 Análise do Perfil Logístico
 
