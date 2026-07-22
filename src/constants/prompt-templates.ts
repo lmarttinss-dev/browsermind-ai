@@ -296,7 +296,7 @@ Sua resposta DEVE começar exatamente assim:
 ## Estrutura geral
 
 - A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
-- Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, contendo a tabela de percentuais (Full, Flex, Frete Grátis, Normal) e a análise do perfil logístico
+- Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
@@ -357,36 +357,42 @@ Determinar:
 
 ### 📦 Perfil Logístico da Categoria
 
-> Calcule o percentual de cada modalidade logística com base nas métricas acima. Use o total de **Vendedores** como denominador. Considere que um mesmo vendedor pode usar múltiplas modalidades (Full + Frete Grátis, etc.), então os percentuais podem ultrapassar 100%.
+> Calcule o percentual de cada tipo de envio com base na métrica **Logísticas de Entrega** do AvantPro. Use como denominador a **soma total dos 4 tipos** (FULL + Flex + Correios + Outros), que representa o total de anúncios analisados. Os percentuais DEVEM somar ~100%.
 
-| Modalidade | Quantidade | Percentual |
-|------------|-----------|------------|
-| **Full** | (valor da métrica Full) | (Full ÷ Vendedores × 100)% |
-| **Flex** | (estime com base na análise dos anúncios individuais) | (Flex ÷ Vendedores × 100)% |
-| **Frete Grátis** | (valor da métrica Frete Grátis) | (Frete Grátis ÷ Vendedores × 100)% |
-| **Normal (sem benefício)** | (Vendedores − estimativa de sobreposição) | (restante)% |
+> ⚠️ **FONTE DOS DADOS**: Os valores de FULL, Flex, Correios e Outros vêm da seção **Logística de Entrega (filtros do AvantPro)** nos Dados Coletados. PRIORIZE esses números — NÃO invente nem use os valores de "Full" e "Frete Grátis" da tabela de Métricas da Categoria (são métricas diferentes).
+
+| Tipo de Envio | Quantidade | Percentual |
+|--------------|-----------|------------|
+| **FULL** | (quantos anúncios) | (FULL ÷ total × 100)% |
+| **Flex** | (quantos anúncios) | (Flex ÷ total × 100)% |
+| **Correios** | (quantos anúncios) | (Correios ÷ total × 100)% |
+| **Outros** | (quantos anúncios) | (Outros ÷ total × 100)% |
+| **Total** | (FULL + Flex + Correios + Outros) | **100%** |
 
 #### � Gráfico do Perfil Logístico (Mermaid)
 
-Gere um gráfico de pizza com a distribuição das modalidades logísticas entre os vendedores:
+Gere um gráfico de pizza com a distribuição dos tipos de envio na categoria:
 
-> 🚨 **ATENÇÃO**: Use apenas os rótulos: Full, Flex, Frete Grátis, Normal. Some os percentuais para garantir que totalizam ~100% (arredonde se necessário).
+> 🚨 **ATENÇÃO**: Use apenas os rótulos: FULL, Flex, Correios, Outros. Arredonde os percentuais para números inteiros que somem exatamente 100%.
 
 \`\`\`mermaid
 pie
-    title "Perfil Logístico da Categoria"
-    "Full" : 65
-    "Flex" : 10
-    "Frete Grátis" : 15
-    "Normal" : 10
+    title "Logísticas de Entrega"
+    "FULL" : 58
+    "Flex" : 12
+    "Correios" : 22
+    "Outros" : 8
 \`\`\`
 
 #### �📝 Análise do Perfil Logístico
 
-- **Predominância:** identifique a modalidade dominante (ex: "80% dos vendedores no Full")
-- **Impacto competitivo:** explique como o perfil logístico afeta a concorrência — categorias com alto % de Full indicam barreira de entrada maior (exige envio de estoque para o CD do ML), enquanto categorias com baixo % de Full indicam oportunidade para diferenciação logística
-- **Oportunidade:** se há poucos vendedores usando Full ou Flex, oferecer entrega rápida via essas modalidades pode ser um diferencial competitivo decisivo
-- **Alerta:** se a categoria é dominada por Full (>70%), entrar sem Full exige preço muito mais baixo ou diferenciação forte para competir
+- **Predominância:** identifique o tipo de envio dominante (ex: "58% dos anúncios usam FULL")
+- **Impacto competitivo:**
+  - Alta proporção de FULL → categoria PROFISSIONAL, vendedores usam armazéns do Mercado Livre, entrega rápida é o padrão. Entrar sem FULL é desvantagem competitiva.
+  - Alta proporção de Flex → vendedores com logística própria ágil (same day / next day), expectativa de entrega rápida
+  - Predomínio de Correios/Outros → logística FRACA, grande oportunidade de diferenciação com envio rápido via FULL ou Flex
+- **Oportunidade:** se FULL e Flex somam < 30%, oferecer entrega rápida é um diferencial competitivo decisivo
+- **Alerta:** se FULL > 60%, a categoria exige envio de estoque para o CD do ML para competir em igualdade
 
 ---
 
@@ -884,7 +890,7 @@ Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coleta
 
 > ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após a tabela de métricas do AvantPro.
 
-Calcule o percentual de cada modalidade logística com base nas métricas. Use **tabela Markdown de 3 colunas** (Modalidade | Quantidade | Percentual) com as linhas: Full, Flex, Frete Grátis, Normal. Após a tabela, inclua o **📊 Gráfico do Perfil Logístico** em bloco \`\`\`mermaid com pie chart da distribuição. Em seguida, a subseção **📝 Análise do Perfil Logístico** com bullet points cobrindo: predominância, impacto competitivo, oportunidade e alerta.
+Calcule o percentual com base nos dados de **Logísticas de Entrega do AvantPro**. Use **tabela Markdown de 3 colunas** (Tipo de Envio | Quantidade | Percentual) com as linhas: FULL, Flex, Correios, Outros, Total. O denominador é a soma dos 4 tipos. Após a tabela, inclua o **📊 Gráfico do Perfil Logístico** em bloco \`\`\`mermaid com pie chart. Em seguida, a subseção **📝 Análise do Perfil Logístico** com bullet points cobrindo: predominância, impacto competitivo, oportunidade e alerta.
 
 ### 🧭 Tarefa 1 — Análise da Demanda
 
