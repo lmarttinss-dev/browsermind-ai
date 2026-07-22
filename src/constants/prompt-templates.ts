@@ -366,7 +366,22 @@ Determinar:
 | **Frete Grátis** | (valor da métrica Frete Grátis) | (Frete Grátis ÷ Vendedores × 100)% |
 | **Normal (sem benefício)** | (Vendedores − estimativa de sobreposição) | (restante)% |
 
-#### 📝 Análise do Perfil Logístico
+#### � Gráfico do Perfil Logístico (Mermaid)
+
+Gere um gráfico de pizza com a distribuição das modalidades logísticas entre os vendedores:
+
+> 🚨 **ATENÇÃO**: Use apenas os rótulos: Full, Flex, Frete Grátis, Normal. Some os percentuais para garantir que totalizam ~100% (arredonde se necessário).
+
+```mermaid
+pie
+    title "Perfil Logístico da Categoria"
+    "Full" : 65
+    "Flex" : 10
+    "Frete Grátis" : 15
+    "Normal" : 10
+```
+
+#### �📝 Análise do Perfil Logístico
 
 - **Predominância:** identifique a modalidade dominante (ex: "80% dos vendedores no Full")
 - **Impacto competitivo:** explique como o perfil logístico afeta a concorrência — categorias com alto % de Full indicam barreira de entrada maior (exige envio de estoque para o CD do ML), enquanto categorias com baixo % de Full indicam oportunidade para diferenciação logística
@@ -869,7 +884,7 @@ Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coleta
 
 > ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após a tabela de métricas do AvantPro.
 
-Calcule o percentual de cada modalidade logística com base nas métricas. Use **tabela Markdown de 3 colunas** (Modalidade | Quantidade | Percentual) com as linhas: Full, Flex, Frete Grátis, Normal. Abaixo da tabela, inclua a subseção **📝 Análise do Perfil Logístico** com bullet points cobrindo: predominância, impacto competitivo, oportunidade e alerta.
+Calcule o percentual de cada modalidade logística com base nas métricas. Use **tabela Markdown de 3 colunas** (Modalidade | Quantidade | Percentual) com as linhas: Full, Flex, Frete Grátis, Normal. Após a tabela, inclua o **📊 Gráfico do Perfil Logístico** em bloco \`\`\`mermaid com pie chart da distribuição. Em seguida, a subseção **📝 Análise do Perfil Logístico** com bullet points cobrindo: predominância, impacto competitivo, oportunidade e alerta.
 
 ### 🧭 Tarefa 1 — Análise da Demanda
 
