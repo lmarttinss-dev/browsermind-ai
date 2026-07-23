@@ -1656,4 +1656,304 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 
 Coloque os gráficos próximos aos dados que eles representam.`,
   },
+  {
+    id: "analise-anuncio-independente",
+    name: "Análise de Anúncio Independente",
+    description: "Diagnóstico completo de um anúncio do Mercado Livre com métricas do AvantPro: saúde financeira, desempenho, pontos negativos e recomendações",
+    content: `Analise este anúncio do Mercado Livre com base nas métricas do AvantPro visíveis na página. Gere um diagnóstico completo focado em identificar gargalos, riscos e oportunidades de melhoria. Inclua a URL do anúncio analisado.
+
+IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
+
+⚠️  FOCO PRINCIPAL: Identificar PONTOS NEGATIVOS e gargalos no desempenho do anúncio. Seja crítico e objetivo — aponte exatamente o que está prejudicando as vendas, a margem ou a conversão.
+
+# Template do Relatório
+
+## 📋 Resumo do Diagnóstico
+
+> Bloco executivo — leitura rápida para tomada de decisão.
+
+- Produto: (nome completo do produto)
+- URL do anúncio:
+- Preço de venda: R$ (formato brasileiro)
+- Faturamento total estimado: R$
+- Ritmo atual (vendas/mês):
+- Taxa de conversão:
+- Dias ativo:
+- Saúde geral: 🟢 Saudável / 🟡 Atenção / 🔴 Crítico
+- Principais gargalos: (1-3 frases resumindo os maiores problemas)
+
+---
+
+## 📦 Dados do Anúncio
+
+- Nome do produto:
+- URL:
+- Categoria:
+- Preço de venda: R$
+- Frete: (valor e tipo — Grátis, Full, Flex, Correios)
+- Loja / Vendedor:
+- Reputação do vendedor (MercadoLíder, Platinum, Gold, etc.):
+- Selos e destaques (MAIS VENDIDO, OFERTA DO DIA, etc.):
+- Tipo de anúncio: (Clássico / Premium / Catálogo / ProdutoPro)
+
+---
+
+## 📊 Métricas do AvantPro
+
+| Métrica | Valor |
+|---------|-------|
+| Preço de venda | R$ |
+| Frete | R$ |
+| Data de criação do anúncio | dd/mm/aaaa |
+| Dias ativo | X dias |
+| Estoque disponível | X unidades |
+| Total vendido (histórico) | X unidades |
+| Vendas por dia | X |
+| Vendas mensais | X/mês |
+| Ritmo atual (vendas/mês) | X |
+| Vendas estimadas | X |
+| Visitas ao anúncio | X |
+| Taxa de conversão | X% |
+| Faturamento total | R$ |
+| Imposto por venda | R$ X,XX (X%) |
+| Comissão ML por venda | R$ X,XX (X%) |
+| Valor líquido recebido por venda | R$ X,XX (X%) |
+| Faixa de preço recomendada | R$ X,XX a R$ X,XX |
+
+### 📈 Métricas do Vendedor (se disponíveis)
+
+- Vendas totais do vendedor:
+- Faturamento total do vendedor:
+- Localização do vendedor:
+- Ticket médio da loja:
+- Tempo de mercado:
+
+---
+
+## 💰 Análise Financeira
+
+### Demonstração por Unidade
+
+| Item | Valor (R$) | % do Preço |
+|------|-----------|------------|
+| Preço de venda | R$ X,XX | 100% |
+| (-) Comissão ML | R$ X,XX | X% |
+| (-) Imposto | R$ X,XX | X% |
+| (-) Frete (se arcado pelo vendedor) | R$ X,XX | X% |
+| (=) Valor líquido recebido | R$ X,XX | X% |
+
+### Projeção Mensal
+
+| Indicador | Valor |
+|-----------|-------|
+| Ritmo atual (unidades/mês) | X |
+| Receita bruta mensal (Ritmo × Preço) | R$ |
+| (-) Comissão ML mensal | R$ |
+| (-) Imposto mensal | R$ |
+| (-) Frete mensal | R$ |
+| (=) Receita líquida mensal estimada | R$ |
+
+### Análise da Margem
+
+- Margem líquida por unidade: X% — classifique como:
+  - 🔴 **Crítica** (< 30%): margem muito apertada, qualquer oscilação de custo ou taxa inviabiliza
+  - 🟡 **Atenção** (30–45%): margem ok, mas exige volume para compensar
+  - 🟢 **Saudável** (45–60%): boa margem, espaço para reinvestimento
+  - 🟢 **Excelente** (> 60%): margem confortável, permite escala agressiva
+- Relação preço vs. faixa recomendada:
+  - Se o preço está DENTRO da faixa recomendada pelo AvantPro → precificação adequada
+  - Se o preço está ACIMA da faixa → 🚨 anúncio pode estar caro demais, perdendo vendas
+  - Se o preço está ABAIXO da faixa → ⚠️ possível perda de margem desnecessária, aumente o preço
+
+---
+
+## 🏥 Saúde do Anúncio
+
+### 📊 Análise de Conversão
+
+A taxa de conversão é o indicador mais direto da qualidade do anúncio. Classifique:
+
+- 🔴 **Muito Baixa** (< 5%): grave — o anúncio não convence. Possíveis causas: fotos ruins, título fraco, preço acima da concorrência, descrição incompleta, frete caro, reputação baixa
+- 🟡 **Baixa** (5–8%): abaixo do esperado — há gargalos na página do produto que precisam ser corrigidos
+- 🟢 **Média** (8–12%): desempenho OK, mas com espaço para melhorar
+- 🟢 **Alta** (12–18%): bom desempenho — o anúncio é eficiente
+- 🟢 **Muito Alta** (> 18%): excelente — anúncio muito bem otimizado, produto com forte apelo
+
+> ⚠️ Atenção: conversão muito alta (> 25%) pode indicar tráfego extremamente qualificado (ex: só chega por busca direta). Verifique se o volume de visitas está saudável.
+
+### ⏱️ Análise de Idade do Anúncio
+
+Cruze a idade do anúncio com o Ritmo atual para avaliar maturidade:
+
+- 🟢 **Anúncio jovem (< 30 dias) com alto ritmo** → produto em ASCENSÃO, timing excelente. Acompanhe de perto — tendência de crescimento acelerado
+- 🟢 **Anúncio jovem (< 90 dias) com ritmo consistente** → validação inicial positiva, produto com demanda real
+- 🟡 **Anúncio entre 90-180 dias** → em fase de consolidação. Se o ritmo estiver estável ou crescendo, é positivo. Se estiver caindo, investigue
+- 🟡 **Anúncio entre 180-365 dias** → maduro. Verifique se o ritmo se mantém ou se há sinais de fadiga
+- 🔴 **Anúncio > 365 dias com ritmo em queda** → possível saturação ou perda de relevância. Revisar estratégia
+
+### 📦 Análise de Estoque
+
+- Estoque atual: X unidades
+- Relação estoque vs. ritmo mensal: estoque cobre X meses de venda
+  - 🔴 **Estoque < 1 mês de vendas** → risco de ruptura IMINENTE. Prioridade máxima: repor estoque
+  - 🟡 **Estoque entre 1-2 meses** → atenção: planeje reposição já
+  - 🟢 **Estoque > 2 meses** → saudável, sem urgência
+- Se estoque está BAIXO e o ritmo é ALTO → 🚨 oportunidade PERDENDO vendas por falta de produto
+
+### 🔍 Qualidade do Tráfego
+
+- Visitas totais: X
+- Relação visitas vs. vendas: X visitas para cada venda
+- Análise:
+  - Se muitas visitas e poucas vendas → problema de CONVERSÃO (fotos, preço, descrição)
+  - Se poucas visitas e boa conversão → problema de TRÁFEGO (SEO fraco, categoria errada, sem anúncios pagos)
+  - Se muitas visitas e muitas vendas → 🟢 anúncio saudável, manter e escalar
+
+---
+
+## 🚨 Pontos Negativos e Riscos
+
+> ⚠️ Esta é a seção mais importante do relatório. Seja CRÍTICO e DIRETO. Liste TODO e QUALQUER ponto negativo identificado, por menor que pareça.
+
+### 🔴 Pontos Críticos (ação imediata necessária)
+
+Liste problemas que exigem correção urgente. Exemplos:
+
+- **Estoque insuficiente**: risco de ruptura em X dias. Impacto direto: perda de vendas e perda de posicionamento no ranking
+- **Margem negativa ou zerada**: custos maiores que o recebimento líquido — o anúncio dá PREJUÍZO
+- **Conversão muito abaixo da média da categoria** (< 5%): anúncio não está performando, investimento em tráfego está sendo desperdiçado
+- **Preço fora da faixa recomendada pelo AvantPro**: se acima, perde vendas; se muito abaixo, perde margem desnecessariamente
+- **Frete caro ou inadequado**: frete acima de 15% do valor do produto reduz drasticamente a conversão
+- **Reputação do vendedor comprometida**: avaliações negativas recentes, reclamações não respondidas, baixa qualidade de atendimento
+- **Anúncio sem Full sendo que a concorrência usa**: desvantagem competitiva grave, especialmente se a categoria tem frete grátis como padrão
+- **Sem avaliações suficientes**: menos de 10 avaliações em um anúncio com volume de vendas — compradores não confiam
+
+### 🟡 Pontos de Atenção (corrigir no curto prazo)
+
+Liste problemas que prejudicam o desempenho mas não são emergenciais. Exemplos:
+
+- **Título mal otimizado**: sem palavras-chave relevantes, difícil de encontrar nas buscas
+- **Fotos insuficientes ou de baixa qualidade**: menos de 5 fotos, baixa resolução, sem fotos de uso real
+- **Descrição incompleta ou mal formatada**: sem bullet points, sem especificações técnicas, sem FAQ
+- **Sem vídeo do produto**: vídeos aumentam significativamente a conversão
+- **Ausência de variações (cor/tamanho/modelo)**: perde vendas para concorrentes que oferecem opções
+- **Tempo de preparo/envio elevado**: prazo de entrega maior que a média da categoria
+- **Sem garantia estendida ou política de troca clara**: gera insegurança no comprador
+- **Preço psicológico mal aplicado**: ex: R$ 50,00 em vez de R$ 49,90 (gatilho mental de desconto)
+- **Anúncio sem Product Ads**: sem investimento em tráfego pago, dependendo 100% do orgânico
+- **Baixo volume de visitas** em relação ao ritmo de vendas da categoria
+
+### ⚠️ Riscos Futuros
+
+Antecipe problemas que podem surgir:
+
+- **Dependência de um único produto/anúncio**: se este anúncio cair, toda a receita some
+- **Sazonalidade**: se o produto é sazonal, planeje a baixa nos meses fracos
+- **Aumento de concorrência**: se a categoria está atraindo novos vendedores, a margem tende a cair
+- **Mudanças nas taxas do Mercado Livre**: impacto de possíveis reajustes de comissão
+- **Risco de cópia do produto**: se é fácil de copiar, prepare diferenciação (marca, embalagem, kit)
+- **Dependência de fornecedor único**: risco de desabastecimento ou aumento de custo
+
+---
+
+## 💡 Oportunidades de Melhoria
+
+### 🎯 Ações Imediatas (0–7 dias)
+
+Ações de alto impacto e baixo esforço:
+
+1. **Precificação**: ajustar preço para a faixa recomendada pelo AvantPro (se aplicável)
+2. **Frete**: ativar Frete Grátis ou Full (se disponível e viável financeiramente)
+3. **Título**: reescrever com palavras-chave de alto volume de busca
+4. **Preço psicológico**: ajustar para R$ X,99 ou R$ X,90
+5. **Estoque**: repor urgentemente se abaixo de 1 mês de cobertura
+
+### 📈 Ações de Curto Prazo (7–30 dias)
+
+Ações que exigem planejamento ou investimento:
+
+1. **Fotos profissionais**: contratar fotógrafo ou melhorar iluminação e enquadramento
+2. **Vídeo do produto**: gravar unboxing, uso real, demonstração de funcionalidades
+3. **Descrição rica**: adicionar tabela de especificações, FAQ, garantia, política de troca
+4. **Variações**: cadastrar cores, tamanhos ou modelos adicionais
+5. **Product Ads**: iniciar campanha patrocinada com orçamento controlado para teste
+6. **Full**: enviar estoque para armazém do Mercado Livre
+
+### 🚀 Ações de Médio Prazo (30–90 dias)
+
+Ações estratégicas para crescimento:
+
+1. **Marca própria**: criar identidade visual, embalagem personalizada, logotipo
+2. **Kit/Combo**: criar variações com acessórios complementares para aumentar ticket médio
+3. **Cross-sell**: configurar ofertas relacionadas (quem comprou X também comprou Y)
+4. **Remarketing**: capturar dados de visitantes para ações de reengajamento
+5. **Expansão de canal**: listar o produto em outros marketplaces (Shopee, Amazon, etc.)
+
+---
+
+## 📈 Score Final do Anúncio
+
+Atribua notas de 0 a 10 para cada critério de saúde do anúncio:
+
+| Critério | Nota | Justificativa |
+|----------|------|---------------|
+| Precificação | /10 | (está na faixa recomendada? margem saudável?) |
+| Conversão | /10 | (taxa de conversão vs. média da categoria) |
+| Qualidade do anúncio | /10 | (fotos, título, descrição, vídeo, variações) |
+| Logística | /10 | (frete, prazo, Full, estoque) |
+| Reputação | /10 | (avaliações, atendimento, garantia) |
+| Potencial de escala | /10 | (dá para crescer ou está no teto?) |
+
+**Score Final:** X/10 (média aritmética)
+
+### Interpretação
+
+| Nota | Diagnóstico | Ação Recomendada |
+|------|-------------|------------------|
+| 0–3 | 🔴 **Crítico** | Reestruturar completamente o anúncio ou considerar descontinuar |
+| 4–5 | 🟡 **Frágil** | Corrigir pontos críticos com urgência antes de investir em tráfego |
+| 6–7 | 🟡 **Regular** | Anúncio funcional, mas com vários pontos de melhoria — priorize os gargalos |
+| 8–9 | 🟢 **Saudável** | Anúncio bem otimizado — manter e buscar escala |
+| 10 | 🟢 **Excelente** | Anúncio modelo — referência na categoria |
+
+---
+
+## ✅ Conclusão e Recomendações
+
+Resuma o diagnóstico em tópicos acionáveis:
+
+### 🎯 Top 3 Prioridades
+
+1. **Ação mais urgente:** (o que fazer primeiro e por quê)
+2. **Maior oportunidade de ganho:** (o que trará mais resultado com menor esforço)
+3. **Maior risco a mitigar:** (o que pode dar errado e como evitar)
+
+### 📋 Checklist de Correções
+
+- [ ] Ajustar preço (se fora da faixa recomendada)
+- [ ] Melhorar fotos (quantidade e qualidade)
+- [ ] Reescrever título com SEO
+- [ ] Enriquecer descrição
+- [ ] Adicionar vídeo
+- [ ] Ativar Frete Grátis / Full
+- [ ] Repor estoque (se crítico)
+- [ ] Responder perguntas pendentes
+- [ ] Iniciar Product Ads
+- [ ] Criar kit/combo
+
+### 🗓️ Plano de 30 Dias
+
+| Semana | Foco | Ações |
+|--------|------|-------|
+| Semana 1 | Correções críticas | (listar ações) |
+| Semana 2 | Otimização do anúncio | (listar ações) |
+| Semana 3 | Tráfego e conversão | (listar ações) |
+| Semana 4 | Análise e ajuste | (listar ações) |
+
+### 🧠 Veredito Final
+
+> Decisão: **[MANTER E OTIMIZAR / CORRIGIR COM URGÊNCIA / REPENSAR ESTRATÉGIA / DESCONTINUAR]**
+
+(justificativa em 2-3 frases com base nos dados analisados)`,
+  },
 ]
