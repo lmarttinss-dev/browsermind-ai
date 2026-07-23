@@ -1658,15 +1658,309 @@ Coloque os gráficos próximos aos dados que eles representam.`,
   },
   {
     id: "analise-anuncio-independente",
-    name: "Análise de Anúncio Independente",
-    description: "Diagnóstico completo de um anúncio do Mercado Livre com métricas do AvantPro: saúde financeira, desempenho, pontos negativos e recomendações",
+    name: "Análise de Anúncio (Catálogo ou Independente)",
+    description: "Diagnóstico completo de um anúncio do Mercado Livre com métricas do AvantPro. Detecta automaticamente se é produto de catálogo ou independente e adapta a análise.",
     content: `Analise este anúncio do Mercado Livre com base nas métricas do AvantPro visíveis na página. Gere um diagnóstico completo focado em identificar gargalos, riscos e oportunidades de melhoria. Inclua a URL do anúncio analisado.
+
+⚠️  PRIMEIRO PASSO OBRIGATÓRIO: Identifique se este é um PRODUTO DE CATÁLOGO ou um ANÚNCIO INDEPENDENTE. O tipo de análise Muda COMPLETAMENTE dependendo desta classificação.
 
 IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 ⚠️  FOCO PRINCIPAL: Identificar PONTOS NEGATIVOS e gargalos no desempenho do anúncio. Seja crítico e objetivo — aponte exatamente o que está prejudicando as vendas, a margem ou a conversão.
 
-# Template do Relatório
+---
+
+# 🔍 PASSO 1 — Identificação do Tipo de Anúncio
+
+## Como identificar se é PRODUTO DE CATÁLOGO:
+
+Um produto de catálogo no Mercado Livre é uma ficha unificada onde MÚLTIPLOS VENDEDORES oferecem o MESMO produto. Sinais claros:
+
+- A página mostra "X vendedores" ou "X opções" ou "Disponível em X cores/tamanhos" com seletores
+- Aparece uma seção "Outros vendedores" ou "Comparar preços" ou "Todos os vendedores"
+- O selo "MAIS VENDIDO" ou "OFERTA DO DIA" pode alternar entre vendedores
+- O AvantPro pode mostrar dados agregados do catálogo (vendas totais de todos os vendedores)
+- Na URL, produtos de catálogo geralmente têm uma estrutura de breadcrumb mais genérica
+- Aparece "ProdutoPro" ou indicadores de catálogo estruturado
+
+## Como identificar se é ANÚNCIO INDEPENDENTE:
+
+- A página mostra apenas UM vendedor ("Vendido por [LOJA]" sem opção de escolher outro)
+- Não há seção de "Outros vendedores" ou comparação de preços
+- O anúncio é único — o vendedor tem controle total sobre fotos, descrição, título
+- O AvantPro mostra métricas específicas DESTE vendedor (não agregadas)
+- Pode ter selos como "LOJA OFICIAL" ou "MERCADO LÍDER" sem compartilhar com outros
+
+## Resultado da Identificação:
+
+Preencha OBRIGATORIAMENTE:
+
+- **URL do anúncio:**
+- **Tipo identificado:** 📚 PRODUTO DE CATÁLOGO ou 📦 ANÚNCIO INDEPENDENTE
+- **Evidências:** (como foi identificado — cite elementos visíveis na página)
+
+---
+
+# SE FOR 📚 PRODUTO DE CATÁLOGO → USE O TEMPLATE ABAIXO
+
+> ⚠️ Um produto de catálogo é uma FICHA UNIFICADA onde vários vendedores competem pelo mesmo produto. A análise deve focar em POSICIONAMENTO COMPETITIVO e ESTRATÉGIA PARA VENCER A BUY BOX.
+
+# Template — Produto de Catálogo
+
+## 📚 Visão Geral do Catálogo
+
+- Nome do produto (catálogo):
+- URL do catálogo:
+- Categoria:
+- Total de vendedores no catálogo: (quantos sellers oferecem este mesmo produto)
+- Tipo de catálogo: (ProdutoPro / Catálogo padrão / Catálogo com variações)
+- Este vendedor está no catálogo? (Sim — analisar posição / Não — analisar entrada)
+
+### 📊 Métricas do Catálogo (AvantPro — agregadas de TODOS os vendedores)
+
+| Métrica | Valor |
+|---------|-------|
+| Preço médio do catálogo | R$ |
+| Faixa de preço (mínimo — máximo) | R$ — R$ |
+| Total vendido (catálogo — todos os vendedores) | X unidades |
+| Vendas por dia (catálogo) | X |
+| Ritmo atual (vendas/mês — catálogo inteiro) | X |
+| Visitas ao catálogo | X |
+| Taxa de conversão do catálogo | X% |
+| Estoque total (todos os vendedores somados) | X unidades |
+| Tempo do catálogo (data de criação) | dd/mm/aaaa |
+| Faturamento total do catálogo | R$ |
+
+---
+
+## 🏆 Posicionamento no Catálogo
+
+> Se este vendedor JÁ está no catálogo, analise sua posição. Se NÃO está, analise a viabilidade de entrada.
+
+### 📊 Tabela de Vendedores no Catálogo
+
+Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
+
+| # | Vendedor | Preço | Reputação | Tipo de Envio | Estoque | Avaliações | Buy Box? |
+|---|----------|-------|-----------|---------------|---------|------------|----------|
+| 1 | | R$ | ⭐/Medalha | Full/Flex/Correios | X un. | X ⭐ | ✅ Sim |
+| 2 | | R$ | ⭐/Medalha | Full/Flex/Correios | X un. | X ⭐ | ❌ |
+| 3 | | R$ | ⭐/Medalha | Full/Flex/Correios | X un. | X ⭐ | ❌ |
+| ... | | | | | | | |
+
+### 🥇 Análise do Vendedor na Buy Box (posição #1)
+
+- **Quem é o vencedor da buy box:** (nome do vendedor)
+- **Por que ele vence:**
+  - Preço: é o mais barato? (Sim/Não — posição de preço: Xº mais barato)
+  - Reputação: MercadoLíder / Platinum / Gold?
+  - Full: Sim/Não
+  - Tempo de entrega: X dias
+  - Estoque: X unidades
+  - Avaliações: X positivas
+- **O que falta para este vendedor (analisado) superar o líder:**
+  - Se o preço é o fator decisivo: quanto precisaria baixar?
+  - Se reputação é o fator: quantas vendas/avaliações faltam?
+  - Se Full é o fator: vale a pena enviar para Full?
+
+---
+
+## 💰 Análise de Precificação no Catálogo
+
+### Estrutura de Preços dos Concorrentes
+
+| Faixa de Preço | Vendedores | % do Catálogo | Perfil |
+|---------------|------------|---------------|--------|
+| R$ X — R$ Y (Entrada) | X | X% | Preço agressivo, margem baixa |
+| R$ Y — R$ Z (Meio) | X | X% | Equilíbrio preço/reputação |
+| R$ Z+ (Premium) | X | X% | Diferenciação, frete grátis, Full |
+
+### Posicionamento de Preço do Vendedor Analisado
+
+- Preço atual do vendedor: R$ X,XX
+- Posição no ranking de preços: Xº mais barato de Y vendedores
+- Diferença para o mais barato: R$ X,XX (X% a mais)
+- Diferença para a média: R$ X,XX
+- Faixa recomendada pelo AvantPro: R$ X,XX a R$ X,XX
+- O preço está dentro da faixa recomendada? Sim / Não
+- Estratégia de preço atual: (Agressivo / Competitivo / Premium / Fora do mercado)
+
+### Simulação de Ajuste de Preço
+
+| Cenário | Preço | Posição no Ranking | Margem Estimada | Vendas Esperadas/mês | Faturamento Projetado |
+|---------|-------|-------------------|-----------------|---------------------|----------------------|
+| Agressivo (top 3 mais barato) | R$ | Xº | X% | X | R$ |
+| Competitivo (preço médio) | R$ | Xº | X% | X | R$ |
+| Premium (top 3 mais caro) | R$ | Xº | X% | X | R$ |
+
+---
+
+## 🚚 Comparativo de Logística no Catálogo
+
+| Vendedor | Tipo de Envio | Prazo de Entrega | Frete | Custo para o Vendedor |
+|----------|---------------|------------------|-------|----------------------|
+| Vendedor #1 | Full / Flex / Correios | X dias | Grátis / R$ X,XX | R$ X,XX |
+| Vendedor #2 | Full / Flex / Correios | X dias | Grátis / R$ X,XX | R$ X,XX |
+| **Vendedor analisado** | Full / Flex / Correios | X dias | Grátis / R$ X,XX | R$ X,XX |
+
+### Análise Logística
+
+- **Full é diferencial neste catálogo?** (quantos % dos vendedores usam Full)
+- **Frete grátis é esperado?** (quantos % oferecem frete grátis)
+- **Prazo de entrega do vendedor analisado vs. concorrência:** (mais rápido / na média / mais lento)
+- **Oportunidade logística:** se a concorrência usa Correios e este vendedor pode usar Full, é vantagem decisiva
+
+---
+
+## ⭐ Comparativo de Reputação
+
+| Vendedor | Medalha | Vendas Totais | Avaliações | Nota Média | Tempo de Mercado |
+|----------|---------|---------------|------------|------------|------------------|
+| #1 | | | | ⭐ | |
+| #2 | | | | ⭐ | |
+| **Analisado** | | | | ⭐ | |
+
+### Análise de Reputação
+
+- A reputação é fator decisivo na buy box deste catálogo? (Sim/Não)
+- O vendedor analisado tem reputação suficiente para competir? (Sim/Não)
+- Se não: quantas vendas/avaliações precisa para se equiparar ao líder?
+- Estratégia para construir reputação: (preço baixo inicial, frete grátis, atendimento excepcional)
+
+---
+
+## 📊 Market Share Estimado no Catálogo
+
+> Calcule a fatia de mercado de cada vendedor com base nas vendas proporcionais.
+
+| Vendedor | Vendas Estimadas | % do Catálogo | Faturamento Estimado |
+|----------|-----------------|---------------|---------------------|
+| #1 (Buy Box) | X | X% | R$ |
+| #2 | X | X% | R$ |
+| **Analisado** | X | X% | R$ |
+| Demais | X | X% | R$ |
+
+### Concentração do Catálogo
+
+- Top 1 detém X% das vendas
+- Top 3 detêm X% das vendas
+- Classificação: (Pulverizado / Moderadamente Concentrado / Altamente Concentrado)
+- Se altamente concentrado no top 1: o que ele faz diferente? (preço, Full, reputação, anúncios pagos?)
+
+---
+
+## 🎯 Estratégia para Vencer a Buy Box
+
+> A buy box é a posição de destaque onde o botão "Comprar" principal leva ao seu anúncio. É onde acontecem ~80% das vendas do catálogo.
+
+### Pré-requisitos para Disputar a Buy Box
+
+Marque o que este vendedor JÁ tem e o que PRECISA:
+
+| Requisito | Status | Ação Necessária |
+|-----------|--------|-----------------|
+| Preço competitivo (dentro da faixa) | ✅ / ❌ | |
+| Reputação (MercadoLíder ou melhor) | ✅ / ❌ | |
+| Full ou Frete Grátis | ✅ / ❌ | |
+| Estoque suficiente (> 20 un.) | ✅ / ❌ | |
+| Bom histórico de entregas | ✅ / ❌ | |
+| Avaliações positivas recentes | ✅ / ❌ | |
+
+### Estratégia Recomendada
+
+Escolha UMA estratégia principal:
+
+1. **Guerra de preço**: baixar para ser o mais barato — risco de margem zero, mas ganha buy box rápido
+2. **Diferenciação por serviço**: preço médio + Full + frete grátis + atendimento premium — ganha buy box por qualidade
+3. **Nichos de variação**: focar em cor/tamanho/modelo que ninguém tem estoque — menos competição
+4. **Entrada gradual**: preço baixo para construir reputação → depois sobe para preço competitivo
+5. **Não competir**: se o líder é uma loja oficial com preço impossível de bater, evite este catálogo
+
+---
+
+## 🚨 Pontos Negativos e Riscos (Catálogo)
+
+### 🔴 Riscos Específicos de Produto de Catálogo
+
+- **Guerra de preços**: se 3+ vendedores baixam preço constantemente, margem tende a zero
+- **Dependência da buy box**: se não estiver na buy box, as vendas caem 70-90%
+- **Loja oficial no catálogo**: se há uma loja oficial da marca, ela tem vantagem permanente
+- **Vendedor internacional**: sellers da China/Paraguai com preço muito baixo podem inviabilizar
+- **Catálogo saturado**: mais de 10 vendedores para o mesmo produto → margem diluída
+- **Risco de suspensão do catálogo**: se o Mercado Livre descontinuar o catálogo, perde-se o histórico
+
+### 🟡 Pontos de Atenção no Catálogo
+
+- **Preço desatualizado**: se o vendedor não ajusta o preço há semanas, perdeu a buy box sem saber
+- **Estoque oculto**: concorrentes podem ter estoque maior que o declarado
+- **Avaliações cross-vendedor**: no catálogo, avaliações são compartilhadas — uma reclamação sobre outro vendedor pode afetar todos
+- **Variações não cobertas**: se o vendedor não tem todas as variações do catálogo, perde clientes que buscam cor/tamanho específico
+
+---
+
+## 💡 Oportunidades de Melhoria (Catálogo)
+
+### 🎯 Ações Imediatas para Vencer a Buy Box
+
+1. **Ajustar preço** para a faixa recomendada pelo AvantPro
+2. **Ativar Full** se a concorrência não usa (diferencial decisivo)
+3. **Aumentar estoque** na variação mais vendida
+4. **Responder perguntas** pendentes (aumenta reputação no catálogo)
+5. **Atualizar GTIN/EAN** se estiver incorreto (melhora posicionamento)
+
+### 📈 Estratégias de Curto Prazo
+
+1. **Product Ads no catálogo**: anúncios pagos para aparecer como destaque
+2. **Oferecer parcelamento sem juros** se a concorrência não oferece
+3. **Envio Full**: prioridade na buy box do Mercado Livre
+4. **Preço dinâmico**: ajustar preço 2x/dia para manter posição competitiva
+5. **Monitorar concorrentes**: verificar diariamente se houve mudança de preço ou estoque
+
+---
+
+## 📈 Score Final do Catálogo
+
+| Critério | Nota | Justificativa |
+|----------|------|---------------|
+| Competitividade de preço | /10 | (posição no ranking de preços) |
+| Força da reputação | /10 | (medalhas, avaliações, tempo de mercado) |
+| Vantagem logística | /10 | (Full, frete grátis, prazo de entrega) |
+| Potencial de buy box | /10 | (chance real de conquistar a posição #1) |
+| Tamanho do catálogo | /10 | (volume de vendas total do catálogo) |
+| Risco de saturação | /10 | (quanto menor o risco, maior a nota) |
+
+**Score Final:** X/10
+
+---
+
+## ✅ Conclusão — Produto de Catálogo
+
+### 🎯 Decisão Estratégica
+
+> Decisão: **[DISPUTAR BUY BOX / ENTRAR COM DIFERENCIAÇÃO / MONITORAR / EVITAR]**
+
+### 📋 Checklist de Ações
+
+- [ ] Ajustar preço para posição competitiva (top 3 mais barato)
+- [ ] Ativar Full (se viável financeiramente)
+- [ ] Aumentar estoque na variação principal
+- [ ] Melhorar descrição e fotos (mesmo em catálogo, ajuda na conversão)
+- [ ] Responder TODAS as perguntas pendentes
+- [ ] Iniciar Product Ads no catálogo
+- [ ] Monitorar preços dos concorrentes diariamente
+- [ ] Verificar se o GTIN/EAN está correto
+
+### 🧠 Veredito Final
+
+> (2-3 frases com a recomendação final baseada nos dados do catálogo)
+
+---
+
+# SE FOR 📦 ANÚNCIO INDEPENDENTE → USE O TEMPLATE ABAIXO
+
+> ⚠️ Um anúncio independente é controlado por UM ÚNICO vendedor. A análise deve focar em SAÚDE DO ANÚNCIO, CONVERSÃO e OTIMIZAÇÃO.
+
+# Template — Anúncio Independente
 
 ## 📋 Resumo do Diagnóstico
 
@@ -1679,6 +1973,7 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 - Ritmo atual (vendas/mês):
 - Taxa de conversão:
 - Dias ativo:
+- Dentro de catálogo? (Sim — este anúncio está linkado a um catálogo / Não — anúncio 100% independente)
 - Saúde geral: 🟢 Saudável / 🟡 Atenção / 🔴 Crítico
 - Principais gargalos: (1-3 frases resumindo os maiores problemas)
 
@@ -1694,7 +1989,10 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 - Loja / Vendedor:
 - Reputação do vendedor (MercadoLíder, Platinum, Gold, etc.):
 - Selos e destaques (MAIS VENDIDO, OFERTA DO DIA, etc.):
-- Tipo de anúncio: (Clássico / Premium / Catálogo / ProdutoPro)
+- Tipo de anúncio: (Clássico / Premium / ProdutoPro)
+- Está vinculado a catálogo? (Sim — ID do catálogo: MLB-XXXX / Não)
+  - Se SIM: mesmo sendo independente, há concorrência de outros sellers no mesmo catálogo?
+  - Se SIM: quantos outros vendedores estão no catálogo?
 
 ---
 
