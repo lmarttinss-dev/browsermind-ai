@@ -659,7 +659,9 @@ Sua resposta DEVE começar exatamente assim:
 ## Estrutura geral
 
 - A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
-- Use emojis nos cabeçalhos: 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
+- Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
+- Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
+- Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
 - Use > para alertas e insights
@@ -717,7 +719,115 @@ Determinar:
 
 ---
 
-## Anúncios Encontrados
+### 📦 Perfil Logístico da Categoria
+
+> Calcule o percentual de cada tipo de envio com base na métrica **Logísticas de Entrega** do AvantPro. Use como denominador a **soma total dos 4 tipos** (FULL + Flex + Correios + Outros), que representa o total de anúncios analisados. Os percentuais DEVEM somar ~100%.
+
+> ⚠️ **FONTE DOS DADOS**: Os valores de FULL, Flex, Correios e Outros vêm da seção **Logística de Entrega (filtros do AvantPro)** nos Dados Coletados. PRIORIZE esses números — NÃO invente nem use os valores de "Full" e "Frete Grátis" da tabela de Métricas da Categoria (são métricas diferentes).
+
+| Tipo de Envio | Quantidade | Percentual |
+|--------------|-----------|------------|
+| **FULL** | (quantos anúncios) | (FULL ÷ total × 100)% |
+| **Flex** | (quantos anúncios) | (Flex ÷ total × 100)% |
+| **Correios** | (quantos anúncios) | (Correios ÷ total × 100)% |
+| **Outros** | (quantos anúncios) | (Outros ÷ total × 100)% |
+| **Total** | (FULL + Flex + Correios + Outros) | **100%** |
+
+#### � Gráfico do Perfil Logístico (Mermaid)
+
+Gere um gráfico de pizza com a distribuição dos tipos de envio na categoria:
+
+> 🚨 **ATENÇÃO**: Use apenas os rótulos: FULL, Flex, Correios, Outros. Arredonde os percentuais para números inteiros que somem exatamente 100%.
+
+\`\`\`mermaid
+pie
+    title "Logísticas de Entrega"
+    "FULL" : 58
+    "Flex" : 12
+    "Correios" : 22
+    "Outros" : 8
+\`\`\`
+
+#### �📝 Análise do Perfil Logístico
+
+- **Predominância:** identifique o tipo de envio dominante (ex: "58% dos anúncios usam FULL")
+- **Impacto competitivo:**
+  - Alta proporção de FULL → categoria PROFISSIONAL, vendedores usam armazéns do Mercado Livre, entrega rápida é o padrão. Entrar sem FULL é desvantagem competitiva.
+  - Alta proporção de Flex → vendedores com logística própria ágil (same day / next day), expectativa de entrega rápida
+  - Predomínio de Correios/Outros → logística FRACA, grande oportunidade de diferenciação com envio rápido via FULL ou Flex
+- **Oportunidade:** se FULL e Flex somam < 30%, oferecer entrega rápida é um diferencial competitivo decisivo
+- **Alerta:** se FULL > 60%, a categoria exige envio de estoque para o CD do ML para competir em igualdade
+
+---
+
+### 📊 Perfil de Conta e Catálogo
+
+> Calcule o percentual de cada tipo de conta e a distribuição de catálogo com base nos filtros do AvantPro nas seções **Perfil dos Vendedores** e **Indicadores de Mercado**. Use como denominador o total de vendedores/anúncios conforme cada tabela. Os percentuais DEVEM somar ~100%.
+
+> ⚠️ **FONTE DOS DADOS**: Os valores vêm das seções **Perfil dos Vendedores (filtros do AvantPro)** e **Indicadores de Mercado (filtros do AvantPro)** nos Dados Coletados. PRIORIZE esses números — NÃO invente.
+
+#### 👤 Distribuição por Tipo de Conta
+
+| Tipo de Conta | Quantidade | Percentual |
+|--------------|-----------|------------|
+| **Clássico** | (quantos vendedores) | (Clássico ÷ total × 100)% |
+| **Premium** | (quantos vendedores) | (Premium ÷ total × 100)% |
+| **Oficiais** | (quantos vendedores) | (Oficiais ÷ total × 100)% |
+| **Internacional** | (quantos vendedores) | (Internacional ÷ total × 100)% |
+| **ProdutoPro** | (quantos vendedores) | (ProdutoPro ÷ total × 100)% |
+| **Total** | (soma dos 5 tipos) | **100%** |
+
+##### 📊 Gráfico de Tipo de Conta (Mermaid)
+
+\`\`\`mermaid
+pie
+    title "Perfil de Conta dos Vendedores"
+    "Clássico" : 45
+    "Premium" : 25
+    "Oficiais" : 15
+    "Internacional" : 10
+    "ProdutoPro" : 5
+\`\`\`
+
+##### 📝 Análise do Perfil de Conta
+
+- **Predominância:** identifique o tipo de conta dominante (ex: "45% dos vendedores são Clássico")
+- **Impacto competitivo:**
+  - Predomínio de Clássico → vendedores INICIANTES ou de baixo volume, categoria acessível, barreira de entrada BAIXA
+  - Predomínio de Premium → vendedores PROFISSIONAIS que investem em conta, concorrência qualificada
+  - Muitos Oficiais → lojas oficiais de marcas dominando, barreira ALTÍSSIMA para genéricos
+  - Presença de Internacional → concorrência de importados diretos, margens mais apertadas
+  - ProdutoPro alto → anúncios de catálogo estruturado, profissionalização elevada
+- **Oportunidade:** se Clássico > 60%, há espaço para profissionalizar e se destacar com conta Premium + anúncios bem estruturados
+- **Alerta:** se Oficiais + Premium > 50%, a categoria exige investimento em conta e marca para competir
+
+#### 📦 Estrutura de Catálogo
+
+> Use os valores de **Catálogos** e **Fora de Catálogo** da tabela de Métricas da Categoria (AvantPro).
+
+| Estrutura | Quantidade | Percentual |
+|----------|-----------|------------|
+| **Em Catálogo** | (valor de Catálogos) | (Catálogos ÷ total × 100)% |
+| **Fora de Catálogo** | (valor de Fora de Catálogo) | (Fora de Catálogo ÷ total × 100)% |
+| **Total de Anúncios** | (Catálogos + Fora de Catálogo) | **100%** |
+
+##### 📊 Gráfico de Estrutura de Catálogo (Mermaid)
+
+\`\`\`mermaid
+pie
+    title "Estrutura de Catálogo"
+    "Em Catálogo" : 27
+    "Fora de Catálogo" : 73
+\`\`\`
+
+##### 📝 Análise da Estrutura de Catálogo
+
+- **Predominância:** identifique a estrutura dominante (ex: "73% dos anúncios estão Fora de Catálogo")
+- **Impacto competitivo:**
+  - Predomínio de "Fora de Catálogo" → categoria DESORGANIZADA, anúncios individuais sem padronização. Oportunidade ENORME para estruturar anúncios em catálogo e dominar o ranqueamento.
+  - Predomínio de "Em Catálogo" → categoria MADURA e organizada, vendedores usam catálogo estruturado. Entrar exige anúncio bem feito e variações.
+- **Oportunidade:** se Fora de Catálogo > 60%, estruturar anúncios em catálogo com variações é o caminho mais rápido para ganhar relevância
+- **Alerta:** se Em Catálogo > 70%, a categoria está consolidada e o SEO por catálogo é obrigatório — anúncios fora de catálogo terão baixa visibilidade
 
 ### Anúncio 1
 
@@ -1280,6 +1390,24 @@ O relatório DEVE começar exatamente com este formato:
 > ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o cabeçalho, ANTES da Tarefa 1.
 
 Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coletados". Formato: tabela Markdown de 2 colunas (Métrica | Valor), com **negrito** nos valores numéricos. NÃO omita esta seção — ela é a base de toda a análise.
+
+### 📦 Perfil Logístico da Categoria
+
+> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após a tabela de métricas do AvantPro.
+
+Calcule o percentual com base nos dados de **Logísticas de Entrega do AvantPro**. Use **tabela Markdown de 3 colunas** (Tipo de Envio | Quantidade | Percentual) com as linhas: FULL, Flex, Correios, Outros, Total. O denominador é a soma dos 4 tipos. Após a tabela, inclua o **📊 Gráfico do Perfil Logístico** em bloco \`\`\`mermaid com pie chart. Em seguida, a subseção **📝 Análise do Perfil Logístico** com bullet points cobrindo: predominância, impacto competitivo, oportunidade e alerta.
+
+### 📊 Perfil de Conta e Catálogo
+
+> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o Perfil Logístico.
+
+Dividida em duas partes, cada uma com tabela, gráfico Mermaid e análise:
+
+#### 👤 Distribuição por Tipo de Conta
+Tabela de 3 colunas (Tipo de Conta | Quantidade | Percentual) com linhas: Clássico, Premium, Oficiais, Internacional, ProdutoPro, Total. Dados do **Perfil dos Vendedores (filtros do AvantPro)**. Gráfico \`\`\`mermaid pie. Análise com bullet points de predominância, impacto competitivo, oportunidade e alerta.
+
+#### 📦 Estrutura de Catálogo
+Tabela de 3 colunas (Estrutura | Quantidade | Percentual) com linhas: Em Catálogo, Fora de Catálogo, Total. Dados de **Catálogos** e **Fora de Catálogo** da tabela de Métricas. Gráfico \`\`\`mermaid pie. Análise com bullet points de predominância, impacto competitivo, oportunidade e alerta.
 
 ### 🧭 Tarefa 1 — Análise da Demanda
 

@@ -394,9 +394,17 @@ app.post("/api/analyze", async (req, res) => {
       content = `========================== PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO) ==========================\n${qnaContent.slice(0, 15000)}\n========================== FIM DAS PERGUNTAS E RESPOSTAS ==========================\n\n${content}`
     }
 
+    // Injeta a data de hoje para templates que precisam (ex: análise de mercado)
+    const hoje = new Date()
+    const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+    const dateHint = templateId === "analise-oferta-demanda-concorrencia"
+      ? `\n\n⚠️ DATA CORRETA: Hoje é ${dataHoje}. Use EXATAMENTE esta data no campo "**Data da análise:**" do relatório.`
+      : ""
+
     const userMessage = content
-      ? `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}`
-      : prompt;
+      ? `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}${dateHint}`
+      : prompt + dateHint
 
     let aiResponse: string;
 
@@ -484,6 +492,17 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     if (!aiResponse) throw new Error("Resposta vazia da IA");
+
+    // Corrige a data da análise no relatório (pós-processamento, bypass do cutoff da IA)
+    if (templateId === "analise-oferta-demanda-concorrencia") {
+      const hoje = new Date()
+      const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+      const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+      aiResponse = aiResponse.replace(
+        /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}/,
+        `**Data da análise:** ${dataCorreta}`
+      )
+    }
 
     // Parse actions from response
     let actions = null;

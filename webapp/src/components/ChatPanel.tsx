@@ -3,7 +3,7 @@ import { useStore } from "@/store/useStore";
 import { api, MODELS, type PipelineProduct } from "@/lib/api";
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates";
 import { sanitizeFilename, extractProductSlugFromResponse } from "@/lib/utils";
-import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Check, MessageCircle } from "lucide-react";
+import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Check, MessageCircle, Search, Package, Star, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
@@ -39,6 +39,9 @@ export function ChatPanel() {
   const [isSavingReport, setIsSavingReport] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
   const [showQnaInput, setShowQnaInput] = useState(false)
+  const [productDropdownOpen, setProductDropdownOpen] = useState(false)
+  const [productSearch, setProductSearch] = useState("")
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const prevLoadingRef = useRef(isLoading)
 
   // Carrega produtos da esteira quando o template de mercado é selecionado
@@ -70,6 +73,46 @@ export function ChatPanel() {
         .finally(() => setIsSavingReport(false))
     }
   }, [isLoading, response, activeTemplate, selectedProductId, pipelineProducts])
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProductDropdownOpen(false)
+        setProductSearch("")
+      }
+    }
+    if (productDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [productDropdownOpen])
+
+  const selectedProduct = pipelineProducts.find(p => p._id === selectedProductId)
+  const filteredProducts = pipelineProducts.filter(p => {
+    if (!productSearch) return true
+    const q = productSearch.toLowerCase()
+    return p.title.toLowerCase().includes(q)
+  })
+
+  const stageBadge = (stage: string) => {
+    const map: Record<string, string> = {
+      triagem: "bg-gray-200 text-gray-600",
+      analise: "bg-blue-100 text-blue-600",
+      aprovado: "bg-emerald-100 text-emerald-600",
+      importando: "bg-amber-100 text-amber-600",
+      concluido: "bg-purple-100 text-purple-600",
+    }
+    const labels: Record<string, string> = {
+      triagem: "Triagem", analise: "Análise", aprovado: "Aprovado",
+      importando: "Importando", concluido: "Concluído",
+    }
+    return (
+      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${map[stage] || map.triagem}`}>
+        {labels[stage] || stage}
+      </span>
+    )
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -156,20 +199,116 @@ export function ChatPanel() {
 
         {/* Product selector for market analysis template */}
         {activeTemplate === MARKET_TEMPLATE_ID && (
-          <div className="relative">
-            <select
-              value={selectedProductId}
-              onChange={(e) => { setSelectedProductId(e.target.value); setSaveSuccess(null) }}
-              className="w-full appearance-none bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          <div className="relative" ref={dropdownRef}>
+            {/* Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                setProductDropdownOpen(!productDropdownOpen)
+                setProductSearch("")
+              }}
+              className="w-full flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 pr-8 text-sm text-left focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-blue-300 transition-colors"
             >
-              <option value="">Vincular a um produto da esteira (opcional)...</option>
-              {pipelineProducts.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.title.replace(/\*+/g, "")} ({p.stage})
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" />
+              {selectedProduct ? (
+                <>
+                  {selectedProduct.imageUrl ? (
+                    <img src={selectedProduct.imageUrl} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
+                  ) : (
+                    <Package className="w-4 h-4 text-blue-400 shrink-0" />
+                  )}
+                  <span className="text-gray-700 truncate">
+                    {selectedProduct.title.replace(/\*+/g, "").length > 50
+                      ? selectedProduct.title.replace(/\*+/g, "").slice(0, 50) + "…"
+                      : selectedProduct.title.replace(/\*+/g, "")}
+                  </span>
+                  {stageBadge(selectedProduct.stage)}
+                </>
+              ) : (
+                <span className="text-gray-400">Vincular a um produto da esteira (opcional)...</span>
+              )}
+            </button>
+            {selectedProductId && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setSelectedProductId(""); setSaveSuccess(null) }}
+                className="absolute right-6 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 rounded"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none transition-transform ${productDropdownOpen ? "rotate-180" : ""}`} />
+
+            {/* Dropdown panel */}
+            {productDropdownOpen && (
+              <div className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                {/* Search input */}
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
+                  <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="Filtrar produtos..."
+                    className="w-full text-sm text-gray-700 placeholder:text-gray-400 bg-transparent focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+                {/* Product list */}
+                <div className="max-h-64 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedProductId(""); setProductDropdownOpen(false); setProductSearch("") }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${!selectedProductId ? "bg-blue-50 text-blue-700" : "text-gray-500"}`}
+                  >
+                    <span className="text-xs">Nenhum (sem vínculo)</span>
+                  </button>
+                  {filteredProducts.length === 0 ? (
+                    <p className="px-3 py-4 text-xs text-gray-400 text-center">Nenhum produto encontrado</p>
+                  ) : (
+                    filteredProducts.map((p) => {
+                      const cleanTitle = p.title.replace(/\*+/g, "")
+                      const isSelected = p._id === selectedProductId
+                      return (
+                        <button
+                          key={p._id}
+                          type="button"
+                          onClick={() => { setSelectedProductId(p._id); setProductDropdownOpen(false); setProductSearch(""); setSaveSuccess(null) }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 ${isSelected ? "bg-blue-50" : ""}`}
+                        >
+                          {p.imageUrl ? (
+                            <img src={p.imageUrl} alt="" className="w-8 h-8 rounded-md object-cover shrink-0 border border-gray-100" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center shrink-0">
+                              <Package className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-gray-800 truncate leading-tight">
+                              {cleanTitle}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              {stageBadge(p.stage)}
+                              {p.score > 0 && (
+                                <span className="flex items-center gap-0.5 text-[10px] text-amber-600">
+                                  <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                                  {p.score}
+                                </span>
+                              )}
+                              {p.monthlySales > 0 && (
+                                <span className="text-[10px] text-gray-400">{p.monthlySales} vendas/mês</span>
+                              )}
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-blue-500 shrink-0" />
+                          )}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
