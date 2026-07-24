@@ -1670,6 +1670,8 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Pontos Negativos, Oportunidades de Melhoria, Score Final).
 
+🚫  NÃO USE GRÁFICOS MERMAID: Este template é puramente textual. NÃO gere diagramas Mermaid (pie, xychart, flowchart, etc.). Use APENAS tabelas Markdown para dados estruturados. Gráficos Mermaid causam erros de renderização e não são necessários para esta análise.
+
 ---
 
 # 🔍 PASSO 1 — Identificação do Tipo de Anúncio

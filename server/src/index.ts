@@ -516,16 +516,16 @@ app.post("/api/analyze", async (req, res) => {
       }
     } catch { /* ignore */ }
 
-    // Auto-inserir produto na esteira apenas para o template "importação simplificada"
+    // Auto-inserir produto na esteira para templates de análise de produto
     let pipelineProductId = null;
     try {
-      if (templateId === "importacao-simplificada" && content) {
+      if ((templateId === "importacao-simplificada" || templateId === "analise-anuncio-independente") && content) {
         const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
         const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
         const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
         const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:]*:\s*([\d.,]+)/im)
-        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*concorrência)\s*:\s*(Baixa|Média|Alta|Saturado)/im)
-        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*margem)\s*:\s*(.+)/im)
+        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*(.+)/im)
         const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
