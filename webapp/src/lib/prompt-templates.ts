@@ -2363,7 +2363,7 @@ Resuma o diagnóstico em tópicos acionáveis:
 
 ## Gráficos de Pizza (pie)
 
-> 🚨 **SINTAXE CORRETA — Mermaid v11**: Use APENAS `pie` na primeira linha. NUNCA use `pie showData` (inválido no Mermaid v11).
+> 🚨 **SINTAXE CORRETA — Mermaid v11**: Use APENAS \`pie\` na primeira linha. NUNCA use \`pie showData\` (inválido no Mermaid v11).
 
 \`\`\`mermaid
 pie
