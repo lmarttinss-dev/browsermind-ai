@@ -2349,6 +2349,47 @@ Resuma o diagnóstico em tópicos acionáveis:
 
 > Decisão: **[MANTER E OTIMIZAR / CORRIGIR COM URGÊNCIA / REPENSAR ESTRATÉGIA / DESCONTINUAR]**
 
-(justificativa em 2-3 frases com base nos dados analisados)`,
+(justificativa em 2-3 frases com base nos dados analisados)
+
+---
+
+# 📐 Regras de Formatação e Sintaxe Mermaid
+
+> ⚠️ Se você optar por incluir gráficos Mermaid no relatório, siga ESTRITAMENTE as regras abaixo. Gráficos são OPCIONAIS — priorize tabelas e análises textuais. Só inclua gráficos se agregarem valor real.
+
+## Aspas nos Gráficos
+
+> 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`\"\"\` (smart quotes) — elas quebram o parser do Mermaid v11 e causam erro de renderização. Exemplo correto: \`title \"Vendas Mensais\"\`, NUNCA \`title \"Vendas Mensais\"\`.
+
+## Gráficos de Pizza (pie)
+
+> 🚨 **SINTAXE CORRETA — Mermaid v11**: Use APENAS `pie` na primeira linha. NUNCA use `pie showData` (inválido no Mermaid v11).
+
+\`\`\`mermaid
+pie
+    title "Distribuição"
+    "Categoria A" : 45
+    "Categoria B" : 30
+    "Categoria C" : 25
+\`\`\`
+
+## Gráficos de Barras (xychart)
+
+> 🚨 **X-AXIS SEM CARACTERES ESPECIAIS**: No \`x-axis\` do \`xychart\`, NUNCA use \`/\` (barra) ou \`-\` (hífen) nos labels. Use apenas texto simples. Exemplo CORRETO: \`x-axis [Jan, Fev, Mar, Abr]\`. Exemplo ERRADO: \`x-axis [Jan/26, Fev/26]\` — barras quebram o parser!
+
+\`\`\`mermaid
+xychart
+    title "Vendas Mensais"
+    x-axis [Jan, Fev, Mar, Abr, Mai, Jun]
+    y-axis "Unidades" 0 --> 5000
+    bar [1200, 980, 1100, 850, 1400, 2100]
+\`\`\`
+
+## Regras Gerais
+
+- **NÃO use smart quotes** (aspas curvas) em nenhum lugar dos blocos Mermaid
+- **NÃO use barras (/)** nem **hifens (-)** como parte de labels nos eixos
+- **Mantenha percentuais como números inteiros** que somem exatamente 100% em pie charts
+- **Prefira tabelas Markdown** a gráficos Mermaid — tabelas são mais confiáveis e nunca quebram`,
   },
 ]
