@@ -1668,6 +1668,8 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 ⚠️  FOCO PRINCIPAL: Identificar PONTOS NEGATIVOS e gargalos no desempenho do anúncio. Seja crítico e objetivo — aponte exatamente o que está prejudicando as vendas, a margem ou a conversão.
 
+💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Pontos Negativos, Oportunidades de Melhoria, Score Final).
+
 ---
 
 # 🔍 PASSO 1 — Identificação do Tipo de Anúncio
@@ -1829,7 +1831,41 @@ Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
 
 ---
 
-## 📊 Market Share Estimado no Catálogo
+## � Análise de Perguntas, Respostas e Opiniões dos Clientes (Catálogo)
+
+> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. No catálogo, as opiniões e perguntas são COMPARTILHADAS entre todos os vendedores — problemas de um vendedor afetam a percepção de todos.
+
+### 📝 Perguntas e Respostas (Q&A)
+
+- Principais dúvidas dos compradores sobre o produto:
+- Qualidade das respostas dos vendedores no catálogo (ágeis, completas, evasivas):
+- Perguntas sem resposta (oportunidade para se destacar respondendo):
+- Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
+- Oportunidades: informações que NENHUM vendedor está fornecendo e que você pode incluir no seu anúncio
+
+### ⭐ Opiniões e Avaliações (Compartilhadas no Catálogo)
+
+- Nota média do catálogo (se disponível):
+- Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
+- Principais elogios (cite trechos literais):
+- Principais reclamações (cite trechos literais):
+- Problemas recorrentes (defeito, tamanho errado, atraso na entrega, produto diferente da foto):
+- Potencial de recompra (clientes comprariam novamente?):
+- Risco de devolução (qual % dos compradores relata problemas graves?):
+- ⚠️  Atenção: no catálogo, avaliações NEGATIVAS sobre OUTROS vendedores também afetam SEU anúncio
+
+### 🎯 Insights para Diferenciação no Catálogo
+
+- O que os clientes AMAM no produto (reforce no seu posicionamento):
+- O que os clientes ODEIAM no produto (corrija ou alerte na sua descrição):
+- Funcionalidades ou variações que os clientes pedem e não encontram:
+- Oportunidades de melhoria no produto: qualidade, embalagem, manual, acessórios
+- Como a concorrência lida com reclamações (oportunidade de atendimento superior)
+- Diferenciais de atendimento que podem fazer você vencer a buy box mesmo sem ser o mais barato
+
+---
+
+## �📊 Market Share Estimado no Catálogo
 
 > Calcule a fatia de mercado de cada vendedor com base nas vendas proporcionais.
 
@@ -2109,7 +2145,40 @@ Cruze a idade do anúncio com o Ritmo atual para avaliar maturidade:
 
 ---
 
-## 🚨 Pontos Negativos e Riscos
+## � Análise de Perguntas, Respostas e Opiniões dos Clientes
+
+> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página. As opiniões dos clientes são a FONTE MAIS RICA de pontos negativos e oportunidades de melhoria.
+
+### 📝 Perguntas e Respostas (Q&A)
+
+- Principais dúvidas dos compradores:
+- Qualidade das respostas do vendedor (ágeis, completas, evasivas):
+- Tempo médio de resposta do vendedor:
+- Perguntas sem resposta:
+- Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
+- Oportunidades: informações que o vendedor NÃO está fornecendo e que você pode incluir no seu anúncio
+
+### ⭐ Opiniões e Avaliações
+
+- Nota média (se disponível):
+- Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
+- Principais elogios (cite trechos literais):
+- Principais reclamações (cite trechos literais):
+- Problemas recorrentes (defeito, tamanho errado, atraso na entrega, produto diferente da foto):
+- Potencial de recompra (clientes comprariam novamente?):
+- Risco de devolução (qual % dos compradores relata problemas graves?):
+
+### 🎯 Insights para Diferenciação
+
+- O que os clientes AMAM no produto (reforce no seu anúncio):
+- O que os clientes ODEIAM no produto (corrija ou alerte no seu anúncio):
+- Funcionalidades ou variações que os clientes pedem e não encontram:
+- Oportunidades de melhoria no produto: qualidade, embalagem, manual, acessórios
+- Como o vendedor atual lida com reclamações (oportunidade de atendimento superior)
+
+---
+
+## �🚨 Pontos Negativos e Riscos
 
 > ⚠️ Esta é a seção mais importante do relatório. Seja CRÍTICO e DIRETO. Liste TODO e QUALQUER ponto negativo identificado, por menor que pareça.
 
