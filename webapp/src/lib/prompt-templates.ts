@@ -1703,6 +1703,24 @@ Preencha OBRIGATORIAMENTE:
 
 ---
 
+## 📋 Resumo para Esteira
+
+> 🚨 Este bloco é OBRIGATÓRIO e usado para alimentar o Kanban automaticamente. Preencha TODOS os campos sem exceção. O Score Final da conclusão DEVE ser IGUAL ao informado aqui.
+
+- Nome: (nome completo do produto)
+- Categoria: (categoria principal > subcategoria)
+- Preço atual: R$ (valor no formato brasileiro, ex: 66,79)
+- Tipo: (exatamente uma das opções: 📚 Catálogo | 📦 Independente)
+- Vendas mensais estimadas: (número inteiro — ritmo atual do catálogo ou do anúncio)
+- Ritmo atual (vendas/mês): (número inteiro do AvantPro)
+- Nível de competição: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
+  - Para catálogo: baseado na quantidade de vendedores e competitividade da buy box
+  - Para independente: baseado na concorrência da categoria
+- Potencial de melhoria: (percentual ou faixa, ex: 20-35% — margem de ganho com otimizações sugeridas)
+- Score Final: (nota de 0 a 10 representando saúde/viabilidade geral)
+
+---
+
 # SE FOR 📚 PRODUTO DE CATÁLOGO → USE O TEMPLATE ABAIXO
 
 > ⚠️ Um produto de catálogo é uma FICHA UNIFICADA onde vários vendedores competem pelo mesmo produto. A análise deve focar em POSICIONAMENTO COMPETITIVO e ESTRATÉGIA PARA VENCER A BUY BOX.
@@ -1965,7 +1983,17 @@ Escolha UMA estratégia principal:
 | Tamanho do catálogo | /10 | (volume de vendas total do catálogo) |
 | Risco de saturação | /10 | (quanto menor o risco, maior a nota) |
 
-**Score Final:** X/10
+**Score Final:** X/10 (média aritmética — DEVE ser igual ao valor informado no "Resumo para Esteira")
+
+### Interpretação
+
+| Nota | Diagnóstico | Ação Recomendada |
+|------|-------------|------------------|
+| 0–3 | 🔴 **Crítico** | Catálogo saturado ou inviável — evite entrar |
+| 4–5 | 🟡 **Frágil** | Catálogo competitivo, exige estratégia agressiva de preço ou Full |
+| 6–7 | 🟡 **Regular** | Boa oportunidade se conseguir vantagem em preço ou logística |
+| 8–9 | 🟢 **Saudável** | Catálogo com espaço — entre com preço competitivo e escale |
+| 10 | 🟢 **Excelente** | Oportunidade rara — catálogo com alta demanda e baixa competição |
 
 ---
 
@@ -2271,7 +2299,7 @@ Atribua notas de 0 a 10 para cada critério de saúde do anúncio:
 | Reputação | /10 | (avaliações, atendimento, garantia) |
 | Potencial de escala | /10 | (dá para crescer ou está no teto?) |
 
-**Score Final:** X/10 (média aritmética)
+**Score Final:** X/10 (média aritmética — DEVE ser igual ao valor informado no "Resumo para Esteira")
 
 ### Interpretação
 
