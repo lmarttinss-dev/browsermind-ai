@@ -1670,7 +1670,15 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Pontos Negativos, Oportunidades de Melhoria, Score Final).
 
-🚫  NÃO USE GRÁFICOS MERMAID: Este template é puramente textual. NÃO gere diagramas Mermaid (pie, xychart, flowchart, etc.). Use APENAS tabelas Markdown para dados estruturados. Gráficos Mermaid causam erros de renderização e não são necessários para esta análise.
+🎨  GRÁFICOS MERMAID: Você PODE usar gráficos Mermaid para enriquecer o relatório com visualizações de dados. Use pie charts para distribuição de market share no catálogo e xychart para tendências de vendas.
+
+⚠️  REGRAS CRÍTICAS DE SINTAXE (Mermaid v11) — siga à risca para evitar erros:
+
+1. Use SEMPRE aspas retas \" (U+0022) — NUNCA aspas curvas \"\" (smart quotes)
+2. Pie charts: use APENAS \`pie\` na primeira linha — NUNCA \`pie showData\` (inválido no v11)
+3. Xychart: NUNCA use / ou - nos labels do x-axis (ex: use \"Jan\", não \"Jan/26\")
+4. Percentuais de pie chart DEVEM ser números inteiros que somem exatamente 100%
+5. Coloque gráficos próximos aos dados que representam
 
 ---
 
@@ -2357,7 +2365,7 @@ Resuma o diagnóstico em tópicos acionáveis:
 
 # 📐 Regras de Formatação e Sintaxe Mermaid
 
-> ⚠️ Se você optar por incluir gráficos Mermaid no relatório, siga ESTRITAMENTE as regras abaixo. Gráficos são OPCIONAIS — priorize tabelas e análises textuais. Só inclua gráficos se agregarem valor real.
+> ⚠️ Reforçando as regras de sintaxe Mermaid. Gráficos são bem-vindos, mas a sintaxe deve ser EXATA.
 
 ## Aspas nos Gráficos
 
