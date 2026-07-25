@@ -15,6 +15,30 @@ import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } 
 import { Comparison } from "./models/comparison.js";
 import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport } from "./parse-suppliers.js";
 
+/** Converte string de preço brasileiro (ex: "66,79" ou "1.234,56" ou "66.79") para number */
+function parseBrPrice(raw: string): number {
+  const cleaned = raw.replace(/[R$\s]/g, "").trim()
+  if (!cleaned) return 0
+  // Se tem vírgula, é formato brasileiro (vírgula = decimal)
+  if (cleaned.includes(",")) {
+    return parseFloat(cleaned.replace(/\./g, "").replace(",", "."))
+  }
+  // Se tem mais de um ponto ou ponto seguido de 3+ dígitos, trata como milhares
+  const dotCount = (cleaned.match(/\./g) || []).length
+  if (dotCount > 1 || (dotCount === 1 && cleaned.split(".").pop()!.length >= 3)) {
+    return parseFloat(cleaned.replace(/\./g, ""))
+  }
+  // Formato com ponto decimal (ex: "66.79")
+  return parseFloat(cleaned)
+}
+
+/** Converte string de número inteiro brasileiro (ex: "1.234" ou "1234" ou "1,234") para number */
+function parseBrInt(raw: string): number {
+  const cleaned = raw.replace(/[R$\s]/g, "").trim()
+  if (!cleaned) return 0
+  return parseInt(cleaned.replace(/[.,]/g, ""), 10)
+}
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3210;
 
@@ -547,11 +571,11 @@ app.post("/api/analyze", async (req, res) => {
             title: productTitle.slice(0, 200),
             url: productUrl,
             imageUrl: imageMatch?.[1] || "",
-            price: parseFloat(priceMatch?.[1]?.replace(".", "").replace(",", ".") || "0"),
+            price: parseBrPrice(priceMatch?.[1] || "0"),
             category: categoryMatch?.[1]?.trim().slice(0, 100) || "",
             stage: "triagem",
             score: parseFloat(scoreMatch?.[1]?.replace(",", ".") || "0"),
-            monthlySales: parseInt(salesMatch?.[1]?.replace(/\./g, "").replace(",", ".") || "0"),
+            monthlySales: parseBrInt(salesMatch?.[1] || "0"),
             competitionLevel: competitionMatch?.[1] || "Média",
             potentialMargin: marginMatch?.[1]?.trim().slice(0, 100) || "",
             analysisReport: aiResponse,
