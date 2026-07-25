@@ -1765,6 +1765,25 @@ Preencha OBRIGATORIAMENTE:
 
 ---
 
+## 🔎 Diagnóstico Rápido do Catálogo
+
+> Preencha esta tabela OBRIGATORIAMENTE antes de prosseguir. Use os dados da página e do AvantPro para determinar cada critério.
+
+| Critério | Resultado |
+|----------|-----------|
+| Existe catálogo? | ✅ Sim / ❌ Não |
+| Tipo | Proprietário / Participante / Não está no catálogo |
+| Pode vender? | ✅ Sim / ❌ Não / ⚠️ Restrições |
+| Catálogo fechado? | ❌ Não / ✅ Sim (novos vendedores bloqueados) |
+| Concorrentes | (número de vendedores no catálogo) |
+| Buy Box concentrada? | Baixa / Média / Alta |
+| Guerra de preço | Baixa / Média / Alta |
+| Margem líquida estimada | (percentual calculado com base no preço de venda − taxas ML − custo) |
+| Nível de dificuldade | X/10 |
+| Recomendação | (frase curta: entrar, evitar, monitorar, etc.) |
+
+---
+
 ## 🏆 Posicionamento no Catálogo
 
 > Se este vendedor JÁ está no catálogo, analise sua posição. Se NÃO está, analise a viabilidade de entrada.
