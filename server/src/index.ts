@@ -549,7 +549,7 @@ app.post("/api/analyze", async (req, res) => {
         const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
         const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:]*:\s*([\d.,]+)/im)
         const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
-        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*(.+)/im)
+        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
         const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 

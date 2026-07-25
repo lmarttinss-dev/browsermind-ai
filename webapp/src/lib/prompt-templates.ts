@@ -1728,7 +1728,7 @@ Preencha OBRIGATORIAMENTE:
 - Nível de competição: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
   - Para catálogo: baseado na quantidade de vendedores e competitividade da buy box
   - Para independente: baseado na concorrência da categoria
-- Potencial de melhoria: (APENAS o percentual, sem texto adicional — ex: 25–40%)
+- Potencial de melhoria: (APENAS o percentual ou faixa, sem texto. Ex: 25-40%)
 - Score Final: (nota de 0 a 10 representando saúde/viabilidade geral)
 
 ---
