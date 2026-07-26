@@ -1748,6 +1748,8 @@ Preencha OBRIGATORIAMENTE:
 - Tipo de catálogo: (ProdutoPro / Catálogo padrão / Catálogo com variações)
 - Este vendedor está no catálogo? (Sim — analisar posição / Não — analisar entrada)
 
+> 📝 DESCRIÇÃO DO CATÁLOGO: No Mercado Livre, a descrição do produto em catálogos costuma ser PADRONIZADA e compartilhada entre todos os vendedores. Avalie rapidamente se a descrição do catálogo está bem estruturada ou se há oportunidades de melhoria que todo o catálogo se beneficiaria (fotos genéricas, falta de especificações, etc.). Se a descrição for FRACA, isso afeta TODOS os vendedores igualmente — mas também representa uma oportunidade se você puder sugerir melhorias ou se destacar em outros fatores (preço, frete, reputação).
+
 ### 📊 Métricas do Catálogo (AvantPro — agregadas de TODOS os vendedores)
 
 | Métrica | Valor |
@@ -2123,7 +2125,65 @@ Escolha UMA estratégia principal:
 
 ---
 
-## 💰 Análise Financeira
+## � Análise da Descrição do Anúncio
+
+> A descrição é um dos fatores mais importantes para conversão. Analise o conteúdo da página do produto e extraia insights acionáveis.
+
+### 📄 Estrutura e Qualidade
+
+- Tamanho da descrição: (Curta < 500 chars / Média 500-2000 / Longa > 2000)
+- Formatação: (✅ usa bullet points / ❌ texto corrido / ✅ usa negrito e destaques / ❌ sem formatação)
+- Clareza: (✅ fácil de entender / ⚠️ confusa ou mal escrita / ❌ incompreensível)
+- Ortografia e gramática: (✅ impecável / ⚠️ pequenos erros / ❌ muitos erros)
+
+### 🔍 Cobertura de Informações
+
+Marque o que a descrição CONTÉM e o que está FALTANDO:
+
+| Informação | Presente? | Qualidade |
+|-----------|-----------|----------|
+| Especificações técnicas | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Dimensões e peso | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Material / composição | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Modo de usar / instruções | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Compatibilidade | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Garantia | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Política de troca/devolução | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Prazo de entrega | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Itens inclusos na embalagem | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| FAQ / perguntas frequentes | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Comparação com concorrentes | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+
+### 🎯 Gatilhos de Venda Utilizados
+
+- Gatilho de escassez: ("últimas unidades", "estoque limitado") — ✅ / ❌
+- Gatilho de urgência: ("promoção por tempo limitado", "aproveite hoje") — ✅ / ❌
+- Gatilho de prova social: ("mais vendido", "X clientes satisfeitos") — ✅ / ❌
+- Gatilho de autoridade: ("recomendado por", "certificado por") — ✅ / ❌
+- Gatilho de reciprocidade: ("brinde", "garantia estendida grátis") — ✅ / ❌
+- Call to action claro: ("compre agora", "garanta o seu") — ✅ / ❌
+
+### 🔑 Análise de SEO na Descrição
+
+- Palavras-chave principais presentes: (liste as 3-5 keywords mais relevantes encontradas)
+- Palavras-chave FALTANDO: (quais keywords de alto volume NÃO estão na descrição?)
+- Densidade de keywords: (excessiva / equilibrada / insuficiente)
+- Uso de sinônimos e variações: (Sim / Não — importante para SEO semântico)
+
+### 💡 Oportunidades de Melhoria na Descrição
+
+- Top 3 informações que FALTAM e que aumentariam a conversão:
+  1.
+  2.
+  3.
+- Sugestão de estrutura melhorada: (ex: "comece com benefícios, depois especificações, depois FAQ")
+- Gatilhos que deveriam ser adicionados:
+- Tom da descrição atual: (muito técnico / muito vendedor / equilibrado / frio)
+- Tom recomendado: (sugestão baseada no público-alvo do produto)
+
+---
+
+## �💰 Análise Financeira
 
 ### Demonstração por Unidade
 
