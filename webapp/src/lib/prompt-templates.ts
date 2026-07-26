@@ -1656,4 +1656,831 @@ Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores
 
 Coloque os gráficos próximos aos dados que eles representam.`,
   },
+  {
+    id: "analise-anuncio-independente",
+    name: "Análise de Anúncio (Catálogo ou Independente)",
+    description: "Diagnóstico completo de um anúncio do Mercado Livre com métricas do AvantPro. Detecta automaticamente se é produto de catálogo ou independente e adapta a análise.",
+    content: `Analise este anúncio do Mercado Livre com base nas métricas do AvantPro visíveis na página. Gere um diagnóstico completo focado em identificar gargalos, riscos e oportunidades de melhoria. Inclua a URL do anúncio analisado.
+
+⚠️  PRIMEIRO PASSO OBRIGATÓRIO: Identifique se este é um PRODUTO DE CATÁLOGO ou um ANÚNCIO INDEPENDENTE. O tipo de análise Muda COMPLETAMENTE dependendo desta classificação.
+
+IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
+
+⚠️  FORMATO DE PREÇO: Use SEMPRE o formato brasileiro com vírgula como separador decimal (ex: R$ 66,79, NUNCA R$ 66.79).
+
+⚠️  FOCO PRINCIPAL: Identificar PONTOS NEGATIVOS e gargalos no desempenho do anúncio. Seja crítico e objetivo — aponte exatamente o que está prejudicando as vendas, a margem ou a conversão.
+
+💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Pontos Negativos, Oportunidades de Melhoria, Score Final).
+
+🎨  GRÁFICOS MERMAID: Você PODE usar gráficos Mermaid para enriquecer o relatório com visualizações de dados. Use pie charts para distribuição de market share no catálogo e xychart para tendências de vendas.
+
+⚠️  REGRAS CRÍTICAS DE SINTAXE (Mermaid v11) — siga à risca para evitar erros:
+
+1. Use SEMPRE aspas retas \" (U+0022) — NUNCA aspas curvas \"\" (smart quotes)
+2. Pie charts: use APENAS \`pie\` na primeira linha — NUNCA \`pie showData\` (inválido no v11)
+3. Xychart: NUNCA use / ou - nos labels do x-axis (ex: use \"Jan\", não \"Jan/26\")
+4. Percentuais de pie chart DEVEM ser números inteiros que somem exatamente 100%
+5. Coloque gráficos próximos aos dados que representam
+
+---
+
+# 🔍 PASSO 1 — Identificação do Tipo de Anúncio
+
+## Como identificar se é PRODUTO DE CATÁLOGO:
+
+Um produto de catálogo no Mercado Livre é uma ficha unificada onde MÚLTIPLOS VENDEDORES oferecem o MESMO produto. Sinais claros:
+
+- A página mostra "X vendedores" ou "X opções" ou "Disponível em X cores/tamanhos" com seletores
+- Aparece uma seção "Outros vendedores" ou "Comparar preços" ou "Todos os vendedores"
+- O selo "MAIS VENDIDO" ou "OFERTA DO DIA" pode alternar entre vendedores
+- O AvantPro pode mostrar dados agregados do catálogo (vendas totais de todos os vendedores)
+- Na URL, produtos de catálogo geralmente têm uma estrutura de breadcrumb mais genérica
+- Aparece "ProdutoPro" ou indicadores de catálogo estruturado
+
+## Como identificar se é ANÚNCIO INDEPENDENTE:
+
+- A página mostra apenas UM vendedor ("Vendido por [LOJA]" sem opção de escolher outro)
+- Não há seção de "Outros vendedores" ou comparação de preços
+- O anúncio é único — o vendedor tem controle total sobre fotos, descrição, título
+- O AvantPro mostra métricas específicas DESTE vendedor (não agregadas)
+- Pode ter selos como "LOJA OFICIAL" ou "MERCADO LÍDER" sem compartilhar com outros
+
+## Resultado da Identificação:
+
+Preencha OBRIGATORIAMENTE:
+
+- **URL do anúncio:**
+- **Tipo identificado:** 📚 PRODUTO DE CATÁLOGO ou 📦 ANÚNCIO INDEPENDENTE
+- **Evidências:** (como foi identificado — cite elementos visíveis na página)
+
+---
+
+## 📋 Resumo para Esteira
+
+> 🚨 Este bloco é OBRIGATÓRIO e usado para alimentar o Kanban automaticamente. Preencha TODOS os campos sem exceção. O Score Final da conclusão DEVE ser IGUAL ao informado aqui.
+
+- Nome: (nome completo do produto)
+- Categoria: (categoria principal > subcategoria)
+- Preço atual: R$ (valor no formato brasileiro, ex: 66,79)
+- Tipo: (exatamente uma das opções: 📚 Catálogo | 📦 Independente)
+- Vendas mensais estimadas: (número inteiro — ritmo atual do catálogo ou do anúncio)
+- Ritmo atual (vendas/mês): (número inteiro do AvantPro)
+- Nível de competição: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
+  - Para catálogo: baseado na quantidade de vendedores e competitividade da buy box
+  - Para independente: baseado na concorrência da categoria
+- Potencial de melhoria: (APENAS o percentual ou faixa, sem texto. Ex: 25-40%)
+- Score Final: (nota de 0 a 10 representando saúde/viabilidade geral)
+
+---
+
+# SE FOR 📚 PRODUTO DE CATÁLOGO → USE O TEMPLATE ABAIXO
+
+> ⚠️ Um produto de catálogo é uma FICHA UNIFICADA onde vários vendedores competem pelo mesmo produto. A análise deve focar em POSICIONAMENTO COMPETITIVO e ESTRATÉGIA PARA VENCER A BUY BOX.
+
+# Template — Produto de Catálogo
+
+## 📚 Visão Geral do Catálogo
+
+- Nome do produto (catálogo):
+- URL do catálogo:
+- Categoria:
+- Total de vendedores no catálogo: (quantos sellers oferecem este mesmo produto)
+- Tipo de catálogo: (ProdutoPro / Catálogo padrão / Catálogo com variações)
+- Este vendedor está no catálogo? (Sim — analisar posição / Não — analisar entrada)
+
+> 📝 DESCRIÇÃO DO CATÁLOGO: No Mercado Livre, a descrição do produto em catálogos costuma ser PADRONIZADA e compartilhada entre todos os vendedores. Avalie rapidamente se a descrição do catálogo está bem estruturada ou se há oportunidades de melhoria que todo o catálogo se beneficiaria (fotos genéricas, falta de especificações, etc.). Se a descrição for FRACA, isso afeta TODOS os vendedores igualmente — mas também representa uma oportunidade se você puder sugerir melhorias ou se destacar em outros fatores (preço, frete, reputação).
+
+### 📊 Métricas do Catálogo (AvantPro — agregadas de TODOS os vendedores)
+
+| Métrica | Valor |
+|---------|-------|
+| Preço médio do catálogo | R$ |
+| Faixa de preço (mínimo — máximo) | R$ — R$ |
+| Total vendido (catálogo — todos os vendedores) | X unidades |
+| Vendas por dia (catálogo) | X |
+| Ritmo atual (vendas/mês — catálogo inteiro) | X |
+| Visitas ao catálogo | X |
+| Taxa de conversão do catálogo | X% |
+| Estoque total (todos os vendedores somados) | X unidades |
+| Tempo do catálogo (data de criação) | dd/mm/aaaa |
+| Faturamento total do catálogo | R$ |
+
+---
+
+## 🔎 Diagnóstico Rápido do Catálogo
+
+> Preencha esta tabela OBRIGATORIAMENTE antes de prosseguir. Use os dados da página e do AvantPro para determinar cada critério.
+
+| Critério | Resultado |
+|----------|-----------|
+| Existe catálogo? | ✅ Sim / ❌ Não |
+| Tipo | Proprietário / Participante / Não está no catálogo |
+| Pode vender? | ✅ Sim / ❌ Não / ⚠️ Restrições |
+| Catálogo fechado? | ❌ Não / ✅ Sim (novos vendedores bloqueados) |
+| Concorrentes | (número de vendedores no catálogo) |
+| Buy Box concentrada? | Baixa / Média / Alta |
+| Guerra de preço | Baixa / Média / Alta |
+| Margem líquida estimada | (percentual calculado com base no preço de venda − taxas ML − custo) |
+| Nível de dificuldade | X/10 |
+| Recomendação | (frase curta: entrar, evitar, monitorar, etc.) |
+
+---
+
+## 🏆 Posicionamento no Catálogo
+
+> Se este vendedor JÁ está no catálogo, analise sua posição. Se NÃO está, analise a viabilidade de entrada.
+
+### 📊 Tabela de Vendedores no Catálogo
+
+Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
+
+| # | Vendedor | Preço | Reputação | Tipo de Envio | Estoque | Avaliações | Buy Box? |
+|---|----------|-------|-----------|---------------|---------|------------|----------|
+| 1 | | R$ | ⭐/Medalha | Full/Flex/Correios | X un. | X ⭐ | ✅ Sim |
+| 2 | | R$ | ⭐/Medalha | Full/Flex/Correios | X un. | X ⭐ | ❌ |
+| 3 | | R$ | ⭐/Medalha | Full/Flex/Correios | X un. | X ⭐ | ❌ |
+| ... | | | | | | | |
+
+### 🥇 Análise do Vendedor na Buy Box (posição #1)
+
+- **Quem é o vencedor da buy box:** (nome do vendedor)
+- **Por que ele vence:**
+  - Preço: é o mais barato? (Sim/Não — posição de preço: Xº mais barato)
+  - Reputação: MercadoLíder / Platinum / Gold?
+  - Full: Sim/Não
+  - Tempo de entrega: X dias
+  - Estoque: X unidades
+  - Avaliações: X positivas
+- **O que falta para este vendedor (analisado) superar o líder:**
+  - Se o preço é o fator decisivo: quanto precisaria baixar?
+  - Se reputação é o fator: quantas vendas/avaliações faltam?
+  - Se Full é o fator: vale a pena enviar para Full?
+
+---
+
+## 💰 Análise de Precificação no Catálogo
+
+### Estrutura de Preços dos Concorrentes
+
+| Faixa de Preço | Vendedores | % do Catálogo | Perfil |
+|---------------|------------|---------------|--------|
+| R$ X — R$ Y (Entrada) | X | X% | Preço agressivo, margem baixa |
+| R$ Y — R$ Z (Meio) | X | X% | Equilíbrio preço/reputação |
+| R$ Z+ (Premium) | X | X% | Diferenciação, frete grátis, Full |
+
+### Posicionamento de Preço do Vendedor Analisado
+
+- Preço atual do vendedor: R$ X,XX
+- Posição no ranking de preços: Xº mais barato de Y vendedores
+- Diferença para o mais barato: R$ X,XX (X% a mais)
+- Diferença para a média: R$ X,XX
+- Faixa recomendada pelo AvantPro: R$ X,XX a R$ X,XX
+- O preço está dentro da faixa recomendada? Sim / Não
+- Estratégia de preço atual: (Agressivo / Competitivo / Premium / Fora do mercado)
+
+### Simulação de Ajuste de Preço
+
+| Cenário | Preço | Posição no Ranking | Margem Estimada | Vendas Esperadas/mês | Faturamento Projetado |
+|---------|-------|-------------------|-----------------|---------------------|----------------------|
+| Agressivo (top 3 mais barato) | R$ | Xº | X% | X | R$ |
+| Competitivo (preço médio) | R$ | Xº | X% | X | R$ |
+| Premium (top 3 mais caro) | R$ | Xº | X% | X | R$ |
+
+---
+
+## 🚚 Comparativo de Logística no Catálogo
+
+| Vendedor | Tipo de Envio | Prazo de Entrega | Frete | Custo para o Vendedor |
+|----------|---------------|------------------|-------|----------------------|
+| Vendedor #1 | Full / Flex / Correios | X dias | Grátis / R$ X,XX | R$ X,XX |
+| Vendedor #2 | Full / Flex / Correios | X dias | Grátis / R$ X,XX | R$ X,XX |
+| **Vendedor analisado** | Full / Flex / Correios | X dias | Grátis / R$ X,XX | R$ X,XX |
+
+### Análise Logística
+
+- **Full é diferencial neste catálogo?** (quantos % dos vendedores usam Full)
+- **Frete grátis é esperado?** (quantos % oferecem frete grátis)
+- **Prazo de entrega do vendedor analisado vs. concorrência:** (mais rápido / na média / mais lento)
+- **Oportunidade logística:** se a concorrência usa Correios e este vendedor pode usar Full, é vantagem decisiva
+
+---
+
+## ⭐ Comparativo de Reputação
+
+| Vendedor | Medalha | Vendas Totais | Avaliações | Nota Média | Tempo de Mercado |
+|----------|---------|---------------|------------|------------|------------------|
+| #1 | | | | ⭐ | |
+| #2 | | | | ⭐ | |
+| **Analisado** | | | | ⭐ | |
+
+### Análise de Reputação
+
+- A reputação é fator decisivo na buy box deste catálogo? (Sim/Não)
+- O vendedor analisado tem reputação suficiente para competir? (Sim/Não)
+- Se não: quantas vendas/avaliações precisa para se equiparar ao líder?
+- Estratégia para construir reputação: (preço baixo inicial, frete grátis, atendimento excepcional)
+
+---
+
+## � Análise de Perguntas, Respostas e Opiniões dos Clientes (Catálogo)
+
+> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. No catálogo, as opiniões e perguntas são COMPARTILHADAS entre todos os vendedores — problemas de um vendedor afetam a percepção de todos.
+
+### 📝 Perguntas e Respostas (Q&A)
+
+- Principais dúvidas dos compradores sobre o produto:
+- Qualidade das respostas dos vendedores no catálogo (ágeis, completas, evasivas):
+- Perguntas sem resposta (oportunidade para se destacar respondendo):
+- Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
+- Oportunidades: informações que NENHUM vendedor está fornecendo e que você pode incluir no seu anúncio
+
+### ⭐ Opiniões e Avaliações (Compartilhadas no Catálogo)
+
+- Nota média do catálogo (se disponível):
+- Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
+- Principais elogios (cite trechos literais):
+- Principais reclamações (cite trechos literais):
+- Problemas recorrentes (defeito, tamanho errado, atraso na entrega, produto diferente da foto):
+- Potencial de recompra (clientes comprariam novamente?):
+- Risco de devolução (qual % dos compradores relata problemas graves?):
+- ⚠️  Atenção: no catálogo, avaliações NEGATIVAS sobre OUTROS vendedores também afetam SEU anúncio
+
+### 🎯 Insights para Diferenciação no Catálogo
+
+- O que os clientes AMAM no produto (reforce no seu posicionamento):
+- O que os clientes ODEIAM no produto (corrija ou alerte na sua descrição):
+- Funcionalidades ou variações que os clientes pedem e não encontram:
+- Oportunidades de melhoria no produto: qualidade, embalagem, manual, acessórios
+- Como a concorrência lida com reclamações (oportunidade de atendimento superior)
+- Diferenciais de atendimento que podem fazer você vencer a buy box mesmo sem ser o mais barato
+
+---
+
+## �📊 Market Share Estimado no Catálogo
+
+> Calcule a fatia de mercado de cada vendedor com base nas vendas proporcionais.
+
+| Vendedor | Vendas Estimadas | % do Catálogo | Faturamento Estimado |
+|----------|-----------------|---------------|---------------------|
+| #1 (Buy Box) | X | X% | R$ |
+| #2 | X | X% | R$ |
+| **Analisado** | X | X% | R$ |
+| Demais | X | X% | R$ |
+
+### Concentração do Catálogo
+
+- Top 1 detém X% das vendas
+- Top 3 detêm X% das vendas
+- Classificação: (Pulverizado / Moderadamente Concentrado / Altamente Concentrado)
+- Se altamente concentrado no top 1: o que ele faz diferente? (preço, Full, reputação, anúncios pagos?)
+
+---
+
+## 🎯 Estratégia para Vencer a Buy Box
+
+> A buy box é a posição de destaque onde o botão "Comprar" principal leva ao seu anúncio. É onde acontecem ~80% das vendas do catálogo.
+
+### Pré-requisitos para Disputar a Buy Box
+
+Marque o que este vendedor JÁ tem e o que PRECISA:
+
+| Requisito | Status | Ação Necessária |
+|-----------|--------|-----------------|
+| Preço competitivo (dentro da faixa) | ✅ / ❌ | |
+| Reputação (MercadoLíder ou melhor) | ✅ / ❌ | |
+| Full ou Frete Grátis | ✅ / ❌ | |
+| Estoque suficiente (> 20 un.) | ✅ / ❌ | |
+| Bom histórico de entregas | ✅ / ❌ | |
+| Avaliações positivas recentes | ✅ / ❌ | |
+
+### Estratégia Recomendada
+
+Escolha UMA estratégia principal:
+
+1. **Guerra de preço**: baixar para ser o mais barato — risco de margem zero, mas ganha buy box rápido
+2. **Diferenciação por serviço**: preço médio + Full + frete grátis + atendimento premium — ganha buy box por qualidade
+3. **Nichos de variação**: focar em cor/tamanho/modelo que ninguém tem estoque — menos competição
+4. **Entrada gradual**: preço baixo para construir reputação → depois sobe para preço competitivo
+5. **Não competir**: se o líder é uma loja oficial com preço impossível de bater, evite este catálogo
+
+---
+
+## 🚨 Pontos Negativos e Riscos (Catálogo)
+
+### 🔴 Riscos Específicos de Produto de Catálogo
+
+- **Guerra de preços**: se 3+ vendedores baixam preço constantemente, margem tende a zero
+- **Dependência da buy box**: se não estiver na buy box, as vendas caem 70-90%
+- **Loja oficial no catálogo**: se há uma loja oficial da marca, ela tem vantagem permanente
+- **Vendedor internacional**: sellers da China/Paraguai com preço muito baixo podem inviabilizar
+- **Catálogo saturado**: mais de 10 vendedores para o mesmo produto → margem diluída
+- **Risco de suspensão do catálogo**: se o Mercado Livre descontinuar o catálogo, perde-se o histórico
+
+### 🟡 Pontos de Atenção no Catálogo
+
+- **Preço desatualizado**: se o vendedor não ajusta o preço há semanas, perdeu a buy box sem saber
+- **Estoque oculto**: concorrentes podem ter estoque maior que o declarado
+- **Avaliações cross-vendedor**: no catálogo, avaliações são compartilhadas — uma reclamação sobre outro vendedor pode afetar todos
+- **Variações não cobertas**: se o vendedor não tem todas as variações do catálogo, perde clientes que buscam cor/tamanho específico
+
+---
+
+## 💡 Oportunidades de Melhoria (Catálogo)
+
+### 🎯 Ações Imediatas para Vencer a Buy Box
+
+1. **Ajustar preço** para a faixa recomendada pelo AvantPro
+2. **Ativar Full** se a concorrência não usa (diferencial decisivo)
+3. **Aumentar estoque** na variação mais vendida
+4. **Responder perguntas** pendentes (aumenta reputação no catálogo)
+5. **Atualizar GTIN/EAN** se estiver incorreto (melhora posicionamento)
+
+### 📈 Estratégias de Curto Prazo
+
+1. **Product Ads no catálogo**: anúncios pagos para aparecer como destaque
+2. **Oferecer parcelamento sem juros** se a concorrência não oferece
+3. **Envio Full**: prioridade na buy box do Mercado Livre
+4. **Preço dinâmico**: ajustar preço 2x/dia para manter posição competitiva
+5. **Monitorar concorrentes**: verificar diariamente se houve mudança de preço ou estoque
+
+---
+
+## 📈 Score Final do Catálogo
+
+| Critério | Nota | Justificativa |
+|----------|------|---------------|
+| Competitividade de preço | /10 | (posição no ranking de preços) |
+| Força da reputação | /10 | (medalhas, avaliações, tempo de mercado) |
+| Vantagem logística | /10 | (Full, frete grátis, prazo de entrega) |
+| Potencial de buy box | /10 | (chance real de conquistar a posição #1) |
+| Tamanho do catálogo | /10 | (volume de vendas total do catálogo) |
+| Risco de saturação | /10 | (quanto menor o risco, maior a nota) |
+
+**Score Final:** X/10 (média aritmética — DEVE ser igual ao valor informado no "Resumo para Esteira")
+
+### Interpretação
+
+| Nota | Diagnóstico | Ação Recomendada |
+|------|-------------|------------------|
+| 0–3 | 🔴 **Crítico** | Catálogo saturado ou inviável — evite entrar |
+| 4–5 | 🟡 **Frágil** | Catálogo competitivo, exige estratégia agressiva de preço ou Full |
+| 6–7 | 🟡 **Regular** | Boa oportunidade se conseguir vantagem em preço ou logística |
+| 8–9 | 🟢 **Saudável** | Catálogo com espaço — entre com preço competitivo e escale |
+| 10 | 🟢 **Excelente** | Oportunidade rara — catálogo com alta demanda e baixa competição |
+
+---
+
+## ✅ Conclusão — Produto de Catálogo
+
+### 🎯 Decisão Estratégica
+
+> Decisão: **[DISPUTAR BUY BOX / ENTRAR COM DIFERENCIAÇÃO / MONITORAR / EVITAR]**
+
+### 📋 Checklist de Ações
+
+- [ ] Ajustar preço para posição competitiva (top 3 mais barato)
+- [ ] Ativar Full (se viável financeiramente)
+- [ ] Aumentar estoque na variação principal
+- [ ] Melhorar descrição e fotos (mesmo em catálogo, ajuda na conversão)
+- [ ] Responder TODAS as perguntas pendentes
+- [ ] Iniciar Product Ads no catálogo
+- [ ] Monitorar preços dos concorrentes diariamente
+- [ ] Verificar se o GTIN/EAN está correto
+
+### 🧠 Veredito Final
+
+> (2-3 frases com a recomendação final baseada nos dados do catálogo)
+
+---
+
+# SE FOR 📦 ANÚNCIO INDEPENDENTE → USE O TEMPLATE ABAIXO
+
+> ⚠️ Um anúncio independente é controlado por UM ÚNICO vendedor. A análise deve focar em SAÚDE DO ANÚNCIO, CONVERSÃO e OTIMIZAÇÃO.
+
+# Template — Anúncio Independente
+
+## 📋 Resumo do Diagnóstico
+
+> Bloco executivo — leitura rápida para tomada de decisão.
+
+- Produto: (nome completo do produto)
+- URL do anúncio:
+- Preço de venda: R$ (formato brasileiro)
+- Faturamento total estimado: R$
+- Ritmo atual (vendas/mês):
+- Taxa de conversão:
+- Dias ativo:
+- Dentro de catálogo? (Sim — este anúncio está linkado a um catálogo / Não — anúncio 100% independente)
+- Saúde geral: 🟢 Saudável / 🟡 Atenção / 🔴 Crítico
+- Principais gargalos: (1-3 frases resumindo os maiores problemas)
+
+---
+
+## 📦 Dados do Anúncio
+
+- Nome do produto:
+- URL:
+- Categoria:
+- Preço de venda: R$
+- Frete: (valor e tipo — Grátis, Full, Flex, Correios)
+- Loja / Vendedor:
+- Reputação do vendedor (MercadoLíder, Platinum, Gold, etc.):
+- Selos e destaques (MAIS VENDIDO, OFERTA DO DIA, etc.):
+- Tipo de anúncio: (Clássico / Premium / ProdutoPro)
+- Está vinculado a catálogo? (Sim — ID do catálogo: MLB-XXXX / Não)
+  - Se SIM: mesmo sendo independente, há concorrência de outros sellers no mesmo catálogo?
+  - Se SIM: quantos outros vendedores estão no catálogo?
+
+---
+
+## 📊 Métricas do AvantPro
+
+| Métrica | Valor |
+|---------|-------|
+| Preço de venda | R$ |
+| Frete | R$ |
+| Data de criação do anúncio | dd/mm/aaaa |
+| Dias ativo | X dias |
+| Estoque disponível | X unidades |
+| Total vendido (histórico) | X unidades |
+| Vendas por dia | X |
+| Vendas mensais | X/mês |
+| Ritmo atual (vendas/mês) | X |
+| Vendas estimadas | X |
+| Visitas ao anúncio | X |
+| Taxa de conversão | X% |
+| Faturamento total | R$ |
+| Imposto por venda | R$ X,XX (X%) |
+| Comissão ML por venda | R$ X,XX (X%) |
+| Valor líquido recebido por venda | R$ X,XX (X%) |
+| Faixa de preço recomendada | R$ X,XX a R$ X,XX |
+
+### 📈 Métricas do Vendedor (se disponíveis)
+
+- Vendas totais do vendedor:
+- Faturamento total do vendedor:
+- Localização do vendedor:
+- Ticket médio da loja:
+- Tempo de mercado:
+
+---
+
+## � Análise da Descrição do Anúncio
+
+> A descrição é um dos fatores mais importantes para conversão. Analise o conteúdo da página do produto e extraia insights acionáveis.
+
+### 📄 Estrutura e Qualidade
+
+- Tamanho da descrição: (Curta < 500 chars / Média 500-2000 / Longa > 2000)
+- Formatação: (✅ usa bullet points / ❌ texto corrido / ✅ usa negrito e destaques / ❌ sem formatação)
+- Clareza: (✅ fácil de entender / ⚠️ confusa ou mal escrita / ❌ incompreensível)
+- Ortografia e gramática: (✅ impecável / ⚠️ pequenos erros / ❌ muitos erros)
+
+### 🔍 Cobertura de Informações
+
+Marque o que a descrição CONTÉM e o que está FALTANDO:
+
+| Informação | Presente? | Qualidade |
+|-----------|-----------|----------|
+| Especificações técnicas | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Dimensões e peso | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Material / composição | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Modo de usar / instruções | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Compatibilidade | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Garantia | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Política de troca/devolução | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Prazo de entrega | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Itens inclusos na embalagem | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| FAQ / perguntas frequentes | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+| Comparação com concorrentes | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
+
+### 🎯 Gatilhos de Venda Utilizados
+
+- Gatilho de escassez: ("últimas unidades", "estoque limitado") — ✅ / ❌
+- Gatilho de urgência: ("promoção por tempo limitado", "aproveite hoje") — ✅ / ❌
+- Gatilho de prova social: ("mais vendido", "X clientes satisfeitos") — ✅ / ❌
+- Gatilho de autoridade: ("recomendado por", "certificado por") — ✅ / ❌
+- Gatilho de reciprocidade: ("brinde", "garantia estendida grátis") — ✅ / ❌
+- Call to action claro: ("compre agora", "garanta o seu") — ✅ / ❌
+
+### 🔑 Análise de SEO na Descrição
+
+- Palavras-chave principais presentes: (liste as 3-5 keywords mais relevantes encontradas)
+- Palavras-chave FALTANDO: (quais keywords de alto volume NÃO estão na descrição?)
+- Densidade de keywords: (excessiva / equilibrada / insuficiente)
+- Uso de sinônimos e variações: (Sim / Não — importante para SEO semântico)
+
+### 💡 Oportunidades de Melhoria na Descrição
+
+- Top 3 informações que FALTAM e que aumentariam a conversão:
+  1.
+  2.
+  3.
+- Sugestão de estrutura melhorada: (ex: "comece com benefícios, depois especificações, depois FAQ")
+- Gatilhos que deveriam ser adicionados:
+- Tom da descrição atual: (muito técnico / muito vendedor / equilibrado / frio)
+- Tom recomendado: (sugestão baseada no público-alvo do produto)
+
+---
+
+## �💰 Análise Financeira
+
+### Demonstração por Unidade
+
+| Item | Valor (R$) | % do Preço |
+|------|-----------|------------|
+| Preço de venda | R$ X,XX | 100% |
+| (-) Comissão ML | R$ X,XX | X% |
+| (-) Imposto | R$ X,XX | X% |
+| (-) Frete (se arcado pelo vendedor) | R$ X,XX | X% |
+| (=) Valor líquido recebido | R$ X,XX | X% |
+
+### Projeção Mensal
+
+| Indicador | Valor |
+|-----------|-------|
+| Ritmo atual (unidades/mês) | X |
+| Receita bruta mensal (Ritmo × Preço) | R$ |
+| (-) Comissão ML mensal | R$ |
+| (-) Imposto mensal | R$ |
+| (-) Frete mensal | R$ |
+| (=) Receita líquida mensal estimada | R$ |
+
+### Análise da Margem
+
+- Margem líquida por unidade: X% — classifique como:
+  - 🔴 **Crítica** (< 30%): margem muito apertada, qualquer oscilação de custo ou taxa inviabiliza
+  - 🟡 **Atenção** (30–45%): margem ok, mas exige volume para compensar
+  - 🟢 **Saudável** (45–60%): boa margem, espaço para reinvestimento
+  - 🟢 **Excelente** (> 60%): margem confortável, permite escala agressiva
+- Relação preço vs. faixa recomendada:
+  - Se o preço está DENTRO da faixa recomendada pelo AvantPro → precificação adequada
+  - Se o preço está ACIMA da faixa → 🚨 anúncio pode estar caro demais, perdendo vendas
+  - Se o preço está ABAIXO da faixa → ⚠️ possível perda de margem desnecessária, aumente o preço
+
+---
+
+## 🏥 Saúde do Anúncio
+
+### 📊 Análise de Conversão
+
+A taxa de conversão é o indicador mais direto da qualidade do anúncio. Classifique:
+
+- 🔴 **Muito Baixa** (< 5%): grave — o anúncio não convence. Possíveis causas: fotos ruins, título fraco, preço acima da concorrência, descrição incompleta, frete caro, reputação baixa
+- 🟡 **Baixa** (5–8%): abaixo do esperado — há gargalos na página do produto que precisam ser corrigidos
+- 🟢 **Média** (8–12%): desempenho OK, mas com espaço para melhorar
+- 🟢 **Alta** (12–18%): bom desempenho — o anúncio é eficiente
+- 🟢 **Muito Alta** (> 18%): excelente — anúncio muito bem otimizado, produto com forte apelo
+
+> ⚠️ Atenção: conversão muito alta (> 25%) pode indicar tráfego extremamente qualificado (ex: só chega por busca direta). Verifique se o volume de visitas está saudável.
+
+### ⏱️ Análise de Idade do Anúncio
+
+Cruze a idade do anúncio com o Ritmo atual para avaliar maturidade:
+
+- 🟢 **Anúncio jovem (< 30 dias) com alto ritmo** → produto em ASCENSÃO, timing excelente. Acompanhe de perto — tendência de crescimento acelerado
+- 🟢 **Anúncio jovem (< 90 dias) com ritmo consistente** → validação inicial positiva, produto com demanda real
+- 🟡 **Anúncio entre 90-180 dias** → em fase de consolidação. Se o ritmo estiver estável ou crescendo, é positivo. Se estiver caindo, investigue
+- 🟡 **Anúncio entre 180-365 dias** → maduro. Verifique se o ritmo se mantém ou se há sinais de fadiga
+- 🔴 **Anúncio > 365 dias com ritmo em queda** → possível saturação ou perda de relevância. Revisar estratégia
+
+### 📦 Análise de Estoque
+
+- Estoque atual: X unidades
+- Relação estoque vs. ritmo mensal: estoque cobre X meses de venda
+  - 🔴 **Estoque < 1 mês de vendas** → risco de ruptura IMINENTE. Prioridade máxima: repor estoque
+  - 🟡 **Estoque entre 1-2 meses** → atenção: planeje reposição já
+  - 🟢 **Estoque > 2 meses** → saudável, sem urgência
+- Se estoque está BAIXO e o ritmo é ALTO → 🚨 oportunidade PERDENDO vendas por falta de produto
+
+### 🔍 Qualidade do Tráfego
+
+- Visitas totais: X
+- Relação visitas vs. vendas: X visitas para cada venda
+- Análise:
+  - Se muitas visitas e poucas vendas → problema de CONVERSÃO (fotos, preço, descrição)
+  - Se poucas visitas e boa conversão → problema de TRÁFEGO (SEO fraco, categoria errada, sem anúncios pagos)
+  - Se muitas visitas e muitas vendas → 🟢 anúncio saudável, manter e escalar
+
+---
+
+## � Análise de Perguntas, Respostas e Opiniões dos Clientes
+
+> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página. As opiniões dos clientes são a FONTE MAIS RICA de pontos negativos e oportunidades de melhoria.
+
+### 📝 Perguntas e Respostas (Q&A)
+
+- Principais dúvidas dos compradores:
+- Qualidade das respostas do vendedor (ágeis, completas, evasivas):
+- Tempo médio de resposta do vendedor:
+- Perguntas sem resposta:
+- Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
+- Oportunidades: informações que o vendedor NÃO está fornecendo e que você pode incluir no seu anúncio
+
+### ⭐ Opiniões e Avaliações
+
+- Nota média (se disponível):
+- Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
+- Principais elogios (cite trechos literais):
+- Principais reclamações (cite trechos literais):
+- Problemas recorrentes (defeito, tamanho errado, atraso na entrega, produto diferente da foto):
+- Potencial de recompra (clientes comprariam novamente?):
+- Risco de devolução (qual % dos compradores relata problemas graves?):
+
+### 🎯 Insights para Diferenciação
+
+- O que os clientes AMAM no produto (reforce no seu anúncio):
+- O que os clientes ODEIAM no produto (corrija ou alerte no seu anúncio):
+- Funcionalidades ou variações que os clientes pedem e não encontram:
+- Oportunidades de melhoria no produto: qualidade, embalagem, manual, acessórios
+- Como o vendedor atual lida com reclamações (oportunidade de atendimento superior)
+
+---
+
+## �🚨 Pontos Negativos e Riscos
+
+> ⚠️ Esta é a seção mais importante do relatório. Seja CRÍTICO e DIRETO. Liste TODO e QUALQUER ponto negativo identificado, por menor que pareça.
+
+### 🔴 Pontos Críticos (ação imediata necessária)
+
+Liste problemas que exigem correção urgente. Exemplos:
+
+- **Estoque insuficiente**: risco de ruptura em X dias. Impacto direto: perda de vendas e perda de posicionamento no ranking
+- **Margem negativa ou zerada**: custos maiores que o recebimento líquido — o anúncio dá PREJUÍZO
+- **Conversão muito abaixo da média da categoria** (< 5%): anúncio não está performando, investimento em tráfego está sendo desperdiçado
+- **Preço fora da faixa recomendada pelo AvantPro**: se acima, perde vendas; se muito abaixo, perde margem desnecessariamente
+- **Frete caro ou inadequado**: frete acima de 15% do valor do produto reduz drasticamente a conversão
+- **Reputação do vendedor comprometida**: avaliações negativas recentes, reclamações não respondidas, baixa qualidade de atendimento
+- **Anúncio sem Full sendo que a concorrência usa**: desvantagem competitiva grave, especialmente se a categoria tem frete grátis como padrão
+- **Sem avaliações suficientes**: menos de 10 avaliações em um anúncio com volume de vendas — compradores não confiam
+
+### 🟡 Pontos de Atenção (corrigir no curto prazo)
+
+Liste problemas que prejudicam o desempenho mas não são emergenciais. Exemplos:
+
+- **Título mal otimizado**: sem palavras-chave relevantes, difícil de encontrar nas buscas
+- **Fotos insuficientes ou de baixa qualidade**: menos de 5 fotos, baixa resolução, sem fotos de uso real
+- **Descrição incompleta ou mal formatada**: sem bullet points, sem especificações técnicas, sem FAQ
+- **Sem vídeo do produto**: vídeos aumentam significativamente a conversão
+- **Ausência de variações (cor/tamanho/modelo)**: perde vendas para concorrentes que oferecem opções
+- **Tempo de preparo/envio elevado**: prazo de entrega maior que a média da categoria
+- **Sem garantia estendida ou política de troca clara**: gera insegurança no comprador
+- **Preço psicológico mal aplicado**: ex: R$ 50,00 em vez de R$ 49,90 (gatilho mental de desconto)
+- **Anúncio sem Product Ads**: sem investimento em tráfego pago, dependendo 100% do orgânico
+- **Baixo volume de visitas** em relação ao ritmo de vendas da categoria
+
+### ⚠️ Riscos Futuros
+
+Antecipe problemas que podem surgir:
+
+- **Dependência de um único produto/anúncio**: se este anúncio cair, toda a receita some
+- **Sazonalidade**: se o produto é sazonal, planeje a baixa nos meses fracos
+- **Aumento de concorrência**: se a categoria está atraindo novos vendedores, a margem tende a cair
+- **Mudanças nas taxas do Mercado Livre**: impacto de possíveis reajustes de comissão
+- **Risco de cópia do produto**: se é fácil de copiar, prepare diferenciação (marca, embalagem, kit)
+- **Dependência de fornecedor único**: risco de desabastecimento ou aumento de custo
+
+---
+
+## 💡 Oportunidades de Melhoria
+
+### 🎯 Ações Imediatas (0–7 dias)
+
+Ações de alto impacto e baixo esforço:
+
+1. **Precificação**: ajustar preço para a faixa recomendada pelo AvantPro (se aplicável)
+2. **Frete**: ativar Frete Grátis ou Full (se disponível e viável financeiramente)
+3. **Título**: reescrever com palavras-chave de alto volume de busca
+4. **Preço psicológico**: ajustar para R$ X,99 ou R$ X,90
+5. **Estoque**: repor urgentemente se abaixo de 1 mês de cobertura
+
+### 📈 Ações de Curto Prazo (7–30 dias)
+
+Ações que exigem planejamento ou investimento:
+
+1. **Fotos profissionais**: contratar fotógrafo ou melhorar iluminação e enquadramento
+2. **Vídeo do produto**: gravar unboxing, uso real, demonstração de funcionalidades
+3. **Descrição rica**: adicionar tabela de especificações, FAQ, garantia, política de troca
+4. **Variações**: cadastrar cores, tamanhos ou modelos adicionais
+5. **Product Ads**: iniciar campanha patrocinada com orçamento controlado para teste
+6. **Full**: enviar estoque para armazém do Mercado Livre
+
+### 🚀 Ações de Médio Prazo (30–90 dias)
+
+Ações estratégicas para crescimento:
+
+1. **Marca própria**: criar identidade visual, embalagem personalizada, logotipo
+2. **Kit/Combo**: criar variações com acessórios complementares para aumentar ticket médio
+3. **Cross-sell**: configurar ofertas relacionadas (quem comprou X também comprou Y)
+4. **Remarketing**: capturar dados de visitantes para ações de reengajamento
+5. **Expansão de canal**: listar o produto em outros marketplaces (Shopee, Amazon, etc.)
+
+---
+
+## 📈 Score Final do Anúncio
+
+Atribua notas de 0 a 10 para cada critério de saúde do anúncio:
+
+| Critério | Nota | Justificativa |
+|----------|------|---------------|
+| Precificação | /10 | (está na faixa recomendada? margem saudável?) |
+| Conversão | /10 | (taxa de conversão vs. média da categoria) |
+| Qualidade do anúncio | /10 | (fotos, título, descrição, vídeo, variações) |
+| Logística | /10 | (frete, prazo, Full, estoque) |
+| Reputação | /10 | (avaliações, atendimento, garantia) |
+| Potencial de escala | /10 | (dá para crescer ou está no teto?) |
+
+**Score Final:** X/10 (média aritmética — DEVE ser igual ao valor informado no "Resumo para Esteira")
+
+### Interpretação
+
+| Nota | Diagnóstico | Ação Recomendada |
+|------|-------------|------------------|
+| 0–3 | 🔴 **Crítico** | Reestruturar completamente o anúncio ou considerar descontinuar |
+| 4–5 | 🟡 **Frágil** | Corrigir pontos críticos com urgência antes de investir em tráfego |
+| 6–7 | 🟡 **Regular** | Anúncio funcional, mas com vários pontos de melhoria — priorize os gargalos |
+| 8–9 | 🟢 **Saudável** | Anúncio bem otimizado — manter e buscar escala |
+| 10 | 🟢 **Excelente** | Anúncio modelo — referência na categoria |
+
+---
+
+## ✅ Conclusão e Recomendações
+
+Resuma o diagnóstico em tópicos acionáveis:
+
+### 🎯 Top 3 Prioridades
+
+1. **Ação mais urgente:** (o que fazer primeiro e por quê)
+2. **Maior oportunidade de ganho:** (o que trará mais resultado com menor esforço)
+3. **Maior risco a mitigar:** (o que pode dar errado e como evitar)
+
+### 📋 Checklist de Correções
+
+- [ ] Ajustar preço (se fora da faixa recomendada)
+- [ ] Melhorar fotos (quantidade e qualidade)
+- [ ] Reescrever título com SEO
+- [ ] Enriquecer descrição
+- [ ] Adicionar vídeo
+- [ ] Ativar Frete Grátis / Full
+- [ ] Repor estoque (se crítico)
+- [ ] Responder perguntas pendentes
+- [ ] Iniciar Product Ads
+- [ ] Criar kit/combo
+
+### 🗓️ Plano de 30 Dias
+
+| Semana | Foco | Ações |
+|--------|------|-------|
+| Semana 1 | Correções críticas | (listar ações) |
+| Semana 2 | Otimização do anúncio | (listar ações) |
+| Semana 3 | Tráfego e conversão | (listar ações) |
+| Semana 4 | Análise e ajuste | (listar ações) |
+
+### 🧠 Veredito Final
+
+> Decisão: **[MANTER E OTIMIZAR / CORRIGIR COM URGÊNCIA / REPENSAR ESTRATÉGIA / DESCONTINUAR]**
+
+(justificativa em 2-3 frases com base nos dados analisados)
+
+---
+
+# 📐 Regras de Formatação e Sintaxe Mermaid
+
+> ⚠️ Reforçando as regras de sintaxe Mermaid. Gráficos são bem-vindos, mas a sintaxe deve ser EXATA.
+
+## Aspas nos Gráficos
+
+> 🚨 **ASPAS RETAS OBRIGATÓRIAS**: Use SEMPRE aspas retas \`\"\` (U+0022) nos títulos e labels dos gráficos Mermaid. NUNCA use aspas curvas \`\"\"\` (smart quotes) — elas quebram o parser do Mermaid v11 e causam erro de renderização. Exemplo correto: \`title \"Vendas Mensais\"\`, NUNCA \`title \"Vendas Mensais\"\`.
+
+## Gráficos de Pizza (pie)
+
+> 🚨 **SINTAXE CORRETA — Mermaid v11**: Use APENAS \`pie\` na primeira linha. NUNCA use \`pie showData\` (inválido no Mermaid v11).
+
+\`\`\`mermaid
+pie
+    title "Distribuição"
+    "Categoria A" : 45
+    "Categoria B" : 30
+    "Categoria C" : 25
+\`\`\`
+
+## Gráficos de Barras (xychart)
+
+> 🚨 **X-AXIS SEM CARACTERES ESPECIAIS**: No \`x-axis\` do \`xychart\`, NUNCA use \`/\` (barra) ou \`-\` (hífen) nos labels. Use apenas texto simples. Exemplo CORRETO: \`x-axis [Jan, Fev, Mar, Abr]\`. Exemplo ERRADO: \`x-axis [Jan/26, Fev/26]\` — barras quebram o parser!
+
+\`\`\`mermaid
+xychart
+    title "Vendas Mensais"
+    x-axis [Jan, Fev, Mar, Abr, Mai, Jun]
+    y-axis "Unidades" 0 --> 5000
+    bar [1200, 980, 1100, 850, 1400, 2100]
+\`\`\`
+
+## Regras Gerais
+
+- **NÃO use smart quotes** (aspas curvas) em nenhum lugar dos blocos Mermaid
+- **NÃO use barras (/)** nem **hifens (-)** como parte de labels nos eixos
+- **Mantenha percentuais como números inteiros** que somem exatamente 100% em pie charts
+- **Prefira tabelas Markdown** a gráficos Mermaid — tabelas são mais confiáveis e nunca quebram`,
+  },
 ]

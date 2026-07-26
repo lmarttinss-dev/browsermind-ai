@@ -15,6 +15,30 @@ import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } 
 import { Comparison } from "./models/comparison.js";
 import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport } from "./parse-suppliers.js";
 
+/** Converte string de preço brasileiro (ex: "66,79" ou "1.234,56" ou "66.79") para number */
+function parseBrPrice(raw: string): number {
+  const cleaned = raw.replace(/[R$\s]/g, "").trim()
+  if (!cleaned) return 0
+  // Se tem vírgula, é formato brasileiro (vírgula = decimal)
+  if (cleaned.includes(",")) {
+    return parseFloat(cleaned.replace(/\./g, "").replace(",", "."))
+  }
+  // Se tem mais de um ponto ou ponto seguido de 3+ dígitos, trata como milhares
+  const dotCount = (cleaned.match(/\./g) || []).length
+  if (dotCount > 1 || (dotCount === 1 && cleaned.split(".").pop()!.length >= 3)) {
+    return parseFloat(cleaned.replace(/\./g, ""))
+  }
+  // Formato com ponto decimal (ex: "66.79")
+  return parseFloat(cleaned)
+}
+
+/** Converte string de número inteiro brasileiro (ex: "1.234" ou "1234" ou "1,234") para number */
+function parseBrInt(raw: string): number {
+  const cleaned = raw.replace(/[R$\s]/g, "").trim()
+  if (!cleaned) return 0
+  return parseInt(cleaned.replace(/[.,]/g, ""), 10)
+}
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3210;
 
@@ -516,16 +540,16 @@ app.post("/api/analyze", async (req, res) => {
       }
     } catch { /* ignore */ }
 
-    // Auto-inserir produto na esteira apenas para o template "importação simplificada"
+    // Auto-inserir produto na esteira para templates de análise de produto
     let pipelineProductId = null;
     try {
-      if (templateId === "importacao-simplificada" && content) {
+      if ((templateId === "importacao-simplificada" || templateId === "analise-anuncio-independente") && content) {
         const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
         const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
         const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
         const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:]*:\s*([\d.,]+)/im)
-        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*concorrência)\s*:\s*(Baixa|Média|Alta|Saturado)/im)
-        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*margem)\s*:\s*(.+)/im)
+        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
         const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
@@ -547,11 +571,11 @@ app.post("/api/analyze", async (req, res) => {
             title: productTitle.slice(0, 200),
             url: productUrl,
             imageUrl: imageMatch?.[1] || "",
-            price: parseFloat(priceMatch?.[1]?.replace(".", "").replace(",", ".") || "0"),
+            price: parseBrPrice(priceMatch?.[1] || "0"),
             category: categoryMatch?.[1]?.trim().slice(0, 100) || "",
             stage: "triagem",
             score: parseFloat(scoreMatch?.[1]?.replace(",", ".") || "0"),
-            monthlySales: parseInt(salesMatch?.[1]?.replace(/\./g, "").replace(",", ".") || "0"),
+            monthlySales: parseBrInt(salesMatch?.[1] || "0"),
             competitionLevel: competitionMatch?.[1] || "Média",
             potentialMargin: marginMatch?.[1]?.trim().slice(0, 100) || "",
             analysisReport: aiResponse,
