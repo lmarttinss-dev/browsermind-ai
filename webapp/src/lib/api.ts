@@ -64,6 +64,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ report }),
     }),
+  addManualSupplier: (productId: string, supplier: Omit<Supplier, "capturedAt" | "quotes" | "negotiationStatus" | "viable" | "report" | "negotiationStartedAt" | "lastContactAt">) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/manual`, {
+      method: "POST",
+      body: JSON.stringify(supplier),
+    }),
   removeSupplier: (productId: string, index: number) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${index}`, {
       method: "DELETE",

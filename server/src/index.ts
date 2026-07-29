@@ -879,6 +879,59 @@ const handleEditSupplierQuote: import("express").RequestHandler = async (req, re
 }
 
 // ==========================================
+// Suppliers — Adicionar fornecedor manualmente
+// ==========================================
+
+const handleAddManualSupplier: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const { name, url, unitPrice, moq, rating, tradeAssurance, yearsInBusiness, responseRate, capabilities, certifications } = req.body || {}
+
+    if (!name || typeof name !== "string" || !name.trim()) {
+      res.status(400).json({ error: "Campo 'name' é obrigatório" })
+      return
+    }
+
+    // Verificar se já existe fornecedor com mesmo nome
+    const existingNames = new Set(product.suppliers.map(s => s.name.toLowerCase()))
+    if (existingNames.has(name.trim().toLowerCase())) {
+      res.status(409).json({ error: "Já existe um fornecedor com este nome no produto" })
+      return
+    }
+
+    const supplier = {
+      name: name.trim(),
+      url: (url || "").trim(),
+      unitPrice: unitPrice || "",
+      moq: moq || "",
+      rating: typeof rating === "number" ? rating : 0,
+      tradeAssurance: !!tradeAssurance,
+      yearsInBusiness: typeof yearsInBusiness === "number" ? yearsInBusiness : 0,
+      responseRate: responseRate || "",
+      capabilities: capabilities || "",
+      certifications: certifications || "",
+      report: "",
+      capturedAt: new Date(),
+      viable: true,
+      negotiationStatus: "aguardando_resposta" as NegotiationStatus,
+      quotes: [],
+    }
+
+    product.suppliers.push(supplier)
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
 // Compare — Compara produtos da triagem e sugere top 3
 // ==========================================
 
@@ -1378,6 +1431,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
 // Registrar rotas de suppliers e compare no pipeline router
 pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
+pipelineRouter.post("/:id/suppliers/manual", handleAddManualSupplier)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
