@@ -409,7 +409,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                             const b = parseCurrency(latestQuote.totalShippingCost)
                             if (a === null && b === null) return null
                             const total = (a || 0) + (b || 0)
-                            return `US$ ${total.toFixed(2)}`
+                            return `R$ ${total.toFixed(2)}`
                           })() || "—"}
                         </span>
                       ) : (
