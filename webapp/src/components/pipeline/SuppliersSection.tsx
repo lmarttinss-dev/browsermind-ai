@@ -1,10 +1,52 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X, DollarSign } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 
 const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top5-fornecedores-alibaba")!
+
+// Helpers para formatação de moeda e cálculo automático
+const parseCurrency = (value: string): number | null => {
+  if (!value) return null
+  const cleaned = value.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+  const num = parseFloat(cleaned)
+  return isNaN(num) ? null : num
+}
+
+const parseMoq = (value: string): number | null => {
+  if (!value) return null
+  const match = value.match(/[\d.,]+/)
+  if (!match) return null
+  const num = parseInt(match[0].replace(/[.,]/g, ""))
+  return isNaN(num) ? null : num
+}
+
+const maskDollar = (value: string): string => {
+  const digits = value.replace(/[^0-9]/g, "")
+  if (!digits) return ""
+  const cents = digits.padStart(3, "0")
+  const intPart = cents.slice(0, -2).replace(/^0+/, "") || "0"
+  const decPart = cents.slice(-2)
+  return `US$ ${intPart}.${decPart}`
+}
+
+const calculateProductCost = (unitPrice: string, moq: string): string => {
+  const price = parseCurrency(unitPrice)
+  const qty = parseMoq(moq)
+  if (price === null || qty === null) return ""
+  const total = price * qty
+  return maskDollar(total.toFixed(2))
+}
+
+const formatTotal = (a: string, b: string): string | null => {
+  const va = parseCurrency(a)
+  const vb = parseCurrency(b)
+  if (va === null && vb === null) return null
+  const total = (va || 0) + (vb || 0)
+  const prefix = a.match(/^[^0-9]*/)?.[0]?.trim() || b.match(/^[^0-9]*/)?.[0]?.trim() || ""
+  return prefix ? `${prefix} ${total.toFixed(2)}` : total.toFixed(2)
+}
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
@@ -50,7 +92,11 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
     name: "",
     unitPrice: "",
     moq: "",
-    shipping: "",
+    totalProductCost: "",
+    totalShippingCost: "",
+    deliveryTime: "",
+    paymentTerms: "",
+    notes: "",
   })
   const [isAddingManual, setIsAddingManual] = useState(false)
   const [manualError, setManualError] = useState<string | null>(null)
@@ -144,7 +190,11 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
         name: "",
         unitPrice: "",
         moq: "",
-        shipping: "",
+        totalProductCost: "",
+        totalShippingCost: "",
+        deliveryTime: "",
+        paymentTerms: "",
+        notes: "",
       })
     } catch (err) {
       setManualError(err instanceof Error ? err.message : String(err))
@@ -416,39 +466,93 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 />
               </div>
 
-              {/* Preço + MOQ lado a lado */}
+              {/* Campos da cotação */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Preço unitário</label>
+                  <label className="block text-[11px] text-gray-400 mb-1">Preço unitário</label>
                   <input
                     type="text"
                     value={manualForm.unitPrice}
-                    onChange={(e) => setManualForm({ ...manualForm, unitPrice: e.target.value })}
-                    placeholder="Ex: US$ 5.00"
+                    onChange={(e) => {
+                      const unitPrice = maskDollar(e.target.value)
+                      setManualForm(f => ({ ...f, unitPrice, totalProductCost: calculateProductCost(unitPrice, f.moq) || f.totalProductCost }))
+                    }}
+                    placeholder="US$ 0.00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">MOQ</label>
+                  <label className="block text-[11px] text-gray-400 mb-1">MOQ</label>
                   <input
                     type="text"
                     value={manualForm.moq}
-                    onChange={(e) => setManualForm({ ...manualForm, moq: e.target.value })}
-                    placeholder="Ex: 100 unidades"
+                    onChange={(e) => {
+                      const moq = e.target.value
+                      setManualForm(f => ({ ...f, moq, totalProductCost: calculateProductCost(f.unitPrice, moq) || f.totalProductCost }))
+                    }}
+                    placeholder="100 unidades"
+                    className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-400 mb-1">Custo total do produto</label>
+                  <input
+                    type="text"
+                    value={manualForm.totalProductCost}
+                    onChange={(e) => setManualForm(f => ({ ...f, totalProductCost: maskDollar(e.target.value) }))}
+                    placeholder="US$ 0.00"
+                    className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-400 mb-1">Custo total do frete</label>
+                  <input
+                    type="text"
+                    value={manualForm.totalShippingCost}
+                    onChange={(e) => setManualForm(f => ({ ...f, totalShippingCost: maskDollar(e.target.value) }))}
+                    placeholder="US$ 0.00"
+                    className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-400 mb-1">Prazo de entrega</label>
+                  <input
+                    type="text"
+                    value={manualForm.deliveryTime}
+                    onChange={(e) => setManualForm(f => ({ ...f, deliveryTime: e.target.value }))}
+                    placeholder="15-20 dias"
+                    className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-gray-400 mb-1">Condições de pagamento</label>
+                  <input
+                    type="text"
+                    value={manualForm.paymentTerms}
+                    onChange={(e) => setManualForm(f => ({ ...f, paymentTerms: e.target.value }))}
+                    placeholder="30% adiantado + 70% antes do envio"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
               </div>
 
-              {/* Frete */}
+              {/* Custo total calculado */}
+              {formatTotal(manualForm.totalProductCost, manualForm.totalShippingCost) && (
+                <div className="px-3 py-2 bg-emerald-900/20 border border-emerald-800/50 rounded-lg flex items-center justify-between">
+                  <span className="text-[11px] text-gray-400">Custo total (produto + frete)</span>
+                  <span className="text-sm font-semibold text-emerald-400">{formatTotal(manualForm.totalProductCost, manualForm.totalShippingCost)}</span>
+                </div>
+              )}
+
+              {/* Notas */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Frete</label>
-                <input
-                  type="text"
-                  value={manualForm.shipping}
-                  onChange={(e) => setManualForm({ ...manualForm, shipping: e.target.value })}
-                  placeholder="Ex: US$ 200.00"
-                  className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
+                <label className="block text-[11px] text-gray-400 mb-1">Notas / Observações</label>
+                <textarea
+                  value={manualForm.notes}
+                  onChange={(e) => setManualForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder="Observações sobre o fornecedor..."
+                  rows={3}
+                  className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500 resize-y"
                 />
               </div>
             </div>

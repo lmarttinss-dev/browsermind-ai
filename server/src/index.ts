@@ -890,7 +890,7 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
       return
     }
 
-    const { name, unitPrice, moq, shipping } = req.body || {}
+    const { name, unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Campo 'name' é obrigatório" })
@@ -903,6 +903,8 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
       res.status(409).json({ error: "Já existe um fornecedor com este nome no produto" })
       return
     }
+
+    const hasQuoteData = !!(unitPrice || moq || totalProductCost || totalShippingCost)
 
     const supplier = {
       name: name.trim(),
@@ -918,20 +920,20 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
       report: "",
       capturedAt: new Date(),
       viable: true,
-      negotiationStatus: (unitPrice || shipping) ? "cotacao_recebida" as NegotiationStatus : "aguardando_resposta" as NegotiationStatus,
-      quotes: [],
+      negotiationStatus: hasQuoteData ? "cotacao_recebida" as NegotiationStatus : "aguardando_resposta" as NegotiationStatus,
+      quotes: [] as SupplierQuote[],
     }
 
     // Criar cotação inicial com os dados fornecidos
-    if (unitPrice || shipping) {
+    if (hasQuoteData) {
       supplier.quotes.push({
         unitPrice: unitPrice || "",
         moq: moq || "",
-        totalProductCost: unitPrice || "",
-        totalShippingCost: shipping || "",
-        deliveryTime: "",
-        paymentTerms: "",
-        notes: "Cadastro manual",
+        totalProductCost: totalProductCost || "",
+        totalShippingCost: totalShippingCost || "",
+        deliveryTime: deliveryTime || "",
+        paymentTerms: paymentTerms || "",
+        notes: notes || "Cadastro manual",
         quotedAt: new Date(),
       })
       supplier.negotiationStartedAt = new Date()
