@@ -49,6 +49,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [showManualModal, setShowManualModal] = useState(false)
   const [manualForm, setManualForm] = useState({
     name: "",
+    url: "",
     unitPrice: "",
     moq: "",
     totalProductCost: "",
@@ -147,6 +148,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
       setShowManualModal(false)
       setManualForm({
         name: "",
+        url: "",
         unitPrice: "",
         moq: "",
         totalProductCost: "",
@@ -421,6 +423,18 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                   value={manualForm.name}
                   onChange={(e) => setManualForm({ ...manualForm, name: e.target.value })}
                   placeholder="Nome do fornecedor"
+                  className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
+                />
+              </div>
+
+              {/* URL */}
+              <div>
+                <label className="block text-[11px] text-gray-400 mb-1">URL</label>
+                <input
+                  type="text"
+                  value={manualForm.url}
+                  onChange={(e) => setManualForm({ ...manualForm, url: e.target.value })}
+                  placeholder="https://..."
                   className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                 />
               </div>

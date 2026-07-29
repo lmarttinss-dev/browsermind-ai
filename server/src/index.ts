@@ -890,7 +890,7 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
       return
     }
 
-    const { name, unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+    const { name, url, unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Campo 'name' é obrigatório" })
@@ -908,7 +908,7 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
 
     const supplier = {
       name: name.trim(),
-      url: "",
+      url: (url || "").trim(),
       unitPrice: unitPrice || "",
       moq: moq || "",
       rating: 0,

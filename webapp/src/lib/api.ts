@@ -64,7 +64,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ report }),
     }),
-  addManualSupplier: (productId: string, supplier: { name: string; unitPrice: string; moq: string; totalProductCost: string; totalShippingCost: string; deliveryTime: string; paymentTerms: string; notes: string }) =>
+  addManualSupplier: (productId: string, supplier: { name: string; url: string; unitPrice: string; moq: string; totalProductCost: string; totalShippingCost: string; deliveryTime: string; paymentTerms: string; notes: string }) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/manual`, {
       method: "POST",
       body: JSON.stringify(supplier),
