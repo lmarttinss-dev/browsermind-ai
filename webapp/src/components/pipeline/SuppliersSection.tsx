@@ -48,15 +48,9 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [showManualModal, setShowManualModal] = useState(false)
   const [manualForm, setManualForm] = useState({
     name: "",
-    url: "",
     unitPrice: "",
     moq: "",
-    rating: 0,
-    tradeAssurance: false,
-    yearsInBusiness: 0,
-    responseRate: "",
-    capabilities: "",
-    certifications: "",
+    shipping: "",
   })
   const [isAddingManual, setIsAddingManual] = useState(false)
   const [manualError, setManualError] = useState<string | null>(null)
@@ -148,15 +142,9 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
       setShowManualModal(false)
       setManualForm({
         name: "",
-        url: "",
         unitPrice: "",
         moq: "",
-        rating: 0,
-        tradeAssurance: false,
-        yearsInBusiness: 0,
-        responseRate: "",
-        capabilities: "",
-        certifications: "",
+        shipping: "",
       })
     } catch (err) {
       setManualError(err instanceof Error ? err.message : String(err))
@@ -428,18 +416,6 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 />
               </div>
 
-              {/* URL */}
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">URL</label>
-                <input
-                  type="text"
-                  value={manualForm.url}
-                  onChange={(e) => setManualForm({ ...manualForm, url: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
-                />
-              </div>
-
               {/* Preço + MOQ lado a lado */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -464,78 +440,17 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 </div>
               </div>
 
-              {/* Rating + Anos de operação */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Rating (0-5)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    value={manualForm.rating}
-                    onChange={(e) => setManualForm({ ...manualForm, rating: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Anos de operação</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={manualForm.yearsInBusiness}
-                    onChange={(e) => setManualForm({ ...manualForm, yearsInBusiness: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              {/* Taxa de resposta */}
+              {/* Frete */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Taxa de resposta</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Frete</label>
                 <input
                   type="text"
-                  value={manualForm.responseRate}
-                  onChange={(e) => setManualForm({ ...manualForm, responseRate: e.target.value })}
-                  placeholder="Ex: 95%"
+                  value={manualForm.shipping}
+                  onChange={(e) => setManualForm({ ...manualForm, shipping: e.target.value })}
+                  placeholder="Ex: US$ 200.00"
                   className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                 />
               </div>
-
-              {/* Capacidades */}
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Capacidades</label>
-                <input
-                  type="text"
-                  value={manualForm.capabilities}
-                  onChange={(e) => setManualForm({ ...manualForm, capabilities: e.target.value })}
-                  placeholder="Ex: OEM, ODM, Custom Packaging"
-                  className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
-                />
-              </div>
-
-              {/* Certificações */}
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Certificações</label>
-                <input
-                  type="text"
-                  value={manualForm.certifications}
-                  onChange={(e) => setManualForm({ ...manualForm, certifications: e.target.value })}
-                  placeholder="Ex: ISO 9001, CE, FDA"
-                  className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
-                />
-              </div>
-
-              {/* Trade Assurance checkbox */}
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={manualForm.tradeAssurance}
-                  onChange={(e) => setManualForm({ ...manualForm, tradeAssurance: e.target.checked })}
-                  className="w-4 h-4 rounded bg-gray-800 border-gray-600 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
-                />
-                <span className="text-sm text-gray-300">Trade Assurance</span>
-              </label>
             </div>
 
             <div className="sticky bottom-0 bg-gray-900 border-t border-gray-700 px-5 py-4 flex justify-end gap-2">

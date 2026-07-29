@@ -890,7 +890,7 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
       return
     }
 
-    const { name, url, unitPrice, moq, rating, tradeAssurance, yearsInBusiness, responseRate, capabilities, certifications } = req.body || {}
+    const { name, unitPrice, moq, shipping } = req.body || {}
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Campo 'name' é obrigatório" })
@@ -906,23 +906,38 @@ const handleAddManualSupplier: import("express").RequestHandler = async (req, re
 
     const supplier = {
       name: name.trim(),
-      url: (url || "").trim(),
+      url: "",
       unitPrice: unitPrice || "",
       moq: moq || "",
-      rating: typeof rating === "number" ? rating : 0,
-      tradeAssurance: !!tradeAssurance,
-      yearsInBusiness: typeof yearsInBusiness === "number" ? yearsInBusiness : 0,
-      responseRate: responseRate || "",
-      capabilities: capabilities || "",
-      certifications: certifications || "",
+      rating: 0,
+      tradeAssurance: false,
+      yearsInBusiness: 0,
+      responseRate: "",
+      capabilities: "",
+      certifications: "",
       report: "",
       capturedAt: new Date(),
       viable: true,
-      negotiationStatus: "aguardando_resposta" as NegotiationStatus,
+      negotiationStatus: (unitPrice || shipping) ? "cotacao_recebida" as NegotiationStatus : "aguardando_resposta" as NegotiationStatus,
       quotes: [],
     }
 
-    product.suppliers.push(supplier)
+    // Criar cotação inicial com os dados fornecidos
+    if (unitPrice || shipping) {
+      supplier.quotes.push({
+        unitPrice: unitPrice || "",
+        moq: moq || "",
+        totalProductCost: unitPrice || "",
+        totalShippingCost: shipping || "",
+        deliveryTime: "",
+        paymentTerms: "",
+        notes: "Cadastro manual",
+        quotedAt: new Date(),
+      })
+      supplier.negotiationStartedAt = new Date()
+    }
+
+    product.suppliers.push(supplier as Supplier)
     await product.save()
 
     res.json({ success: true, suppliers: product.suppliers })
