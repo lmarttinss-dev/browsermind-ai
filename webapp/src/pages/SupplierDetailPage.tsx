@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, MODELS, type ModelId, type PipelineProduct, type Supplier, type NegotiationStatus, type SupplierQuote, NEGOTIATION_STATUSES } from "@/lib/api"
+import { calculateUnitCost } from "@/lib/utils"
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando resposta", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
@@ -601,6 +602,12 @@ export const SupplierDetailPage = () => {
                           <div>
                             <span className="text-[10px] text-gray-500 block">Custo total</span>
                             <span className="text-sm text-emerald-400 font-bold">{total}</span>
+                          </div>
+                        )}
+                        {calculateUnitCost(quote.totalProductCost, quote.totalShippingCost, quote.moq) && (
+                          <div>
+                            <span className="text-[10px] text-gray-500 block">Custo unitário c/ frete</span>
+                            <span className="text-sm text-blue-400 font-semibold">{calculateUnitCost(quote.totalProductCost, quote.totalShippingCost, quote.moq)}</span>
                           </div>
                         )}
                         {quote.deliveryTime && (
