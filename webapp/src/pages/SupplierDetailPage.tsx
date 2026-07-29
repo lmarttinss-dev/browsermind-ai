@@ -80,6 +80,8 @@ export const SupplierDetailPage = () => {
   const [isSavingQuote, setIsSavingQuote] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [confirmRemoveQuoteIndex, setConfirmRemoveQuoteIndex] = useState<number | null>(null)
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [urlDraft, setUrlDraft] = useState("")
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
     unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
@@ -180,6 +182,17 @@ export const SupplierDetailPage = () => {
     }
   }
 
+  const handleSaveUrl = async () => {
+    if (!product) return
+    try {
+      const res = await api.updateSupplierUrl(product._id, index, urlDraft)
+      setProduct({ ...product, suppliers: res.suppliers })
+      setIsEditingUrl(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
   const handleRemoveSupplier = async () => {
     if (!product) return
     try {
@@ -247,8 +260,49 @@ export const SupplierDetailPage = () => {
             <p className="text-xs text-gray-500 truncate">{product.title}</p>
           </div>
           <div className="flex items-center gap-2">
-            {supplier.url && (
+            {/* URL: display ou edição inline */}
+            {isEditingUrl ? (
               <>
+                <input
+                  type="text"
+                  value={urlDraft}
+                  onChange={(e) => setUrlDraft(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setIsEditingUrl(false) }}
+                  placeholder="https://..."
+                  className="text-xs bg-gray-800 border border-emerald-600 text-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 w-64"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveUrl}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-900/30"
+                >
+                  Salvar
+                </button>
+                <button
+                  onClick={() => setIsEditingUrl(false)}
+                  className="text-xs text-gray-400 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700"
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : supplier.url ? (
+              <>
+                <a
+                  href={supplier.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Alibaba
+                </a>
+                <button
+                  onClick={() => { setUrlDraft(supplier.url); setIsEditingUrl(true) }}
+                  className="text-xs text-gray-500 hover:text-gray-300 px-1.5 py-1 rounded hover:bg-gray-700"
+                  title="Editar URL"
+                >
+                  ✎
+                </button>
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value as ModelId)}
@@ -265,16 +319,14 @@ export const SupplierDetailPage = () => {
                   <Search className="w-3.5 h-3.5" />
                   Analisar
                 </button>
-                <a
-                  href={supplier.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Alibaba
-                </a>
               </>
+            ) : (
+              <button
+                onClick={() => { setUrlDraft(""); setIsEditingUrl(true) }}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded hover:bg-gray-700"
+              >
+                + URL
+              </button>
             )}
             <button
               onClick={handleToggleViability}

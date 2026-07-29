@@ -750,6 +750,40 @@ const handleUpdateSupplierViability: import("express").RequestHandler = async (r
 }
 
 // ==========================================
+// Suppliers — Atualizar URL
+// ==========================================
+
+const handleUpdateSupplierUrl: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice inválido" })
+      return
+    }
+
+    const { url } = req.body || {}
+    if (typeof url !== "string") {
+      res.status(400).json({ error: "Campo 'url' (string) é obrigatório" })
+      return
+    }
+
+    product.suppliers[index].url = url.trim()
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
 // Suppliers — Adicionar cotação
 // ==========================================
 
@@ -1453,6 +1487,7 @@ pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
 pipelineRouter.patch("/:id/suppliers/:index/viability", handleUpdateSupplierViability)
+pipelineRouter.patch("/:id/suppliers/:index/url", handleUpdateSupplierUrl)
 pipelineRouter.post("/:id/suppliers/:index/quotes", handleAddSupplierQuote)
 pipelineRouter.delete("/:id/suppliers/:index/quotes/:quoteIndex", handleRemoveSupplierQuote)
 pipelineRouter.patch("/:id/suppliers/:index/quotes/:quoteIndex", handleEditSupplierQuote)
