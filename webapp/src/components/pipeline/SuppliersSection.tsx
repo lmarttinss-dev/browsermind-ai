@@ -9,7 +9,8 @@ const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top5-fornecedores
 // Helpers para formatação de moeda e cálculo automático
 const parseCurrency = (value: string): number | null => {
   if (!value) return null
-  const cleaned = value.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
+  // Remove símbolos e letras, trata virgula como decimal e ponto como milhar
+  const cleaned = value.replace(/[^0-9.,]/g, "").replace(/\.(?=.*,)/g, "").replace(",", ".")
   const num = parseFloat(cleaned)
   return isNaN(num) ? null : num
 }
@@ -22,13 +23,18 @@ const parseMoq = (value: string): number | null => {
   return isNaN(num) ? null : num
 }
 
-const maskDollar = (value: string): string => {
+const maskReal = (value: string): string => {
   const digits = value.replace(/[^0-9]/g, "")
   if (!digits) return ""
   const cents = digits.padStart(3, "0")
-  const intPart = cents.slice(0, -2).replace(/^0+/, "") || "0"
+  const intPartRaw = cents.slice(0, -2).replace(/^0+/, "") || "0"
   const decPart = cents.slice(-2)
-  return `R$ ${intPart}.${decPart}`
+  const intPart = intPartRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  return `R$ ${intPart},${decPart}`
+}
+
+const formatBrl = (num: number): string => {
+  return `R$ ${num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 const calculateProductCost = (unitPrice: string, moq: string): string => {
@@ -36,7 +42,7 @@ const calculateProductCost = (unitPrice: string, moq: string): string => {
   const qty = parseMoq(moq)
   if (price === null || qty === null) return ""
   const total = price * qty
-  return maskDollar(total.toFixed(2))
+  return maskReal(total.toFixed(2))
 }
 
 const formatTotal = (a: string, b: string): string | null => {
@@ -44,8 +50,7 @@ const formatTotal = (a: string, b: string): string | null => {
   const vb = parseCurrency(b)
   if (va === null && vb === null) return null
   const total = (va || 0) + (vb || 0)
-  const prefix = a.match(/^[^0-9]*/)?.[0]?.trim() || b.match(/^[^0-9]*/)?.[0]?.trim() || ""
-  return prefix ? `${prefix} ${total.toFixed(2)}` : total.toFixed(2)
+  return formatBrl(total)
 }
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
@@ -409,7 +414,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                             const b = parseCurrency(latestQuote.totalShippingCost)
                             if (a === null && b === null) return null
                             const total = (a || 0) + (b || 0)
-                            return `R$ ${total.toFixed(2)}`
+                            return formatBrl(total)
                           })() || "—"}
                         </span>
                       ) : (
@@ -474,10 +479,10 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     type="text"
                     value={manualForm.unitPrice}
                     onChange={(e) => {
-                      const unitPrice = maskDollar(e.target.value)
+                      const unitPrice = maskReal(e.target.value)
                       setManualForm(f => ({ ...f, unitPrice, totalProductCost: calculateProductCost(unitPrice, f.moq) || f.totalProductCost }))
                     }}
-                    placeholder="R$ 0.00"
+                    placeholder="R$ 0,00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
@@ -499,8 +504,8 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                   <input
                     type="text"
                     value={manualForm.totalProductCost}
-                    onChange={(e) => setManualForm(f => ({ ...f, totalProductCost: maskDollar(e.target.value) }))}
-                    placeholder="R$ 0.00"
+                    onChange={(e) => setManualForm(f => ({ ...f, totalProductCost: maskReal(e.target.value) }))}
+                    placeholder="R$ 0,00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
@@ -509,8 +514,8 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                   <input
                     type="text"
                     value={manualForm.totalShippingCost}
-                    onChange={(e) => setManualForm(f => ({ ...f, totalShippingCost: maskDollar(e.target.value) }))}
-                    placeholder="R$ 0.00"
+                    onChange={(e) => setManualForm(f => ({ ...f, totalShippingCost: maskReal(e.target.value) }))}
+                    placeholder="R$ 0,00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
