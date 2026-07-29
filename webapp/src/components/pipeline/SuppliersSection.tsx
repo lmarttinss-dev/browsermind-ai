@@ -53,6 +53,16 @@ const formatTotal = (a: string, b: string): string | null => {
   return formatBrl(total)
 }
 
+const calculateUnitCost = (totalProduct: string, totalShipping: string, moq: string): string | null => {
+  const productCost = parseCurrency(totalProduct)
+  const shippingCost = parseCurrency(totalShipping)
+  const qty = parseMoq(moq)
+  if (productCost === null && shippingCost === null) return null
+  if (!qty || qty <= 0) return null
+  const total = (productCost || 0) + (shippingCost || 0)
+  return formatBrl(total / qty)
+}
+
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
   cotacao_recebida: { label: "Cotação recebida", color: "text-blue-400", bgColor: "bg-blue-900/30", borderColor: "border-blue-800" },
@@ -543,9 +553,17 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
 
               {/* Custo total calculado */}
               {formatTotal(manualForm.totalProductCost, manualForm.totalShippingCost) && (
-                <div className="px-3 py-2 bg-emerald-900/20 border border-emerald-800/50 rounded-lg flex items-center justify-between">
-                  <span className="text-[11px] text-gray-400">Custo total (produto + frete)</span>
-                  <span className="text-sm font-semibold text-emerald-400">{formatTotal(manualForm.totalProductCost, manualForm.totalShippingCost)}</span>
+                <div className="px-3 py-2 bg-emerald-900/20 border border-emerald-800/50 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-gray-400">Custo total (produto + frete)</span>
+                    <span className="text-sm font-semibold text-emerald-400">{formatTotal(manualForm.totalProductCost, manualForm.totalShippingCost)}</span>
+                  </div>
+                  {calculateUnitCost(manualForm.totalProductCost, manualForm.totalShippingCost, manualForm.moq) && (
+                    <div className="flex items-center justify-between pt-2 border-t border-emerald-800/30">
+                      <span className="text-[11px] text-gray-400">Custo unitário com frete</span>
+                      <span className="text-sm font-semibold text-amber-400">{calculateUnitCost(manualForm.totalProductCost, manualForm.totalShippingCost, manualForm.moq)}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
