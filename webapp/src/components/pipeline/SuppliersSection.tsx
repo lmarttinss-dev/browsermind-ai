@@ -1,67 +1,11 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X, DollarSign } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
+import { parseCurrency, parseMoq, maskReal, formatBrl, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
 
 const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top5-fornecedores-alibaba")!
-
-// Helpers para formatação de moeda e cálculo automático
-const parseCurrency = (value: string): number | null => {
-  if (!value) return null
-  // Remove símbolos e letras, trata virgula como decimal e ponto como milhar
-  const cleaned = value.replace(/[^0-9.,]/g, "").replace(/\.(?=.*,)/g, "").replace(",", ".")
-  const num = parseFloat(cleaned)
-  return isNaN(num) ? null : num
-}
-
-const parseMoq = (value: string): number | null => {
-  if (!value) return null
-  const match = value.match(/[\d.,]+/)
-  if (!match) return null
-  const num = parseInt(match[0].replace(/[.,]/g, ""))
-  return isNaN(num) ? null : num
-}
-
-const maskReal = (value: string): string => {
-  const digits = value.replace(/[^0-9]/g, "")
-  if (!digits) return ""
-  const cents = digits.padStart(3, "0")
-  const intPartRaw = cents.slice(0, -2).replace(/^0+/, "") || "0"
-  const decPart = cents.slice(-2)
-  const intPart = intPartRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-  return `R$ ${intPart},${decPart}`
-}
-
-const formatBrl = (num: number): string => {
-  return `R$ ${num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-const calculateProductCost = (unitPrice: string, moq: string): string => {
-  const price = parseCurrency(unitPrice)
-  const qty = parseMoq(moq)
-  if (price === null || qty === null) return ""
-  const total = price * qty
-  return maskReal(total.toFixed(2))
-}
-
-const formatTotal = (a: string, b: string): string | null => {
-  const va = parseCurrency(a)
-  const vb = parseCurrency(b)
-  if (va === null && vb === null) return null
-  const total = (va || 0) + (vb || 0)
-  return formatBrl(total)
-}
-
-const calculateUnitCost = (totalProduct: string, totalShipping: string, moq: string): string | null => {
-  const productCost = parseCurrency(totalProduct)
-  const shippingCost = parseCurrency(totalShipping)
-  const qty = parseMoq(moq)
-  if (productCost === null && shippingCost === null) return null
-  if (!qty || qty <= 0) return null
-  const total = (productCost || 0) + (shippingCost || 0)
-  return formatBrl(total / qty)
-}
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
