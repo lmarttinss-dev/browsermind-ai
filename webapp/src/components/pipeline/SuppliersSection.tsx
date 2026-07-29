@@ -28,7 +28,7 @@ const maskDollar = (value: string): string => {
   const cents = digits.padStart(3, "0")
   const intPart = cents.slice(0, -2).replace(/^0+/, "") || "0"
   const decPart = cents.slice(-2)
-  return `US$ ${intPart}.${decPart}`
+  return `R$ ${intPart}.${decPart}`
 }
 
 const calculateProductCost = (unitPrice: string, moq: string): string => {
@@ -477,7 +477,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                       const unitPrice = maskDollar(e.target.value)
                       setManualForm(f => ({ ...f, unitPrice, totalProductCost: calculateProductCost(unitPrice, f.moq) || f.totalProductCost }))
                     }}
-                    placeholder="US$ 0.00"
+                    placeholder="R$ 0.00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
@@ -500,7 +500,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     type="text"
                     value={manualForm.totalProductCost}
                     onChange={(e) => setManualForm(f => ({ ...f, totalProductCost: maskDollar(e.target.value) }))}
-                    placeholder="US$ 0.00"
+                    placeholder="R$ 0.00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
@@ -510,7 +510,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     type="text"
                     value={manualForm.totalShippingCost}
                     onChange={(e) => setManualForm(f => ({ ...f, totalShippingCost: maskDollar(e.target.value) }))}
-                    placeholder="US$ 0.00"
+                    placeholder="R$ 0.00"
                     className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 placeholder:text-gray-500"
                   />
                 </div>
