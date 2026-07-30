@@ -467,6 +467,19 @@ export const SupplierDetailPage = () => {
                     <span className="text-xs text-gray-300 text-right max-w-[60%]">{supplier.certifications}</span>
                   </div>
                 )}
+                {supplier.url && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Site</span>
+                    <a
+                      href={supplier.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                    >
+                      Acessar
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
