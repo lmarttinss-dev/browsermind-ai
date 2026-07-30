@@ -108,9 +108,19 @@ export const ProductDetailPage = () => {
     if (!product?.analysisReport) return
     setIsCopying(true)
     try {
+      // Substitui a URL no relatório pela URL do produto de origem
+      let updatedReport = product.analysisReport
+      if (product.url) {
+        // Substitui **URL:** [qualquer-url](qualquer-url) pelo formato padronizado com a URL do produto
+        updatedReport = updatedReport.replace(
+          /\*\*URL:\*\*\s*\[.*?\]\(.*?\)/g,
+          `**URL:** [${product.url}](${product.url})`
+        )
+      }
+
       await api.updatePipelineProduct(destId, {
         title: product.title,
-        analysisReport: product.analysisReport,
+        analysisReport: updatedReport,
         url: product.url,
         imageUrl: product.imageUrl,
         price: product.price,
