@@ -268,86 +268,90 @@ export const SupplierDetailPage = () => {
             <p className="text-xs text-gray-500 truncate">{product.title}</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* URL: display ou edição inline */}
-            {isEditingUrl ? (
+            {/* Fornecedores do Alibaba (com relatório): botões completos */}
+            {!!supplier.report ? (
               <>
-                <input
-                  type="text"
-                  value={urlDraft}
-                  onChange={(e) => setUrlDraft(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setIsEditingUrl(false) }}
-                  placeholder="https://..."
-                  className="text-xs bg-gray-800 border border-emerald-600 text-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 w-64"
-                  autoFocus
-                />
+                {isEditingUrl ? (
+                  <>
+                    <input
+                      type="text"
+                      value={urlDraft}
+                      onChange={(e) => setUrlDraft(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setIsEditingUrl(false) }}
+                      placeholder="https://..."
+                      className="text-xs bg-gray-800 border border-emerald-600 text-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 w-64"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveUrl}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-900/30"
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      onClick={() => setIsEditingUrl(false)}
+                      className="text-xs text-gray-400 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700"
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ) : supplier.url ? (
+                  <>
+                    <a
+                      href={supplier.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Alibaba
+                    </a>
+                    <button
+                      onClick={() => { setUrlDraft(supplier.url); setIsEditingUrl(true) }}
+                      className="text-xs text-gray-500 hover:text-gray-300 px-1.5 py-1 rounded hover:bg-gray-700"
+                      title="Editar URL"
+                    >
+                      ✎
+                    </button>
+                    <select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value as ModelId)}
+                      className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+                    >
+                      {MODELS.map((m) => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => navigate(`/supplier-analysis?url=${encodeURIComponent(supplier.url.replace(/`/g, ""))}&model=${selectedModel}`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      Analisar
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => { setUrlDraft(""); setIsEditingUrl(true) }}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded hover:bg-gray-700"
+                  >
+                    + URL
+                  </button>
+                )}
                 <button
-                  onClick={handleSaveUrl}
-                  className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-900/30"
+                  onClick={handleToggleViability}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                    supplier.viable === false
+                      ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
+                      : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
+                  }`}
+                  title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
                 >
-                  Salvar
-                </button>
-                <button
-                  onClick={() => setIsEditingUrl(false)}
-                  className="text-xs text-gray-400 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700"
-                >
-                  Cancelar
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {supplier.viable === false ? "Inviável" : "Viável"}
                 </button>
               </>
-            ) : supplier.url ? (
-              <>
-                <a
-                  href={supplier.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Alibaba
-                </a>
-                <button
-                  onClick={() => { setUrlDraft(supplier.url); setIsEditingUrl(true) }}
-                  className="text-xs text-gray-500 hover:text-gray-300 px-1.5 py-1 rounded hover:bg-gray-700"
-                  title="Editar URL"
-                >
-                  ✎
-                </button>
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value as ModelId)}
-                  className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
-                >
-                  {MODELS.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => navigate(`/supplier-analysis?url=${encodeURIComponent(supplier.url.replace(/`/g, ""))}&model=${selectedModel}`)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                  Analisar
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => { setUrlDraft(""); setIsEditingUrl(true) }}
-                className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded hover:bg-gray-700"
-              >
-                + URL
-              </button>
-            )}
-            <button
-              onClick={handleToggleViability}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                supplier.viable === false
-                  ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
-                  : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
-              }`}
-              title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
-            >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {supplier.viable === false ? "Inviável" : "Viável"}
-            </button>
+            ) : null}
             <button
               onClick={() => setConfirmRemove(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
