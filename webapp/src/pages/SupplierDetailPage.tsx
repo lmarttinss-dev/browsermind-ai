@@ -82,8 +82,8 @@ export const SupplierDetailPage = () => {
   const [confirmRemoveQuoteIndex, setConfirmRemoveQuoteIndex] = useState<number | null>(null)
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [urlDraft, setUrlDraft] = useState("")
-  const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
-    unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
+  const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt"> & { url: string }>({
+    url: "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
 
   const index = parseInt(supplierIndex || "")
@@ -130,15 +130,22 @@ export const SupplierDetailPage = () => {
     setIsSavingQuote(true)
     try {
       let res
+      const { url, ...quoteData } = quoteForm
       if (editingQuoteIndex !== null) {
-        res = await api.editSupplierQuote(product._id, index, editingQuoteIndex, quoteForm)
+        res = await api.editSupplierQuote(product._id, index, editingQuoteIndex, quoteData)
       } else {
-        res = await api.addSupplierQuote(product._id, index, quoteForm)
+        res = await api.addSupplierQuote(product._id, index, quoteData)
       }
-      setProduct({ ...product, suppliers: res.suppliers })
+      // Atualizar URL do fornecedor se tiver sido alterada
+      if (url && url !== supplier?.url) {
+        const urlRes = await api.updateSupplierUrl(product._id, index, url)
+        setProduct({ ...product, suppliers: urlRes.suppliers })
+      } else {
+        setProduct({ ...product, suppliers: res.suppliers })
+      }
       setShowQuoteForm(false)
       setEditingQuoteIndex(null)
-      setQuoteForm({ unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
+      setQuoteForm({ url: "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -150,6 +157,7 @@ export const SupplierDetailPage = () => {
     if (!supplier) return
     const quote = supplier.quotes[quoteIndex]
     setQuoteForm({
+      url: supplier.url || "",
       unitPrice: quote.unitPrice || "",
       moq: quote.moq || "",
       totalProductCost: quote.totalProductCost || "",
@@ -467,7 +475,7 @@ export const SupplierDetailPage = () => {
                 Cotações ({supplier.quotes?.length || 0})
               </h3>
               <button
-                onClick={() => { setShowQuoteForm(true); setEditingQuoteIndex(null); setQuoteForm({ unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
+                onClick={() => { setShowQuoteForm(true); setEditingQuoteIndex(null); setQuoteForm({ url: supplier?.url || "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -478,9 +486,19 @@ export const SupplierDetailPage = () => {
             {/* Formulário de cotação */}
             {showQuoteForm && (
               <div className="mb-4 p-4 bg-gray-900/50 border border-gray-600/50 rounded-lg">
-                <h4 className="text-xs font-semibold text-gray-300 mb-3">
+                <h4 className="text-xs font-semibold text-gray-300 mb-1">
                   {editingQuoteIndex !== null ? "Editar Cotação" : "Registrar Nova Cotação"}
-                </h4>
+                </h4>                {/* URL editável no formulário */}
+                <div className="mb-3">
+                  <label className="block text-[11px] text-gray-400 mb-1">URL do fornecedor</label>
+                  <input
+                    type="text"
+                    value={quoteForm.url || ""}
+                    onChange={(e) => setQuoteForm(f => ({ ...f, url: e.target.value }))}
+                    placeholder="https://..."
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-[11px] text-gray-400 mb-1">Preço unitário</label>
