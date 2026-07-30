@@ -692,20 +692,20 @@ export const SupplierDetailPage = () => {
                             <span className="text-sm text-gray-200">{quote.paymentTerms}</span>
                           </div>
                         )}
+                        {supplier.url && (
+                          <div>
+                            <span className="text-[10px] text-gray-500 block">Site</span>
+                            <a
+                              href={supplier.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                            >
+                              Acessar
+                            </a>
+                          </div>
+                        )}
                       </div>
-
-                      {supplier.url && (
-                        <div className="mt-2 pt-2 border-t border-gray-700/50">
-                          <a
-                            href={supplier.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] text-blue-400 hover:text-blue-300 truncate block"
-                          >
-                            {supplier.url}
-                          </a>
-                        </div>
-                      )}
 
                       {quote.notes && (
                         <div className="mt-3 pt-3 border-t border-gray-700/50">
