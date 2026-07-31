@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Search } from "lucide-react"
+import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Brain } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -82,6 +82,9 @@ export const SupplierDetailPage = () => {
   const [confirmRemoveQuoteIndex, setConfirmRemoveQuoteIndex] = useState<number | null>(null)
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [urlDraft, setUrlDraft] = useState("")
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null)
+  const [showInlineAnalysis, setShowInlineAnalysis] = useState(false)
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt"> & { url: string }>({
     url: "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
@@ -211,6 +214,31 @@ export const SupplierDetailPage = () => {
     }
   }
 
+  const handleAnalyzeSupplier = useCallback(async () => {
+    if (!product || !supplier?.url) return
+    const cleanUrl = supplier.url.replace(/`/g, "").trim()
+    if (!cleanUrl) return
+
+    setIsAnalyzing(true)
+    setError(null)
+    setAnalysisResult(null)
+    setShowInlineAnalysis(true)
+
+    try {
+      const res = await api.analyzeSupplier(cleanUrl, selectedModel)
+      setAnalysisResult(res.report)
+
+      // Salva o relatório no fornecedor automaticamente
+      const updated = await api.updateSupplierReport(product._id, index, res.report, cleanUrl)
+      setProduct({ ...product, suppliers: updated.suppliers })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+      setShowInlineAnalysis(false)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }, [product, supplier?.url, selectedModel, index])
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -268,90 +296,97 @@ export const SupplierDetailPage = () => {
             <p className="text-xs text-gray-500 truncate">{product.title}</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Fornecedores do Alibaba (com relatório): botões completos */}
-            {!!supplier.report ? (
+            {/* URL + analise: disponível para qualquer fornecedor com URL */}
+            {isEditingUrl ? (
               <>
-                {isEditingUrl ? (
-                  <>
-                    <input
-                      type="text"
-                      value={urlDraft}
-                      onChange={(e) => setUrlDraft(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setIsEditingUrl(false) }}
-                      placeholder="https://..."
-                      className="text-xs bg-gray-800 border border-emerald-600 text-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 w-64"
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleSaveUrl}
-                      className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-900/30"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      onClick={() => setIsEditingUrl(false)}
-                      className="text-xs text-gray-400 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700"
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                ) : supplier.url ? (
-                  <>
-                    <a
-                      href={supplier.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Alibaba
-                    </a>
-                    <button
-                      onClick={() => { setUrlDraft(supplier.url); setIsEditingUrl(true) }}
-                      className="text-xs text-gray-500 hover:text-gray-300 px-1.5 py-1 rounded hover:bg-gray-700"
-                      title="Editar URL"
-                    >
-                      ✎
-                    </button>
-                    <select
-                      value={selectedModel}
-                      onChange={(e) => setSelectedModel(e.target.value as ModelId)}
-                      className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
-                    >
-                      {MODELS.map((m) => (
-                        <option key={m.id} value={m.id}>{m.name}</option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => navigate(`/supplier-analysis?url=${encodeURIComponent(supplier.url.replace(/`/g, ""))}&model=${selectedModel}`)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                      Analisar
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => { setUrlDraft(""); setIsEditingUrl(true) }}
-                    className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded hover:bg-gray-700"
-                  >
-                    + URL
-                  </button>
-                )}
+                <input
+                  type="text"
+                  value={urlDraft}
+                  onChange={(e) => setUrlDraft(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setIsEditingUrl(false) }}
+                  placeholder="https://..."
+                  className="text-xs bg-gray-800 border border-emerald-600 text-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 w-64"
+                  autoFocus
+                />
                 <button
-                  onClick={handleToggleViability}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                    supplier.viable === false
-                      ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
-                      : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
-                  }`}
-                  title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
+                  onClick={handleSaveUrl}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-900/30"
                 >
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  {supplier.viable === false ? "Inviável" : "Viável"}
+                  Salvar
+                </button>
+                <button
+                  onClick={() => setIsEditingUrl(false)}
+                  className="text-xs text-gray-400 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700"
+                >
+                  Cancelar
                 </button>
               </>
-            ) : null}
+            ) : supplier.url ? (
+              <>
+                <a
+                  href={supplier.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Alibaba
+                </a>
+                <button
+                  onClick={() => { setUrlDraft(supplier.url); setIsEditingUrl(true) }}
+                  className="text-xs text-gray-500 hover:text-gray-300 px-1.5 py-1 rounded hover:bg-gray-700"
+                  title="Editar URL"
+                >
+                  ✎
+                </button>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value as ModelId)}
+                  className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+                  disabled={isAnalyzing}
+                >
+                  {MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAnalyzeSupplier}
+                  disabled={isAnalyzing}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg transition-colors"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Analisando...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-3.5 h-3.5" />
+                      Analisar
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { setUrlDraft(""); setIsEditingUrl(true) }}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded hover:bg-gray-700"
+              >
+                + URL
+              </button>
+            )}
+            <button
+              onClick={handleToggleViability}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                supplier.viable === false
+                  ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
+                  : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
+              }`}
+              title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              {supplier.viable === false ? "Inviável" : "Viável"}
+            </button>
             <button
               onClick={() => setConfirmRemove(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
@@ -382,6 +417,48 @@ export const SupplierDetailPage = () => {
           {error && (
             <div className="px-3 py-2 text-xs text-red-300 bg-red-900/30 border border-red-800 rounded-lg">
               {error}
+            </div>
+          )}
+
+          {/* Análise Inline — loading ou resultado */}
+          {showInlineAnalysis && (
+            <div className="p-4 bg-gray-800/50 border border-blue-700/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Brain className="w-4 h-4 text-blue-400" />
+                <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                  Análise Automática do Fornecedor
+                </h3>
+                {!isAnalyzing && analysisResult && (
+                  <span className="text-[10px] text-emerald-400 ml-auto">Concluída</span>
+                )}
+              </div>
+
+              {isAnalyzing && (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                  <p className="text-xs text-gray-400">Navegando e analisando o fornecedor...</p>
+                </div>
+              )}
+
+              {!isAnalyzing && analysisResult && (
+                <div className="prose prose-invert prose-sm max-w-none text-gray-300
+                  [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-0 [&_h1]:mb-3
+                  [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-gray-200 [&_h2]:mt-4 [&_h2]:mb-2
+                  [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-gray-300 [&_h3]:mt-3 [&_h3]:mb-1.5
+                  [&_p]:text-xs [&_p]:leading-relaxed [&_p]:mb-1.5
+                  [&_ul]:text-xs [&_ol]:text-xs [&_li]:mb-0.5
+                  [&_table]:text-xs [&_th]:text-[11px] [&_td]:text-[11px]
+                  [&_strong]:text-gray-200 [&_em]:text-gray-400
+                  [&_code]:text-[11px] [&_pre]:text-[11px]
+                  [&_blockquote]:text-xs [&_blockquote]:border-blue-700
+                  [&_hr]:border-gray-700
+                  [&_a]:text-blue-400 [&_a]:text-xs
+                ">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {analysisResult}
+                  </ReactMarkdown>
+                </div>
+              )}
             </div>
           )}
 

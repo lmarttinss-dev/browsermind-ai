@@ -88,6 +88,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ url }),
     }),
+  updateSupplierReport: (productId: string, supplierIndex: number, report: string, supplierUrl?: string) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/report`, {
+      method: "PATCH",
+      body: JSON.stringify({ report, supplierUrl }),
+    }),
   addSupplierQuote: (productId: string, supplierIndex: number, quote: Omit<SupplierQuote, "quotedAt">) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes`, {
       method: "POST",
