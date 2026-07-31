@@ -1672,6 +1672,14 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Pontos Negativos, Oportunidades de Melhoria, Score Final).
 
+📋  CARACTERÍSTICAS DO PRODUTO: A página do anúncio pode conter uma das seguintes seções com informações detalhadas sobre o produto:
+
+- "## O que você precisa saber sobre este produto" — se esta seção estiver presente no conteúdo da página, ANALISE-A com atenção máxima e inclua uma seção específica "📋 Características do Produto" no relatório do Anúncio Independente, extraindo TODAS as informações relevantes sobre o produto (especificações, materiais, funcionalidades, cuidados, garantia, etc.).
+
+- "## Características do produto" — se a seção acima NÃO estiver presente, use esta seção como fonte das características do produto.
+
+Essas informações DEVEM alimentar a seção "📋 Características do Produto" e também enriquecer as demais seções do relatório (Análise da Descrição, Pontos Negativos, Oportunidades de Melhoria).
+
 🎨  GRÁFICOS MERMAID: Você PODE usar gráficos Mermaid para enriquecer o relatório com visualizações de dados. Use pie charts para distribuição de market share no catálogo e xychart para tendências de vendas.
 
 ⚠️  REGRAS CRÍTICAS DE SINTAXE (Mermaid v11) — siga à risca para evitar erros:
@@ -2093,7 +2101,39 @@ Escolha UMA estratégia principal:
 
 ---
 
-## 📊 Métricas do AvantPro
+## � Características do Produto
+
+> 📌 Se a seção "## O que você precisa saber sobre este produto" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, utilize a seção "## Características do produto" da página do anúncio.
+
+### 📝 Informações Extraídas da Página
+
+- Fonte utilizada: ("## O que você precisa saber sobre este produto" / "## Características do produto")
+- Conteúdo completo da seção: (transcreva ou resuma fielmente o conteúdo encontrado)
+
+### 🔍 Especificações Técnicas
+
+| Característica | Valor / Descrição |
+|---------------|-------------------|
+| (extraia cada característica listada) | |
+| ... | |
+
+### 🎯 Destaques e Diferenciais do Produto
+
+- Principais funcionalidades e diferenciais:
+- Materiais, composição ou tecnologia empregada:
+- Itens inclusos (acessórios, manuais, garantia):
+- Cuidados e recomendações de uso:
+- Dimensões, peso e outras informações relevantes:
+
+### ⚠️ Pontos de Atenção nas Características
+
+- Informações importantes que o comprador precisa saber (restrições, incompatibilidades):
+- Características que podem gerar dúvidas ou devoluções:
+- O que está BEM explicado e o que está CONFUSO ou OMISSO:
+
+---
+
+## �📊 Métricas do AvantPro
 
 | Métrica | Valor |
 |---------|-------|
