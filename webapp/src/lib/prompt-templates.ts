@@ -1672,11 +1672,13 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 💬  Q&A DO USUÁRIO: O conteúdo da página pode incluir uma seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" que contém perguntas, respostas e opiniões de clientes reais copiadas do Mercado Livre. Se esta seção estiver presente, ANALISE-A com atenção máxima. Extraia: dúvidas frequentes, qualidade do atendimento do vendedor, elogios e reclamações literais dos compradores, padrões recorrentes nas avaliações. Use esses dados para enriquecer TODAS as seções do relatório (Pontos Negativos, Oportunidades de Melhoria, Score Final).
 
-📋  CARACTERÍSTICAS DO PRODUTO: A página do anúncio pode conter uma das seguintes seções com informações detalhadas sobre o produto:
+📋  CARACTERÍSTICAS DO PRODUTO: A página do anúncio pode conter uma ou ambas as seções abaixo com informações detalhadas sobre o produto:
 
-- "## O que você precisa saber sobre este produto" — se esta seção estiver presente no conteúdo da página, ANALISE-A com atenção máxima e inclua uma seção específica "📋 Características do Produto" no relatório do Anúncio Independente, extraindo TODAS as informações relevantes sobre o produto (especificações, materiais, funcionalidades, cuidados, garantia, etc.).
+- "## O que você precisa saber sobre este produto" — geralmente traz destaques, cuidados e informações práticas para o comprador.
 
-- "## Características do produto" — se a seção acima NÃO estiver presente, use esta seção como fonte das características do produto.
+- "## Características do produto" — geralmente traz especificações técnicas e ficha do produto.
+
+Se AMBAS estiverem presentes, CONDENSE as informações das duas seções em uma única seção "📋 Características do Produto" no relatório do Anúncio Independente, eliminando redundâncias e organizando o conteúdo de forma coesa (dados técnicos + informações práticas). Se apenas UMA delas estiver presente, use-a como fonte única.
 
 Essas informações DEVEM alimentar a seção "📋 Características do Produto" e também enriquecer as demais seções do relatório (Análise da Descrição, Pontos Negativos, Oportunidades de Melhoria).
 
@@ -2101,14 +2103,15 @@ Escolha UMA estratégia principal:
 
 ---
 
-## � Características do Produto
+## 📋 Características do Produto
 
-> 📌 Se a seção "## O que você precisa saber sobre este produto" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, utilize a seção "## Características do produto" da página do anúncio.
+> 📌 Esta seção condensa as informações das seções "## O que você precisa saber sobre este produto" e/ou "## Características do produto" encontradas na página do anúncio. Se AMBAS estiverem presentes, elimine redundâncias e organize o conteúdo de forma coesa (dados técnicos + informações práticas para o comprador). Se apenas UMA estiver presente, use-a como fonte única.
 
-### 📝 Informações Extraídas da Página
+### 📝 Fontes Utilizadas
 
-- Fonte utilizada: ("## O que você precisa saber sobre este produto" / "## Características do produto")
-- Conteúdo completo da seção: (transcreva ou resuma fielmente o conteúdo encontrado)
+- "## O que você precisa saber sobre este produto": (✅ presente / ❌ ausente)
+- "## Características do produto": (✅ presente / ❌ ausente)
+- Conteúdo consolidado das seções: (resuma fielmente o conteúdo encontrado, eliminando sobreposições)
 
 ### 🔍 Especificações Técnicas
 
