@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, MODELS, type ModelId, type PipelineProduct, type Supplier, type NegotiationStatus, type SupplierQuote, NEGOTIATION_STATUSES } from "@/lib/api"
+import { calculateUnitCost } from "@/lib/utils"
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando resposta", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
@@ -79,8 +80,10 @@ export const SupplierDetailPage = () => {
   const [isSavingQuote, setIsSavingQuote] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [confirmRemoveQuoteIndex, setConfirmRemoveQuoteIndex] = useState<number | null>(null)
-  const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt">>({
-    unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [urlDraft, setUrlDraft] = useState("")
+  const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt"> & { url: string }>({
+    url: "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
 
   const index = parseInt(supplierIndex || "")
@@ -127,15 +130,22 @@ export const SupplierDetailPage = () => {
     setIsSavingQuote(true)
     try {
       let res
+      const { url, ...quoteData } = quoteForm
       if (editingQuoteIndex !== null) {
-        res = await api.editSupplierQuote(product._id, index, editingQuoteIndex, quoteForm)
+        res = await api.editSupplierQuote(product._id, index, editingQuoteIndex, quoteData)
       } else {
-        res = await api.addSupplierQuote(product._id, index, quoteForm)
+        res = await api.addSupplierQuote(product._id, index, quoteData)
       }
-      setProduct({ ...product, suppliers: res.suppliers })
+      // Atualizar URL do fornecedor se tiver sido alterada
+      if (url && url !== supplier?.url) {
+        const urlRes = await api.updateSupplierUrl(product._id, index, url)
+        setProduct({ ...product, suppliers: urlRes.suppliers })
+      } else {
+        setProduct({ ...product, suppliers: res.suppliers })
+      }
       setShowQuoteForm(false)
       setEditingQuoteIndex(null)
-      setQuoteForm({ unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
+      setQuoteForm({ url: "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -147,6 +157,7 @@ export const SupplierDetailPage = () => {
     if (!supplier) return
     const quote = supplier.quotes[quoteIndex]
     setQuoteForm({
+      url: supplier.url || "",
       unitPrice: quote.unitPrice || "",
       moq: quote.moq || "",
       totalProductCost: quote.totalProductCost || "",
@@ -174,6 +185,17 @@ export const SupplierDetailPage = () => {
     try {
       const res = await api.updateSupplierViability(product._id, index, !supplier.viable)
       setProduct({ ...product, suppliers: res.suppliers })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  const handleSaveUrl = async () => {
+    if (!product) return
+    try {
+      const res = await api.updateSupplierUrl(product._id, index, urlDraft)
+      setProduct({ ...product, suppliers: res.suppliers })
+      setIsEditingUrl(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     }
@@ -246,47 +268,90 @@ export const SupplierDetailPage = () => {
             <p className="text-xs text-gray-500 truncate">{product.title}</p>
           </div>
           <div className="flex items-center gap-2">
-            {supplier.url && (
+            {/* Fornecedores do Alibaba (com relatório): botões completos */}
+            {!!supplier.report ? (
               <>
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value as ModelId)}
-                  className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
-                >
-                  {MODELS.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </select>
+                {isEditingUrl ? (
+                  <>
+                    <input
+                      type="text"
+                      value={urlDraft}
+                      onChange={(e) => setUrlDraft(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setIsEditingUrl(false) }}
+                      placeholder="https://..."
+                      className="text-xs bg-gray-800 border border-emerald-600 text-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-emerald-500 w-64"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveUrl}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-900/30"
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      onClick={() => setIsEditingUrl(false)}
+                      className="text-xs text-gray-400 hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700"
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ) : supplier.url ? (
+                  <>
+                    <a
+                      href={supplier.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Alibaba
+                    </a>
+                    <button
+                      onClick={() => { setUrlDraft(supplier.url); setIsEditingUrl(true) }}
+                      className="text-xs text-gray-500 hover:text-gray-300 px-1.5 py-1 rounded hover:bg-gray-700"
+                      title="Editar URL"
+                    >
+                      ✎
+                    </button>
+                    <select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value as ModelId)}
+                      className="text-xs bg-gray-800 border border-gray-600 text-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+                    >
+                      {MODELS.map((m) => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => navigate(`/supplier-analysis?url=${encodeURIComponent(supplier.url.replace(/`/g, ""))}&model=${selectedModel}`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      Analisar
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => { setUrlDraft(""); setIsEditingUrl(true) }}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-300 rounded hover:bg-gray-700"
+                  >
+                    + URL
+                  </button>
+                )}
                 <button
-                  onClick={() => navigate(`/supplier-analysis?url=${encodeURIComponent(supplier.url.replace(/`/g, ""))}&model=${selectedModel}`)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                  onClick={handleToggleViability}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                    supplier.viable === false
+                      ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
+                      : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
+                  }`}
+                  title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
                 >
-                  <Search className="w-3.5 h-3.5" />
-                  Analisar
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {supplier.viable === false ? "Inviável" : "Viável"}
                 </button>
-                <a
-                  href={supplier.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-blue-400 rounded-lg transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Alibaba
-                </a>
               </>
-            )}
-            <button
-              onClick={handleToggleViability}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                supplier.viable === false
-                  ? "bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/60"
-                  : "bg-gray-700 hover:bg-red-900/30 text-gray-300 hover:text-red-400"
-              }`}
-              title={supplier.viable === false ? "Marcar como viável" : "Marcar como sem viabilidade"}
-            >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {supplier.viable === false ? "Inviável" : "Viável"}
-            </button>
+            ) : null}
             <button
               onClick={() => setConfirmRemove(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors"
@@ -402,6 +467,19 @@ export const SupplierDetailPage = () => {
                     <span className="text-xs text-gray-300 text-right max-w-[60%]">{supplier.certifications}</span>
                   </div>
                 )}
+                {supplier.url && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Site</span>
+                    <a
+                      href={supplier.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                    >
+                      Acessar
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -414,7 +492,7 @@ export const SupplierDetailPage = () => {
                 Cotações ({supplier.quotes?.length || 0})
               </h3>
               <button
-                onClick={() => { setShowQuoteForm(true); setEditingQuoteIndex(null); setQuoteForm({ unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
+                onClick={() => { setShowQuoteForm(true); setEditingQuoteIndex(null); setQuoteForm({ url: supplier?.url || "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "" }) }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -425,9 +503,19 @@ export const SupplierDetailPage = () => {
             {/* Formulário de cotação */}
             {showQuoteForm && (
               <div className="mb-4 p-4 bg-gray-900/50 border border-gray-600/50 rounded-lg">
-                <h4 className="text-xs font-semibold text-gray-300 mb-3">
+                <h4 className="text-xs font-semibold text-gray-300 mb-1">
                   {editingQuoteIndex !== null ? "Editar Cotação" : "Registrar Nova Cotação"}
-                </h4>
+                </h4>                {/* URL editável no formulário */}
+                <div className="mb-3">
+                  <label className="block text-[11px] text-gray-400 mb-1">URL do fornecedor</label>
+                  <input
+                    type="text"
+                    value={quoteForm.url || ""}
+                    onChange={(e) => setQuoteForm(f => ({ ...f, url: e.target.value }))}
+                    placeholder="https://..."
+                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-[11px] text-gray-400 mb-1">Preço unitário</label>
@@ -603,6 +691,12 @@ export const SupplierDetailPage = () => {
                             <span className="text-sm text-emerald-400 font-bold">{total}</span>
                           </div>
                         )}
+                        {calculateUnitCost(quote.totalProductCost, quote.totalShippingCost, quote.moq) && (
+                          <div>
+                            <span className="text-[10px] text-gray-500 block">Custo unitário c/ frete</span>
+                            <span className="text-sm text-blue-400 font-semibold">{calculateUnitCost(quote.totalProductCost, quote.totalShippingCost, quote.moq)}</span>
+                          </div>
+                        )}
                         {quote.deliveryTime && (
                           <div>
                             <span className="text-[10px] text-gray-500 block">Prazo entrega</span>
@@ -613,6 +707,19 @@ export const SupplierDetailPage = () => {
                           <div className="col-span-2">
                             <span className="text-[10px] text-gray-500 block">Pagamento</span>
                             <span className="text-sm text-gray-200">{quote.paymentTerms}</span>
+                          </div>
+                        )}
+                        {supplier.url && (
+                          <div>
+                            <span className="text-[10px] text-gray-500 block">Site</span>
+                            <a
+                              href={supplier.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+                            >
+                              Acessar
+                            </a>
                           </div>
                         )}
                       </div>

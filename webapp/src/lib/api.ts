@@ -64,6 +64,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ report }),
     }),
+  addManualSupplier: (productId: string, supplier: { name: string; url: string; unitPrice: string; moq: string; totalProductCost: string; totalShippingCost: string; deliveryTime: string; paymentTerms: string; notes: string }) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/manual`, {
+      method: "POST",
+      body: JSON.stringify(supplier),
+    }),
   removeSupplier: (productId: string, index: number) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${index}`, {
       method: "DELETE",
@@ -77,6 +82,11 @@ export const api = {
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/viability`, {
       method: "PATCH",
       body: JSON.stringify({ viable }),
+    }),
+  updateSupplierUrl: (productId: string, supplierIndex: number, url: string) =>
+    request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/url`, {
+      method: "PATCH",
+      body: JSON.stringify({ url }),
     }),
   addSupplierQuote: (productId: string, supplierIndex: number, quote: Omit<SupplierQuote, "quotedAt">) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes`, {

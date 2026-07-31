@@ -750,6 +750,40 @@ const handleUpdateSupplierViability: import("express").RequestHandler = async (r
 }
 
 // ==========================================
+// Suppliers — Atualizar URL
+// ==========================================
+
+const handleUpdateSupplierUrl: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice inválido" })
+      return
+    }
+
+    const { url } = req.body || {}
+    if (typeof url !== "string") {
+      res.status(400).json({ error: "Campo 'url' (string) é obrigatório" })
+      return
+    }
+
+    product.suppliers[index].url = url.trim()
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
 // Suppliers — Adicionar cotação
 // ==========================================
 
@@ -870,6 +904,76 @@ const handleEditSupplierQuote: import("express").RequestHandler = async (req, re
     if (notes !== undefined) quote.notes = notes
 
     product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
+// Suppliers — Adicionar fornecedor manualmente
+// ==========================================
+
+const handleAddManualSupplier: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const { name, url, unitPrice, moq, totalProductCost, totalShippingCost, deliveryTime, paymentTerms, notes } = req.body || {}
+
+    if (!name || typeof name !== "string" || !name.trim()) {
+      res.status(400).json({ error: "Campo 'name' é obrigatório" })
+      return
+    }
+
+    // Verificar se já existe fornecedor com mesmo nome
+    const existingNames = new Set(product.suppliers.map(s => s.name.toLowerCase()))
+    if (existingNames.has(name.trim().toLowerCase())) {
+      res.status(409).json({ error: "Já existe um fornecedor com este nome no produto" })
+      return
+    }
+
+    const hasQuoteData = !!(unitPrice || moq || totalProductCost || totalShippingCost)
+
+    const supplier = {
+      name: name.trim(),
+      url: (url || "").trim(),
+      unitPrice: unitPrice || "",
+      moq: moq || "",
+      rating: 0,
+      tradeAssurance: false,
+      yearsInBusiness: 0,
+      responseRate: "",
+      capabilities: "",
+      certifications: "",
+      report: "",
+      capturedAt: new Date(),
+      viable: true,
+      negotiationStatus: hasQuoteData ? "cotacao_recebida" as NegotiationStatus : "aguardando_resposta" as NegotiationStatus,
+      quotes: [] as SupplierQuote[],
+    }
+
+    // Criar cotação inicial com os dados fornecidos
+    if (hasQuoteData) {
+      supplier.quotes.push({
+        unitPrice: unitPrice || "",
+        moq: moq || "",
+        totalProductCost: totalProductCost || "",
+        totalShippingCost: totalShippingCost || "",
+        deliveryTime: deliveryTime || "",
+        paymentTerms: paymentTerms || "",
+        notes: notes || "Cadastro manual",
+        quotedAt: new Date(),
+      })
+      supplier.negotiationStartedAt = new Date()
+    }
+
+    product.suppliers.push(supplier as Supplier)
     await product.save()
 
     res.json({ success: true, suppliers: product.suppliers })
@@ -1378,10 +1482,12 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
 // Registrar rotas de suppliers e compare no pipeline router
 pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
+pipelineRouter.post("/:id/suppliers/manual", handleAddManualSupplier)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
 pipelineRouter.patch("/:id/suppliers/:index/viability", handleUpdateSupplierViability)
+pipelineRouter.patch("/:id/suppliers/:index/url", handleUpdateSupplierUrl)
 pipelineRouter.post("/:id/suppliers/:index/quotes", handleAddSupplierQuote)
 pipelineRouter.delete("/:id/suppliers/:index/quotes/:quoteIndex", handleRemoveSupplierQuote)
 pipelineRouter.patch("/:id/suppliers/:index/quotes/:quoteIndex", handleEditSupplierQuote)
