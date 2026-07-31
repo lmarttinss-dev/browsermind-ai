@@ -1678,7 +1678,7 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 - "## Características do produto" — geralmente traz especificações técnicas e ficha do produto.
 
-Se AMBAS estiverem presentes, CONDENSE as informações das duas seções em uma única seção "📋 Características do Produto" no relatório do Anúncio Independente, eliminando redundâncias e organizando o conteúdo de forma coesa (dados técnicos + informações práticas). Se apenas UMA delas estiver presente, use-a como fonte única.
+Se AMBAS estiverem presentes, CONDENSE as informações das duas seções em uma única seção "📋 Características do Produto" no relatório (tanto para Produto de Catálogo quanto para Anúncio Independente), eliminando redundâncias e organizando o conteúdo de forma coesa (dados técnicos + informações práticas). Se apenas UMA delas estiver presente, use-a como fonte única.
 
 Essas informações DEVEM alimentar a seção "📋 Características do Produto" e também enriquecer as demais seções do relatório (Análise da Descrição, Pontos Negativos, Oportunidades de Melhoria).
 
@@ -1777,7 +1777,40 @@ Preencha OBRIGATORIAMENTE:
 
 ---
 
-## 🔎 Diagnóstico Rápido do Catálogo
+## � Características do Produto
+
+> 📌 Esta seção condensa as informações das seções "## O que você precisa saber sobre este produto" e/ou "## Características do produto" encontradas na página do anúncio. Se AMBAS estiverem presentes, elimine redundâncias e organize o conteúdo de forma coesa (dados técnicos + informações práticas para o comprador). Se apenas UMA estiver presente, use-a como fonte única.
+
+### 📝 Fontes Utilizadas
+
+- "## O que você precisa saber sobre este produto": (✅ presente / ❌ ausente)
+- "## Características do produto": (✅ presente / ❌ ausente)
+- Conteúdo consolidado das seções: (resuma fielmente o conteúdo encontrado, eliminando sobreposições)
+
+### 🔍 Especificações Técnicas
+
+| Característica | Valor / Descrição |
+|---------------|-------------------|
+| (extraia cada característica listada) | |
+| ... | |
+
+### 🎯 Destaques e Diferenciais do Produto
+
+- Principais funcionalidades e diferenciais:
+- Materiais, composição ou tecnologia empregada:
+- Itens inclusos (acessórios, manuais, garantia):
+- Cuidados e recomendações de uso:
+- Dimensões, peso e outras informações relevantes:
+
+### ⚠️ Pontos de Atenção nas Características
+
+- Informações importantes que o comprador precisa saber (restrições, incompatibilidades):
+- Características que podem gerar dúvidas ou devoluções:
+- O que está BEM explicado e o que está CONFUSO ou OMISSO:
+
+---
+
+## �🔎 Diagnóstico Rápido do Catálogo
 
 > Preencha esta tabela OBRIGATORIAMENTE antes de prosseguir. Use os dados da página e do AvantPro para determinar cada critério.
 
