@@ -83,8 +83,6 @@ export const SupplierDetailPage = () => {
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [urlDraft, setUrlDraft] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null)
-  const [showInlineAnalysis, setShowInlineAnalysis] = useState(false)
   const [quoteForm, setQuoteForm] = useState<Omit<SupplierQuote, "quotedAt"> & { url: string }>({
     url: "", unitPrice: "", moq: "", totalProductCost: "", totalShippingCost: "", deliveryTime: "", paymentTerms: "", notes: "",
   })
@@ -221,19 +219,14 @@ export const SupplierDetailPage = () => {
 
     setIsAnalyzing(true)
     setError(null)
-    setAnalysisResult(null)
-    setShowInlineAnalysis(true)
 
     try {
       const res = await api.analyzeSupplier(cleanUrl, selectedModel)
-      setAnalysisResult(res.report)
-
-      // Salva o relatório no fornecedor automaticamente
+      // Salva o relatório no fornecedor — a seção "Relatório de Análise" no final da página exibe automaticamente
       const updated = await api.updateSupplierReport(product._id, index, res.report, cleanUrl)
       setProduct({ ...product, suppliers: updated.suppliers })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
-      setShowInlineAnalysis(false)
     } finally {
       setIsAnalyzing(false)
     }
@@ -417,48 +410,6 @@ export const SupplierDetailPage = () => {
           {error && (
             <div className="px-3 py-2 text-xs text-red-300 bg-red-900/30 border border-red-800 rounded-lg">
               {error}
-            </div>
-          )}
-
-          {/* Análise Inline — loading ou resultado */}
-          {showInlineAnalysis && (
-            <div className="p-4 bg-gray-800/50 border border-blue-700/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-3">
-                <Brain className="w-4 h-4 text-blue-400" />
-                <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                  Análise Automática do Fornecedor
-                </h3>
-                {!isAnalyzing && analysisResult && (
-                  <span className="text-[10px] text-emerald-400 ml-auto">Concluída</span>
-                )}
-              </div>
-
-              {isAnalyzing && (
-                <div className="flex flex-col items-center justify-center py-8 gap-3">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-                  <p className="text-xs text-gray-400">Navegando e analisando o fornecedor...</p>
-                </div>
-              )}
-
-              {!isAnalyzing && analysisResult && (
-                <div className="prose prose-invert prose-sm max-w-none text-gray-300
-                  [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-0 [&_h1]:mb-3
-                  [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-gray-200 [&_h2]:mt-4 [&_h2]:mb-2
-                  [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:text-gray-300 [&_h3]:mt-3 [&_h3]:mb-1.5
-                  [&_p]:text-xs [&_p]:leading-relaxed [&_p]:mb-1.5
-                  [&_ul]:text-xs [&_ol]:text-xs [&_li]:mb-0.5
-                  [&_table]:text-xs [&_th]:text-[11px] [&_td]:text-[11px]
-                  [&_strong]:text-gray-200 [&_em]:text-gray-400
-                  [&_code]:text-[11px] [&_pre]:text-[11px]
-                  [&_blockquote]:text-xs [&_blockquote]:border-blue-700
-                  [&_hr]:border-gray-700
-                  [&_a]:text-blue-400 [&_a]:text-xs
-                ">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                    {analysisResult}
-                  </ReactMarkdown>
-                </div>
-              )}
             </div>
           )}
 
