@@ -784,6 +784,62 @@ const handleUpdateSupplierUrl: import("express").RequestHandler = async (req, re
 }
 
 // ==========================================
+// Suppliers — Atualizar relatório do fornecedor (análise inline)
+// ==========================================
+
+const handleUpdateSupplierReport: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const index = parseInt(req.params.index as string)
+    if (isNaN(index) || index < 0 || index >= product.suppliers.length) {
+      res.status(400).json({ error: "Índice inválido" })
+      return
+    }
+
+    const { report, supplierUrl: rawSupplierUrl } = req.body || {}
+    const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
+
+    if (typeof report !== "string" || !report.trim()) {
+      res.status(400).json({ error: "Campo 'report' (string) é obrigatório" })
+      return
+    }
+
+    // Atualiza o relatório e, se a URL for fornecida, também atualiza a URL
+    product.suppliers[index].report = report
+    if (supplierUrl) {
+      product.suppliers[index].url = supplierUrl
+    }
+
+    // Tenta re-parsear os dados estruturados do novo relatório
+    if (supplierUrl) {
+      const parsed = parseIndividualSupplierReport(report, supplierUrl)
+      // Atualiza campos estruturados mantendo os existentes se o parse falhar
+      if (parsed.name) product.suppliers[index].name = parsed.name
+      if (parsed.rating > 0) product.suppliers[index].rating = parsed.rating
+      if (parsed.yearsInBusiness > 0) product.suppliers[index].yearsInBusiness = parsed.yearsInBusiness
+      product.suppliers[index].tradeAssurance = parsed.tradeAssurance
+      product.suppliers[index].responseRate = parsed.responseRate || product.suppliers[index].responseRate
+      product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
+      product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
+      if (parsed.unitPrice) product.suppliers[index].unitPrice = parsed.unitPrice
+      if (parsed.moq) product.suppliers[index].moq = parsed.moq
+    }
+
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
 // Suppliers — Adicionar cotação
 // ==========================================
 
@@ -1488,6 +1544,7 @@ pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
 pipelineRouter.patch("/:id/suppliers/:index/viability", handleUpdateSupplierViability)
 pipelineRouter.patch("/:id/suppliers/:index/url", handleUpdateSupplierUrl)
+pipelineRouter.patch("/:id/suppliers/:index/report", handleUpdateSupplierReport)
 pipelineRouter.post("/:id/suppliers/:index/quotes", handleAddSupplierQuote)
 pipelineRouter.delete("/:id/suppliers/:index/quotes/:quoteIndex", handleRemoveSupplierQuote)
 pipelineRouter.patch("/:id/suppliers/:index/quotes/:quoteIndex", handleEditSupplierQuote)
