@@ -311,7 +311,7 @@ Emita alertas automáticos quando:
 
 - 🚨 **Conversão baixa**: taxa de conversão < 8% (indica baixa atratividade do anúncio ou produto)
 - 🚨 **Concorrente dominante**: concorrente principal com estoque > 100 unidades E preço muito agressivo (< 70% do valor de mercado)
-- 🚨 **Demanda em queda**: anúncio com > 1 ano E Ritmo atual em declínio nos últimos meses
+- 🚨 **Demanda em queda**: anúncio com > 1 ano E Vendas mensais em declínio nos últimos meses
 - 🚨 **Margem inviável**: valor líquido recebido por venda < custo total de importação + margem de segurança de 30%
 - 🚨 **Risco de certificação**: produto que exige Anatel/INMETRO sem certificação disponível no fornecedor
 - 🚨 **Estoque baixo do concorrente**: pode ser oportunidade OU sinal de produto problemático (avalie o contexto)
@@ -1723,8 +1723,7 @@ Preencha OBRIGATORIAMENTE:
 - Categoria: (categoria principal > subcategoria)
 - Preço atual: R$ (valor no formato brasileiro, ex: 66,79)
 - Tipo: (exatamente uma das opções: 📚 Catálogo | 📦 Independente)
-- Vendas mensais estimadas: (número inteiro — ritmo atual do catálogo ou do anúncio)
-- Ritmo atual (vendas/mês): (número inteiro do AvantPro)
+- Vendas mensais: (número inteiro — métrica Vendas mensais do AvantPro)
 - Nível de competição: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
   - Para catálogo: baseado na quantidade de vendedores e competitividade da buy box
   - Para independente: baseado na concorrência da categoria
@@ -1758,7 +1757,7 @@ Preencha OBRIGATORIAMENTE:
 | Faixa de preço (mínimo — máximo) | R$ — R$ |
 | Total vendido (catálogo — todos os vendedores) | X unidades |
 | Vendas por dia (catálogo) | X |
-| Ritmo atual (vendas/mês — catálogo inteiro) | X |
+| Vendas mensais (catálogo inteiro) | X |
 | Visitas ao catálogo | X |
 | Taxa de conversão do catálogo | X% |
 | Estoque total (todos os vendedores somados) | X unidades |
@@ -2067,7 +2066,7 @@ Escolha UMA estratégia principal:
 - URL do anúncio:
 - Preço de venda: R$ (formato brasileiro)
 - Faturamento total estimado: R$
-- Ritmo atual (vendas/mês):
+- Vendas mensais:
 - Taxa de conversão:
 - Dias ativo:
 - Dentro de catálogo? (Sim — este anúncio está linkado a um catálogo / Não — anúncio 100% independente)
@@ -2105,7 +2104,6 @@ Escolha UMA estratégia principal:
 | Total vendido (histórico) | X unidades |
 | Vendas por dia | X |
 | Vendas mensais | X/mês |
-| Ritmo atual (vendas/mês) | X |
 | Vendas estimadas | X |
 | Visitas ao anúncio | X |
 | Taxa de conversão | X% |
@@ -2199,8 +2197,8 @@ Marque o que a descrição CONTÉM e o que está FALTANDO:
 
 | Indicador | Valor |
 |-----------|-------|
-| Ritmo atual (unidades/mês) | X |
-| Receita bruta mensal (Ritmo × Preço) | R$ |
+| Vendas mensais | X |
+| Receita bruta mensal (Vendas mensais × Preço) | R$ |
 | (-) Comissão ML mensal | R$ |
 | (-) Imposto mensal | R$ |
 | (-) Frete mensal | R$ |
@@ -2236,22 +2234,22 @@ A taxa de conversão é o indicador mais direto da qualidade do anúncio. Classi
 
 ### ⏱️ Análise de Idade do Anúncio
 
-Cruze a idade do anúncio com o Ritmo atual para avaliar maturidade:
+Cruze a idade do anúncio com as Vendas mensais para avaliar maturidade:
 
-- 🟢 **Anúncio jovem (< 30 dias) com alto ritmo** → produto em ASCENSÃO, timing excelente. Acompanhe de perto — tendência de crescimento acelerado
-- 🟢 **Anúncio jovem (< 90 dias) com ritmo consistente** → validação inicial positiva, produto com demanda real
-- 🟡 **Anúncio entre 90-180 dias** → em fase de consolidação. Se o ritmo estiver estável ou crescendo, é positivo. Se estiver caindo, investigue
-- 🟡 **Anúncio entre 180-365 dias** → maduro. Verifique se o ritmo se mantém ou se há sinais de fadiga
-- 🔴 **Anúncio > 365 dias com ritmo em queda** → possível saturação ou perda de relevância. Revisar estratégia
+- 🟢 **Anúncio jovem (< 30 dias) com alto volume de vendas** → produto em ASCENSÃO, timing excelente. Acompanhe de perto — tendência de crescimento acelerado
+- 🟢 **Anúncio jovem (< 90 dias) com vendas consistentes** → validação inicial positiva, produto com demanda real
+- 🟡 **Anúncio entre 90-180 dias** → em fase de consolidação. Se as vendas mensais estiverem estáveis ou crescendo, é positivo. Se estiverem caindo, investigue
+- 🟡 **Anúncio entre 180-365 dias** → maduro. Verifique se as vendas mensais se mantêm ou se há sinais de fadiga
+- 🔴 **Anúncio > 365 dias com vendas em queda** → possível saturação ou perda de relevância. Revisar estratégia
 
 ### 📦 Análise de Estoque
 
 - Estoque atual: X unidades
-- Relação estoque vs. ritmo mensal: estoque cobre X meses de venda
+- Relação estoque vs. vendas mensais: estoque cobre X meses de venda
   - 🔴 **Estoque < 1 mês de vendas** → risco de ruptura IMINENTE. Prioridade máxima: repor estoque
   - 🟡 **Estoque entre 1-2 meses** → atenção: planeje reposição já
   - 🟢 **Estoque > 2 meses** → saudável, sem urgência
-- Se estoque está BAIXO e o ritmo é ALTO → 🚨 oportunidade PERDENDO vendas por falta de produto
+- Se estoque está BAIXO e as vendas mensais são ALTAS → 🚨 oportunidade PERDENDO vendas por falta de produto
 
 ### 🔍 Qualidade do Tráfego
 
