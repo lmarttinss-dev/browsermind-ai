@@ -282,45 +282,10 @@ export class PlaywrightManager {
 
     console.log("✅ AvantPro: elementos detectados no DOM")
 
-    // Verifica se a extensão está pedindo login/cadastro — busca no BODY inteiro
-    const notAuthCheck = `(() => {
-      const body = document.body.innerText || "";
-      return /comece a usar o avantpro|faça login.*avantpro|cadastre-se.*avantpro|avantpro.*faça login|avantpro.*cadastre-se|avantpro.*sign in|avantpro.*log in|avantpro.*criar conta/i.test(body);
-    })()`
-    try {
-      const notAuth = await page.evaluate(notAuthCheck)
-      if (notAuth) {
-        console.log("⚠️ AvantPro: extensão não autenticada (pedindo login/cadastro)")
-        return "not_authenticated"
-      }
-    } catch { /* ignore */ }
-
-    // Tenta abrir o painel de dados clicando no botão
-    const buttonTexts = ["Informações Avantpro", "Informações AvantPro", "Dados Avantpro", "Dados AvantPro"]
-    let clicked = false
-    for (const text of buttonTexts) {
-      try {
-        const btn = page.getByText(text, { exact: false }).first()
-        if (await btn.isVisible()) {
-          await btn.click({ timeout: 5000 })
-          console.log(`✅ AvantPro: clicou em "${text}"`)
-          clicked = true
-          break
-        }
-      } catch {
-        // Tenta próximo texto
-      }
-    }
-
-    // Após clicar, aguarda as requisições de rede da extensão terminarem
-    if (clicked) {
-      try {
-        await page.waitForLoadState("networkidle", { timeout: 10000 })
-        console.log("✅ AvantPro: rede estabilizou após clique")
-      } catch {
-        console.log("⏳ AvantPro: timeout esperando rede estabilizar, continuando...")
-      }
-    }
+    // Em páginas de listagem (lista.mercadolivre.com.br) as métricas já são
+    // injetadas abertas — o clique no botão do overlay é específico de páginas
+    // de produto e pode FECHAR um painel já aberto (causando oscilação).
+    const isListingPage = /lista\.mercadolivre\.com\.br\//.test(page.url())
 
     // Polling: verifica o BODY INTEIRO e os elementos injetados pela extensão
     // (incluindo shadow roots abertos) para garantir que as MÉTRICAS REAIS
@@ -362,29 +327,84 @@ export class PlaywrightManager {
       return "waiting";
     })()`
 
-    const pollInterval = 500
-    const deadline = Date.now() + timeout
-    while (Date.now() < deadline) {
+    const readStatus = async (): Promise<string> => {
       try {
-        const status = await page.evaluate(checkScript) as string
-        if (status === "ready") {
-          // Espera extra de 500ms para garantir que a renderização completou
-          await page.waitForTimeout(500)
+        return (await page.evaluate(checkScript)) as string
+      } catch {
+        // Página pode estar navegando/renderizando
+        return "waiting"
+      }
+    }
+
+    const clickPanelButton = async (): Promise<boolean> => {
+      const buttonTexts = ["Informações Avantpro", "Informações AvantPro", "Dados Avantpro", "Dados AvantPro"]
+      for (const text of buttonTexts) {
+        try {
+          const btn = page.getByText(text, { exact: false }).first()
+          if (await btn.isVisible()) {
+            await btn.click({ timeout: 5000 })
+            console.log(`✅ AvantPro: clicou em "${text}"`)
+            return true
+          }
+        } catch {
+          // Tenta o próximo texto
+        }
+      }
+      return false
+    }
+
+    const deadline = Date.now() + timeout
+    let readyStreak = 0
+    let notAuthStreak = 0
+    let lastStatus = "waiting"
+    let clicked = false
+
+    while (Date.now() < deadline) {
+      const status = await readStatus()
+      lastStatus = status
+
+      if (status === "ready") {
+        readyStreak++
+        notAuthStreak = 0
+        // Exige 2 leituras consecutivas para evitar falso positivo durante re-render
+        if (readyStreak >= 2) {
+          await page.waitForTimeout(300)
           console.log("✅ AvantPro: dados carregados com sucesso")
           return "loaded"
         }
-        if (status === "not_auth") {
-          console.log("⚠️ AvantPro: extensão não autenticada (detectado durante polling)")
+      } else if (status === "not_auth") {
+        readyStreak = 0
+        notAuthStreak++
+        // Só declara não autenticado após o estado persistir (evita CTA piscando)
+        if (notAuthStreak >= 4) {
+          console.log("⚠️ AvantPro: extensão não autenticada (estado persistente)")
           return "not_authenticated"
         }
-      } catch {
-        // Página pode estar navegando, tenta novamente
+      } else {
+        readyStreak = 0
+        notAuthStreak = 0
       }
+
+      // Em página de produto, tenta abrir o painel UMA vez (somente se ainda
+      // não carregou). Em listagem, NÃO clica — evita fechar painel já aberto.
+      if (!clicked && !isListingPage && (status === "loading" || status === "waiting")) {
+        clicked = true
+        const didClick = await clickPanelButton()
+        if (didClick) {
+          await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {})
+          continue
+        }
+      }
+
       const remaining = deadline - Date.now()
       if (remaining <= 0) break
-      await page.waitForTimeout(Math.min(pollInterval, remaining))
+      await page.waitForTimeout(Math.min(500, remaining))
     }
 
+    if (lastStatus === "not_auth") {
+      console.log("⚠️ AvantPro: extensão não autenticada")
+      return "not_authenticated"
+    }
     console.log("⚠️ AvantPro: timeout aguardando dados carregarem")
     return false
   }
