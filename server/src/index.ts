@@ -1660,15 +1660,30 @@ function deriveMlCategoryUrl(category: string): string | null {
 
 /** Extrai a URL da categoria (link da breadcrumb) navegando na página de produto do ML */
 async function extractCategoryUrlFromProductPage(productUrl: string): Promise<string | null> {
+  if (!productUrl) return null
   try {
     await playwrightManager.navigate(productUrl)
     const page = await playwrightManager.getPage()
     await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {})
 
     const categoryUrl = (await page.evaluate(`(() => {
-      const links = Array.from(document.querySelectorAll("a.andes-breadcrumb__link, .andes-breadcrumb a, .ui-breadcrumb a"))
-      const hrefs = links.map(a => a.href).filter(h => h && h.includes("lista.mercadolivre.com.br"))
-      return hrefs[hrefs.length - 1] || ""
+      // Tenta grupos de seletores do mais específico para o mais genérico
+      const selectorGroups = [
+        "nav.andes-breadcrumb a.andes-breadcrumb__link",
+        "nav.andes-breadcrumb a",
+        ".andes-breadcrumb a",
+        ".ui-breadcrumb a",
+        "a[href*='lista.mercadolivre.com.br']",
+      ]
+      for (const sel of selectorGroups) {
+        const links = Array.from(document.querySelectorAll(sel))
+        const hrefs = links
+          .map(a => a.href)
+          .filter(h => h && h.includes("lista.mercadolivre.com.br"))
+        // O último link de categoria é o mais específico (mais próximo do produto)
+        if (hrefs.length > 0) return hrefs[hrefs.length - 1]
+      }
+      return ""
     })()`)) as string
     return categoryUrl || null
   } catch {
@@ -1716,22 +1731,32 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
       return
     }
 
-    // Resolve a URL da categoria no ML
-    let categoryUrl = deriveMlCategoryUrl(product.category)
+    // Resolve a URL correta no ML — prioridade:
+    // 1) Busca pelo título do anúncio (nicho exato do produto)
+    // 2) Breadcrumb da página do produto (categoria real do ML)
+    // 3) Slug derivado do nome da categoria salva
+    const titleSlug = slugifyCategory(product.title)
+    let categoryUrl = titleSlug ? `https://lista.mercadolivre.com.br/${titleSlug}` : null
+
     if (!categoryUrl) {
       categoryUrl = await extractCategoryUrlFromProductPage(product.url)
+    }
+    if (!categoryUrl) {
+      categoryUrl = deriveMlCategoryUrl(product.category)
     }
     if (!categoryUrl) {
       res.status(400).json({ success: false, error: "Não foi possível determinar a URL da categoria." })
       return
     }
 
-    // Navega até a categoria
+    console.log("🧭 Mercado: navegando para:", categoryUrl)
+
+    // Navega até a categoria/busca
     await playwrightManager.navigate(categoryUrl)
     const page = await playwrightManager.getPage()
     await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {})
 
-    // Se a URL derivada não caiu numa lista, tenta a breadcrumb da página do produto
+    // Se a navegação não caiu numa lista válida, tenta a breadcrumb do produto
     if (!page.url().includes("lista.mercadolivre.com.br")) {
       const breadcrumbUrl = await extractCategoryUrlFromProductPage(product.url)
       if (breadcrumbUrl) {
