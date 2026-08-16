@@ -1250,12 +1250,36 @@ Sugira:
 
 # Estratégia de Precificação
 
+Avalie:
+
+- Nível de competitividade dos preços praticados na categoria.
+- Distribuição dos preços entre as faixas de entrada, intermediária e premium.
+- Sensibilidade a preço e risco de guerra de preços.
+- Oportunidade de posicionamento (entrada, competitivo ou premium).
+- Impacto das taxas do Mercado Livre e do custo de importação na margem final.
+
+### Análise de Competitividade de Preço
+
 Defina:
 
 - Preço de entrada
 - Preço competitivo
 - Faixa máxima aceitável
 - Estratégia contra líderes
+
+### Classificação da Competitividade de Preço
+
+Escolha uma:
+
+- Muito Baixa
+- Baixa
+- Média
+- Alta
+- Muito Alta
+
+### Justificativa
+
+Explique a classificação com base nas métricas do AvantPro (menor preço, maior preço, menor faturamento, maior faturamento) e na distribuição dos concorrentes por faixa de preço.
 
 ---
 
@@ -1585,7 +1609,16 @@ Bullet points com **negrito** no tipo de gatilho.
 
 ### 💲 Estratégia de Precificação
 
-#### 💰 Preços Recomendados
+#### � Análise de Competitividade de Preço
+Parágrafo(s) avaliando o nível de competitividade dos preços praticados e a distribuição dos concorrentes entre as faixas de entrada, intermediária e premium.
+
+#### 🎯 Classificação da Competitividade de Preço: **[CLASSIFICAÇÃO]**
+Formato: "**ALTA**", "**MÉDIA**", "**BAIXA**", "**MUITO ALTA**" ou "**MUITO BAIXA**"
+
+#### 📝 Justificativa
+Parágrafo(s) explicando a classificação com base nas métricas do AvantPro (menor/maior preço, menor/maior faturamento).
+
+#### �💰 Preços Recomendados
 Tabela Markdown: Estratégia | Preço | Margem Estimada.
 
 #### ⚔️ Estratégia Contra Líderes
