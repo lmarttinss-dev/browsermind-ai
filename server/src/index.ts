@@ -1766,28 +1766,43 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
     }
 
     // Faz login no form avantauth-root, se presente
-    const form = await playwrightManager.findAvantproAuthForm()
+    let form = await playwrightManager.findAvantproAuthForm()
     if (form) {
       await playwrightManager.loginAvantproViaForm(avantproEmail)
     }
 
-    // SÓ analisa se as métricas do AvantPro carregarem
-    const avantproResult = await playwrightManager.waitForAvantproData({ timeout: 30000 })
+    // BLOQUEIO OBRIGATÓRIO: só analisa se as métricas do AvantPro carregarem
+    let avantproResult = await playwrightManager.waitForAvantproData({ timeout: 30000 })
+
+    // Se ainda não autenticado, tenta o login uma última vez (o form pode ter
+    // aparecido somente após o primeiro carregamento da página)
+    if (avantproResult === "not_authenticated") {
+      form = await playwrightManager.findAvantproAuthForm()
+      if (form) {
+        await playwrightManager.loginAvantproViaForm(avantproEmail)
+        avantproResult = await playwrightManager.waitForAvantproData({ timeout: 30000 })
+      }
+    }
+
     if (avantproResult !== "loaded") {
       res.status(422).json({
         success: false,
         error: avantproResult === "not_authenticated"
           ? "Não foi possível autenticar no AvantPro. Verifique o email cadastrado."
-          : "As métricas do AvantPro não carregaram. Tente novamente.",
+          : "As métricas do AvantPro não carregaram. A reanálise foi cancelada.",
       })
       return
     }
 
-    // Extrai o conteúdo da página e monta o prompt
+    // Extrai o conteúdo da página e os dados AvantPro (fonte da verdade)
     const extracted = await playwrightManager.extractPageContent()
+    const avantproContent = await playwrightManager.extractAvantproContent()
     const content = [
       `URL: ${extracted.url}`,
       `Title: ${extracted.title}`,
+      avantproContent
+        ? `\n===== DADOS AVANTPRO (FONTE DA VERDADE — USE ESTES NÚMEROS) =====\n${avantproContent}\n===== FIM DOS DADOS AVANTPRO =====`
+        : "",
       `\nHeadings:\n${extracted.headings.join("\n")}`,
       Object.keys(extracted.metaTags).length > 0
         ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`

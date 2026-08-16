@@ -322,30 +322,42 @@ export class PlaywrightManager {
       }
     }
 
-    // Polling: verifica o BODY INTEIRO para "Carregando dados Avantpro" e métricas
-    // Isso é mais robusto do que verificar apenas elementos com classe avantpro
+    // Polling: verifica o BODY INTEIRO e os elementos injetados pela extensão
+    // (incluindo shadow roots abertos) para garantir que as MÉTRICAS REAIS
+    // do AvantPro carregaram — e não apenas a interface/login da extensão.
     const checkScript = `(() => {
       const body = document.body.innerText || "";
-      const bodyLower = body.toLowerCase();
 
-      // Verifica se extensão está pedindo login
-      if (/comece a usar o avantpro|avantpro.*faça login|avantpro.*cadastre-se/i.test(body)) return "not_auth";
+      // Verifica se extensão está pedindo login/cadastro
+      if (/comece a usar o avantpro|avantpro.*faça login|avantpro.*cadastre-se|avantpro.*sign in|avantpro.*log in/i.test(body)) return "not_auth";
 
-      // Verifica se ainda está carregando (texto específico do AvantPro)
-      if (/carregando dados avantpro|carregando.*avantpro/i.test(body)) return "loading";
+      // Coleta o texto de elementos AvantPro (DOM normal + shadow roots abertos)
+      const selector = "${avantproSelector}";
+      const collect = (root) => {
+        let text = "";
+        root.querySelectorAll(selector).forEach(el => {
+          const t = (el.textContent || "").trim();
+          if (t) text += " " + t;
+        });
+        return text;
+      };
+      let avantText = collect(document);
+      document.querySelectorAll("*").forEach(el => {
+        if (el.shadowRoot) avantText += " " + collect(el.shadowRoot);
+      });
 
-      // Verifica se dados do AvantPro estão presentes (métricas típicas)
-      // Busca nos elementos avantpro especificamente
-      const avantEls = document.querySelectorAll("${avantproSelector}");
-      if (avantEls.length > 0) {
-        const avantText = Array.from(avantEls).map(e => e.textContent || "").join(" ");
-        if (/carregando/i.test(avantText)) return "loading";
-        if (/\\d+[.,]\\d+|R\\$|vendas|visitas|faturamento|conversão|estoque|receita|lucro|margem/i.test(avantText)) return "ready";
-      }
+      const lower = avantText.toLowerCase();
 
-      // Fallback: verifica no body se existem padrões de dados AvantPro
-      // (ex: tabelas de métricas, dados de vendas injetados pela extensão)
-      if (/avantpro/i.test(body) && /vendas.*\\d|faturamento.*\\d|estoque.*\\d|visitas.*\\d|conversão.*\\d|receita.*\\d/i.test(body)) return "ready";
+      // Login/CTA da extensão ainda visível
+      if (/faça login|cadastre-se|comece a usar|digite seu e-mail|sign in|log in|criar conta/i.test(lower)) return "not_auth";
+
+      // Ainda carregando
+      if (/carregando|loading/i.test(lower)) return "loading";
+
+      // MÉTRICAS REAIS: exige label de métrica + ao menos um valor numérico
+      const hasMetricLabel = /(vendas|faturamento|estoque|visitas|conversão|receita|vendedores|catálogos|logística|full|flex|correios|preço|taxa|medalha)/i.test(lower);
+      const hasMetricValue = /[0-9]{2,}/.test(avantText);
+      if (avantText.trim() && hasMetricLabel && hasMetricValue) return "ready";
 
       return "waiting";
     })()`
@@ -474,6 +486,48 @@ export class PlaywrightManager {
       console.log("⚠️ AvantPro: falha ao preencher form de login:", err instanceof Error ? err.message : err)
       return false
     }
+  }
+
+  /**
+   * Extrai o conteúdo textual injetado pela extensão AvantPro (métricas),
+   * incluindo elementos em shadow roots abertos e iframes da extensão.
+   * Retorna o texto bruto ou "" se nada for encontrado.
+   */
+  async extractAvantproContent(): Promise<string> {
+    const page = await this.getPage()
+    const selector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro]"
+
+    const collectScript = `(() => {
+      const selector = ${JSON.stringify(selector)};
+      const collect = (root) => {
+        let text = "";
+        root.querySelectorAll(selector).forEach(el => {
+          const t = (el.textContent || "").trim();
+          if (t) text += t + "\\n";
+        });
+        return text;
+      };
+      let out = collect(document);
+      document.querySelectorAll("*").forEach(el => {
+        if (el.shadowRoot) out += collect(el.shadowRoot);
+      });
+      return out.trim();
+    })()`
+
+    let content = (await page.evaluate(collectScript).catch(() => "")) as string
+
+    // Também coleta de iframes (a extensão pode injetar um iframe próprio)
+    for (const frame of page.frames()) {
+      if (frame === page.mainFrame()) continue
+      try {
+        const frameContent = (await frame.evaluate(collectScript).catch(() => "")) as string
+        if (frameContent) content += "\\n" + frameContent
+      } catch {
+        // frame cross-origin pode lançar; ignora
+      }
+    }
+
+    return content.trim()
   }
 
   async extractPageContent(): Promise<{
