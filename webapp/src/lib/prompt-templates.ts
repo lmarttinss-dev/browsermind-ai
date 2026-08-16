@@ -1258,7 +1258,43 @@ Avalie:
 - Oportunidade de posicionamento (entrada, competitivo ou premium).
 - Impacto das taxas do Mercado Livre e do custo de importação na margem final.
 
-### Análise de Competitividade de Preço
+### Métricas de Precificação da Categoria
+
+Com base nas métricas do AvantPro, monte a tabela:
+
+| Métrica | Valor | Análise |
+|---------|-------|----------|
+| **Menor preço** | **R$ [valor]** | [análise] |
+| **Maior preço** | **R$ [valor]** | [análise] |
+| **Amplitude de preço** | **R$ [min] a R$ [max]** | [análise] |
+| **Menor faturamento** | **R$ [valor]** | [análise] |
+| **Maior faturamento** | **R$ [valor]** | [análise] |
+
+### Distribuição por Faixa de Preço
+
+Classifique os concorrentes por faixa e indique a participação de cada uma:
+
+| Faixa | Intervalo de Preço | Concorrentes | % do Mercado |
+|-------|-------------------|--------------|--------------|
+| **Entrada** | **R$ X,XX a R$ X,XX** | **X** | **X%** |
+| **Intermediária** | **R$ X,XX a R$ X,XX** | **X** | **X%** |
+| **Premium** | **R$ X,XX a R$ X,XX** | **X** | **X%** |
+
+### Gráfico de Distribuição de Preços (Mermaid)
+
+Gere um gráfico de pizza com a participação de cada faixa de preço:
+
+> 🚨 **ATENÇÃO**: Use apenas os rótulos: Entrada, Intermediária, Premium. Os percentuais DEVEM somar 100%.
+
+\`\`\`mermaid
+pie
+    title "Distribuição de Preços"
+    "Entrada" : 40
+    "Intermediária" : 35
+    "Premium" : 25
+\`\`\`
+
+### Posicionamento Recomendado
 
 Defina:
 
@@ -1611,6 +1647,15 @@ Bullet points com **negrito** no tipo de gatilho.
 
 #### � Análise de Competitividade de Preço
 Parágrafo(s) avaliando o nível de competitividade dos preços praticados e a distribuição dos concorrentes entre as faixas de entrada, intermediária e premium.
+
+#### 📊 Métricas de Precificação da Categoria
+Tabela Markdown de 3 colunas (Métrica | Valor | Análise) com as linhas: Menor preço, Maior preço, Amplitude de preço, Menor faturamento, Maior faturamento.
+
+#### 📊 Distribuição por Faixa de Preço
+Tabela Markdown de 4 colunas (Faixa | Intervalo de Preço | Concorrentes | % do Mercado) com as linhas: Entrada, Intermediária, Premium.
+
+#### Gráfico de Distribuição de Preços
+Bloco \`\`\`mermaid com pie chart das 3 faixas (Entrada, Intermediária, Premium), percentuais somando 100%.
 
 #### 🎯 Classificação da Competitividade de Preço: **[CLASSIFICAÇÃO]**
 Formato: "**ALTA**", "**MÉDIA**", "**BAIXA**", "**MUITO ALTA**" ou "**MUITO BAIXA**"
