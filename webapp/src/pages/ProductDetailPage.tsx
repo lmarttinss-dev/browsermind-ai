@@ -30,7 +30,7 @@ type Tab = "produto" | "fornecedores" | "mercado"
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { avantproEmail, selectedModel } = useStore()
+  const { avantproEmail, selectedModel, browserActive, launchBrowser } = useStore()
   const [product, setProduct] = useState<PipelineProduct | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -102,6 +102,11 @@ export const ProductDetailPage = () => {
     setIsAnalyzingMarket(true)
     setMarketError(null)
     try {
+      // Inicia o browser automaticamente (modo headed, necessário para a extensão AvantPro)
+      if (!browserActive) {
+        await launchBrowser(false)
+      }
+
       const res = await api.analyzeMarket(product._id, {
         email: avantproEmail || undefined,
         model: selectedModel,
