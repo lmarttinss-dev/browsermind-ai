@@ -653,7 +653,7 @@ Sua resposta DEVE começar exatamente assim:
 - **EXEMPLO CORRETO (sempre faça isto):** a Categoria na linha 2, a URL na linha 3, a Data na linha 4 — cada uma em sua própria linha
 - O título é EXATAMENTE \`# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre\`
 - A URL da categoria DEVE ser a URL completa do Mercado Livre, em formato de link Markdown \`[URL](URL)\` para abrir em nova aba
-- A data DEVE estar no formato "DD de Mês de AAAA"
+- A data DEVE estar no formato "DD de Mês de AAAA às HH:MM"
 - NÃO invente um título diferente (ex: "Relatório de Market Intelligence" está PROIBIDO)
 
 ## Estrutura geral
@@ -1405,7 +1405,7 @@ O relatório DEVE começar exatamente com este formato:
 - **ANTI-EXEMPLO (PROIBIDO):** \`**Categoria:** X **URL:** Y **Data:** Z\` — tudo na mesma linha.
 - **EXEMPLO CORRETO:** cada campo \`**Categoria:**\`, \`**URL:**\` e \`**Data da análise:**\` em sua própria linha, um abaixo do outro.
 - **URL da categoria**: Use SEMPRE a URL completa do Mercado Livre (ex: https://lista.mercadolivre.com.br/celulares-telefones/acessorios-celulares/aneis-celulares). Use formato de link Markdown \`[URL](URL)\` para que o link abra em nova aba. **NUNCA** use apenas o path relativo.
-- **Data da análise**: Use a data atual no formato "DD de Mês de AAAA".
+- **Data da análise**: Use a data atual no formato "DD de Mês de AAAA às HH:MM".
 
 ## Seções Obrigatórias (na ordem)
 

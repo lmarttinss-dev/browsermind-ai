@@ -517,7 +517,8 @@ app.post("/api/analyze", async (req, res) => {
     // Injeta a data de hoje para templates que precisam (ex: análise de mercado)
     const hoje = new Date()
     const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+    const horaHoje = `${String(hoje.getHours()).padStart(2, "0")}:${String(hoje.getMinutes()).padStart(2, "0")}`
+    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()} às ${horaHoje}`
     const dateHint = templateId === "analise-oferta-demanda-concorrencia"
       ? `\n\n⚠️ DATA CORRETA: Hoje é ${dataHoje}. Use EXATAMENTE esta data no campo "**Data da análise:**" do relatório.`
       : ""
@@ -617,9 +618,9 @@ app.post("/api/analyze", async (req, res) => {
     if (templateId === "analise-oferta-demanda-concorrencia") {
       const hoje = new Date()
       const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-      const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+      const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()} às ${String(hoje.getHours()).padStart(2, "0")}:${String(hoje.getMinutes()).padStart(2, "0")}`
       aiResponse = aiResponse.replace(
-        /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}/,
+        /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}( às \d{1,2}:\d{2})?/,
         `**Data da análise:** ${dataCorreta}`
       )
     }
@@ -1816,7 +1817,8 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
     // Injeta a data de hoje para o template de mercado
     const hoje = new Date()
     const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+    const horaHoje = `${String(hoje.getHours()).padStart(2, "0")}:${String(hoje.getMinutes()).padStart(2, "0")}`
+    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()} às ${horaHoje}`
     const dateHint = `\n\n⚠️ DATA CORRETA: Hoje é ${dataHoje}. Use EXATAMENTE esta data no campo "**Data da análise:**" do relatório.`
 
     const userMessage = `Conteúdo da página:\n${content.slice(0, 45000)}${dateHint}`
@@ -1826,9 +1828,9 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
     const aiResponse = await callAI(selectedModel, prompt, userMessage)
 
     // Corrige a data da análise (bypass do cutoff da IA)
-    const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+    const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()} às ${String(hoje.getHours()).padStart(2, "0")}:${String(hoje.getMinutes()).padStart(2, "0")}`
     const finalReport = aiResponse.replace(
-      /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}/,
+      /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}( às \d{1,2}:\d{2})?/,
       `**Data da análise:** ${dataCorreta}`
     )
 
