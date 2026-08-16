@@ -1819,9 +1819,11 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
     const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
     const dateHint = `\n\n⚠️ DATA CORRETA: Hoje é ${dataHoje}. Use EXATAMENTE esta data no campo "**Data da análise:**" do relatório.`
 
-    const userMessage = `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}${dateHint}`
+    const userMessage = `Conteúdo da página:\n${content.slice(0, 45000)}${dateHint}`
 
-    const aiResponse = await callAI(selectedModel, SYSTEM_PROMPT, userMessage)
+    // Usa APENAS o template de mercado (analise-oferta-demanda-concorrencia)
+    // como system prompt — sem o SYSTEM_PROMPT genérico de automação.
+    const aiResponse = await callAI(selectedModel, prompt, userMessage)
 
     // Corrige a data da análise (bypass do cutoff da IA)
     const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
