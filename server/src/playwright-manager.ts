@@ -1,4 +1,4 @@
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
+import { chromium, type Browser, type BrowserContext, type Page, type Frame, type Locator } from "playwright";
 import fs from "fs";
 import path from "path";
 
@@ -268,6 +268,7 @@ export class PlaywrightManager {
     const url = page.url()
     const isMlPage = /mercadolivre\.com\.br\/(.*\/p\/MLB|MLB[-\d])/.test(url)
       || /produto\.mercadolivre\.com\.br\/MLB/.test(url)
+      || /lista\.mercadolivre\.com\.br\//.test(url)
     if (!isMlPage) return false
 
     // Espera a extensão injetar qualquer elemento no DOM (classe, id, ou data attribute)
@@ -374,6 +375,105 @@ export class PlaywrightManager {
 
     console.log("⚠️ AvantPro: timeout aguardando dados carregarem")
     return false
+  }
+
+  /**
+   * Localiza o form de login do AvantPro (elemento avantauth-root) na página.
+   * Busca em DOM normal, shadow DOM aberto (Playwright perfura shadow roots abertos)
+   * e iframes. Retorna os locators do input e do botão de submit, ou null.
+   */
+  async findAvantproAuthForm(): Promise<{ input: Locator; submit: Locator } | null> {
+    const page = await this.getPage()
+
+    // Raízes possíveis do form de login da extensão
+    const rootSelector = "#avantauth-root, [id*=avantauth], [class*=avantauth]"
+
+    for (const frame of page.frames()) {
+      try {
+        const root = frame.locator(rootSelector).first()
+        if ((await root.count()) === 0) continue
+
+        // Input: email → text → primeiro input não oculto → primeiro input
+        let input: Locator | null = null
+        for (const sel of ["input[type=email]", "input[type=text]", "input:not([type=hidden])", "input"]) {
+          const loc = root.locator(sel).first()
+          if ((await loc.count()) > 0) {
+            input = loc
+            break
+          }
+        }
+        if (!input) continue
+
+        // Botão de submit: type=submit → texto de login → primeiro button
+        let submit: Locator | null = null
+        const submitBtn = root.locator("button[type=submit]").first()
+        if ((await submitBtn.count()) > 0) {
+          submit = submitBtn
+        } else {
+          const textBtn = root.getByRole("button", {
+            name: /entrar|continuar|acessar|login|sign in|log in|avançar|próximo|acessar minha conta/i,
+          }).first()
+          if ((await textBtn.count()) > 0) {
+            submit = textBtn
+          } else {
+            const anyBtn = root.locator("button").first()
+            if ((await anyBtn.count()) > 0) submit = anyBtn
+          }
+        }
+        if (!submit) continue
+
+        return { input, submit }
+      } catch {
+        // Frame cross-origin pode lançar; segue para o próximo
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Faz login no AvantPro preenchendo o email no form renderizado pela extensão
+   * (avantauth-root). Retorna true se o form foi preenchido e submetido.
+   */
+  async loginAvantproViaForm(email: string): Promise<boolean> {
+    const page = await this.getPage()
+
+    const form = await this.findAvantproAuthForm()
+    if (!form) {
+      console.log("⏳ AvantPro: form de login (avantauth-root) não encontrado")
+      return false
+    }
+
+    try {
+      const { input, submit } = form
+
+      await input.waitFor({ state: "visible", timeout: 5000 }).catch(() => {})
+      await input.click({ timeout: 5000 }).catch(() => {})
+      await input.fill("", { timeout: 2000 }).catch(() => {})
+      await input.pressSequentially(email, { delay: 50 })
+      console.log("✅ AvantPro: email preenchido no form de login")
+
+      let submitted = false
+      try {
+        await submit.click({ timeout: 5000 })
+        submitted = true
+        console.log("✅ AvantPro: form de login submetido")
+      } catch {
+        submitted = false
+      }
+
+      if (!submitted) {
+        await input.press("Enter")
+        console.log("✅ AvantPro: form de login submetido via Enter")
+      }
+
+      // Dá um tempo para a extensão processar o login e buscar as métricas
+      await page.waitForTimeout(2000)
+      return true
+    } catch (err) {
+      console.log("⚠️ AvantPro: falha ao preencher form de login:", err instanceof Error ? err.message : err)
+      return false
+    }
   }
 
   async extractPageContent(): Promise<{

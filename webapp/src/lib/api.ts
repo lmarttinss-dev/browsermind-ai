@@ -133,6 +133,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ report }),
     }),
+  analyzeMarket: (id: string, params: { email?: string; model?: string; prompt: string }) =>
+    request<{ success: boolean; report: string; product: PipelineProduct }>(`/api/pipeline/${id}/analyze-market`, {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
 
   // Compare
   comparePipelineProducts: (model: string, stage: PipelineStage = "triagem", forceRefresh = false) =>

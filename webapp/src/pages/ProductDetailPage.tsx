@@ -6,7 +6,9 @@ import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
+import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
+import { useStore } from "@/store/useStore"
 
 const STAGE_LABELS: Record<PipelineStage, { label: string; color: string }> = {
   triagem: { label: "Triagem", color: "bg-gray-600 text-gray-200" },
@@ -28,6 +30,7 @@ type Tab = "produto" | "fornecedores" | "mercado"
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { avantproEmail, selectedModel } = useStore()
   const [product, setProduct] = useState<PipelineProduct | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,6 +42,8 @@ export const ProductDetailPage = () => {
   const [copySuccess, setCopySuccess] = useState(false)
   const [copySearch, setCopySearch] = useState("")
   const [urlCopied, setUrlCopied] = useState(false)
+  const [isAnalyzingMarket, setIsAnalyzingMarket] = useState(false)
+  const [marketError, setMarketError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -85,6 +90,29 @@ export const ProductDetailPage = () => {
   const handleSuppliersUpdate = (suppliers: Supplier[], supplierReport: string) => {
     if (!product) return
     setProduct({ ...product, suppliers, supplierReport })
+  }
+
+  const handleAnalyzeMarket = async () => {
+    if (!product) return
+    const marketTemplate = PROMPT_TEMPLATES.find((t) => t.id === "analise-oferta-demanda-concorrencia")
+    if (!marketTemplate) {
+      setMarketError("Template de análise de mercado não encontrado.")
+      return
+    }
+    setIsAnalyzingMarket(true)
+    setMarketError(null)
+    try {
+      const res = await api.analyzeMarket(product._id, {
+        email: avantproEmail || undefined,
+        model: selectedModel,
+        prompt: marketTemplate.content,
+      })
+      setProduct(res.product)
+    } catch (err) {
+      setMarketError(err instanceof Error ? err.message : "Erro ao analisar mercado")
+    } finally {
+      setIsAnalyzingMarket(false)
+    }
   }
 
   const handleOpenCopyModal = async () => {
@@ -407,27 +435,54 @@ export const ProductDetailPage = () => {
 
         {activeTab === "mercado" && (
           <div className="p-5">
-            {product.marketReport ? (
-              <>
-                <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Relatório de Mercado
-                </h3>
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={markdownComponents}
-                  >
-                    {product.marketReport}
-                  </ReactMarkdown>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Relatório de Mercado
+              </h3>
+              <button
+                onClick={handleAnalyzeMarket}
+                disabled={isAnalyzingMarket}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-emerald-700/50 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-500 text-emerald-300 rounded-lg transition-colors"
+              >
+                {isAnalyzingMarket ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <TrendingUp className="w-3.5 h-3.5" />
+                )}
+                {isAnalyzingMarket ? "Analisando..." : product.marketReport ? "Reanalisar Mercado" : "Analisar Mercado"}
+              </button>
+            </div>
+
+            {marketError && (
+              <div className="mb-4 px-3 py-2 bg-red-900/30 border border-red-800 rounded-lg text-sm text-red-300">
+                {marketError}
+              </div>
+            )}
+
+            {isAnalyzingMarket ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+                <div className="text-center">
+                  <p className="text-sm text-gray-300">Navegando e aguardando métricas do AvantPro...</p>
+                  <p className="text-xs text-gray-500 mt-1">Isso pode levar alguns segundos</p>
                 </div>
-              </>
+              </div>
+            ) : product.marketReport ? (
+              <div className="prose prose-invert max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {product.marketReport}
+                </ReactMarkdown>
+              </div>
             ) : (
               <div className="text-center py-16">
                 <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">Nenhum relatório de mercado disponível.</p>
                 <p className="text-gray-600 text-xs mt-1">
-                  Execute uma análise de oferta, demanda e concorrência e vincule a este produto.
+                  Clique em "Analisar Mercado" para executar a análise de oferta, demanda e concorrência.
                 </p>
               </div>
             )}

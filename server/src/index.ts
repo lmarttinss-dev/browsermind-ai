@@ -319,6 +319,102 @@ Diretrizes:
 - NUNCA use expressões JavaScript como document.URL, window.location etc. como selector — use "evaluate" em vez disso
 - Se não puder executar uma ação, explique o motivo`;
 
+/** Chama o modelo de IA configurado (Gemini/OpenAI/Claude/DeepSeek) e retorna o texto da resposta */
+async function callAI(
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+  screenshot?: string
+): Promise<string> {
+  let aiResponse: string
+
+  if (model === "gemini-flash-2.5" || model === "gemini-pro-2.5" || model === "gemini-flash-3" || model === "gemini-pro-3.1") {
+    const geminiModelMap: Record<string, string> = {
+      "gemini-flash-2.5": "gemini-2.5-flash",
+      "gemini-pro-2.5": "gemini-2.5-pro",
+      "gemini-flash-3": "gemini-3-flash-preview",
+      "gemini-pro-3.1": "gemini-3.1-pro-preview",
+    }
+    const geminiModel = geminiModelMap[model]
+    const key = apiKeys.gemini
+    if (!key) throw new Error("Chave Gemini não configurada. Configure em Settings.")
+
+    const parts: Array<Record<string, unknown>> = [
+      { text: systemPrompt },
+      { text: userMessage },
+    ]
+    if (screenshot) {
+      parts.push({ inline_data: { mime_type: "image/png", data: screenshot } })
+    }
+
+    const r = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${key}`,
+      { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: 16384 } }
+    )
+    aiResponse = r.data.candidates?.[0]?.content?.parts?.[0]?.text || ""
+
+  } else if (model === "gpt-4.1") {
+    const key = apiKeys.openai
+    if (!key) throw new Error("Chave OpenAI não configurada. Configure em Settings.")
+
+    const msgContent: Array<Record<string, unknown>> = [{ type: "text", text: userMessage }]
+    if (screenshot) {
+      msgContent.push({ type: "image_url", image_url: { url: `data:image/png;base64,${screenshot}` } })
+    }
+
+    const r = await axios.post("https://api.openai.com/v1/chat/completions", {
+      model: "gpt-4.1",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: msgContent },
+      ],
+      max_tokens: 16384,
+      temperature: 0.7,
+    }, { headers: { Authorization: `Bearer ${key}` } })
+    aiResponse = r.data.choices?.[0]?.message?.content || ""
+
+  } else if (model === "claude-sonnet") {
+    const key = apiKeys.anthropic
+    if (!key) throw new Error("Chave Anthropic não configurada. Configure em Settings.")
+
+    const msgContent: Array<Record<string, unknown>> = []
+    if (screenshot) {
+      msgContent.push({ type: "image", source: { type: "base64", media_type: "image/png", data: screenshot } })
+    }
+    msgContent.push({ type: "text", text: userMessage })
+
+    const r = await axios.post("https://api.anthropic.com/v1/messages", {
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 16384,
+      system: systemPrompt,
+      messages: [{ role: "user", content: msgContent }],
+    }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } })
+    aiResponse = r.data.content?.[0]?.text || ""
+
+  } else if (model === "deepseek-flash" || model === "deepseek-pro") {
+    const key = apiKeys.deepseek
+    if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
+    const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
+
+    const r = await axios.post("https://api.deepseek.com/chat/completions", {
+      model: deepseekModel,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage },
+      ],
+      max_tokens: 16384,
+      temperature: 0.7,
+    }, { headers: { Authorization: `Bearer ${key}` } })
+    aiResponse = r.data.choices?.[0]?.message?.content || ""
+
+  } else {
+    throw new Error(`Modelo não suportado: ${model}`)
+  }
+
+  if (!aiResponse) throw new Error("Resposta vazia da IA")
+  return aiResponse
+}
+
 app.post("/api/analyze", async (req, res) => {
   try {
     const { prompt, model, pageContent, screenshot, templateId, qnaContent } = req.body as {
@@ -1535,8 +1631,180 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
   }
 }
 
+// ==========================================
+// Market Analysis — Reanálise automática de mercado (aba Mercado)
+// ==========================================
+
+/** Converte nome de categoria em slug de URL do Mercado Livre (ex: "Celulares e Telefones > Acessórios" → "celulares-e-telefones/acessorios") */
+function slugifyCategory(category: string): string {
+  if (!category) return ""
+  return category
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s*>\s*/g, "/")
+    .replace(/&/g, "e")
+    .replace(/[^a-z0-9/\s-]/g, "")
+    .replace(/[\s-]+/g, "-")
+    .replace(/\/+/g, "/")
+    .replace(/^\/+|\/+$/g, "")
+    .trim()
+}
+
+/** Deriva a URL da categoria no Mercado Livre a partir do nome da categoria */
+function deriveMlCategoryUrl(category: string): string | null {
+  const slug = slugifyCategory(category)
+  if (!slug) return null
+  return `https://lista.mercadolivre.com.br/${slug}`
+}
+
+/** Extrai a URL da categoria (link da breadcrumb) navegando na página de produto do ML */
+async function extractCategoryUrlFromProductPage(productUrl: string): Promise<string | null> {
+  try {
+    await playwrightManager.navigate(productUrl)
+    const page = await playwrightManager.getPage()
+    await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {})
+
+    const categoryUrl = (await page.evaluate(`(() => {
+      const links = Array.from(document.querySelectorAll("a.andes-breadcrumb__link, .andes-breadcrumb a, .ui-breadcrumb a"))
+      const hrefs = links.map(a => a.href).filter(h => h && h.includes("lista.mercadolivre.com.br"))
+      return hrefs[hrefs.length - 1] || ""
+    })()`)) as string
+    return categoryUrl || null
+  } catch {
+    return null
+  }
+}
+
+const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const { email, model, prompt } = req.body as { email?: string; model?: string; prompt?: string }
+
+    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+      res.status(400).json({ error: "Campo 'prompt' é obrigatório" })
+      return
+    }
+
+    const selectedModel = model || process.env.DEFAULT_MODEL || "gemini-flash-2.5"
+
+    const status = await playwrightManager.getStatus()
+    if (!status.active) {
+      res.status(400).json({ success: false, error: "Browser não está ativo. Inicie o browser primeiro." })
+      return
+    }
+
+    // Resolve o email do AvantPro: corpo da requisição → chrome.storage da extensão
+    let avantproEmail = (email || "").trim()
+    if (!avantproEmail) {
+      try {
+        const storedAuth = await playwrightManager.evaluateInServiceWorker(
+          AVANTPRO_CONFIG.extensionId,
+          `chrome.storage.local.get("avantpro_auth").then(d => JSON.stringify(d.avantpro_auth || null))`
+        )
+        const authData = JSON.parse(storedAuth)
+        avantproEmail = (authData?.email || "").trim()
+      } catch { /* ignora */ }
+    }
+    if (!avantproEmail) {
+      res.status(400).json({ success: false, error: "Email do AvantPro não configurado. Informe em Settings ou no corpo da requisição." })
+      return
+    }
+
+    // Resolve a URL da categoria no ML
+    let categoryUrl = deriveMlCategoryUrl(product.category)
+    if (!categoryUrl) {
+      categoryUrl = await extractCategoryUrlFromProductPage(product.url)
+    }
+    if (!categoryUrl) {
+      res.status(400).json({ success: false, error: "Não foi possível determinar a URL da categoria." })
+      return
+    }
+
+    // Navega até a categoria
+    await playwrightManager.navigate(categoryUrl)
+    const page = await playwrightManager.getPage()
+    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {})
+
+    // Se a URL derivada não caiu numa lista, tenta a breadcrumb da página do produto
+    if (!page.url().includes("lista.mercadolivre.com.br")) {
+      const breadcrumbUrl = await extractCategoryUrlFromProductPage(product.url)
+      if (breadcrumbUrl) {
+        await playwrightManager.navigate(breadcrumbUrl)
+        await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {})
+      }
+    }
+
+    // Faz login no form avantauth-root, se presente
+    const form = await playwrightManager.findAvantproAuthForm()
+    if (form) {
+      await playwrightManager.loginAvantproViaForm(avantproEmail)
+    }
+
+    // SÓ analisa se as métricas do AvantPro carregarem
+    const avantproResult = await playwrightManager.waitForAvantproData({ timeout: 30000 })
+    if (avantproResult !== "loaded") {
+      res.status(422).json({
+        success: false,
+        error: avantproResult === "not_authenticated"
+          ? "Não foi possível autenticar no AvantPro. Verifique o email cadastrado."
+          : "As métricas do AvantPro não carregaram. Tente novamente.",
+      })
+      return
+    }
+
+    // Extrai o conteúdo da página e monta o prompt
+    const extracted = await playwrightManager.extractPageContent()
+    const content = [
+      `URL: ${extracted.url}`,
+      `Title: ${extracted.title}`,
+      `\nHeadings:\n${extracted.headings.join("\n")}`,
+      Object.keys(extracted.metaTags).length > 0
+        ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
+        : "",
+      extracted.links.length > 0
+        ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
+        : "",
+      `\nContent:\n${extracted.visibleText}`,
+    ].filter(Boolean).join("\n")
+
+    // Injeta a data de hoje para o template de mercado
+    const hoje = new Date()
+    const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+    const dateHint = `\n\n⚠️ DATA CORRETA: Hoje é ${dataHoje}. Use EXATAMENTE esta data no campo "**Data da análise:**" do relatório.`
+
+    const userMessage = `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}${dateHint}`
+
+    const aiResponse = await callAI(selectedModel, SYSTEM_PROMPT, userMessage)
+
+    // Corrige a data da análise (bypass do cutoff da IA)
+    const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
+    const finalReport = aiResponse.replace(
+      /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}/,
+      `**Data da análise:** ${dataCorreta}`
+    )
+
+    product.marketReport = finalReport
+    await product.save()
+
+    res.json({ success: true, report: finalReport, product })
+  } catch (error) {
+    const msg = axios.isAxiosError(error)
+      ? error.response?.data?.error?.message || error.message
+      : error instanceof Error ? error.message : String(error)
+    res.status(500).json({ success: false, error: msg })
+  }
+}
+
 // Registrar rotas de suppliers e compare no pipeline router
 pipelineRouter.post("/compare", handleCompareProducts)
+pipelineRouter.post("/:id/analyze-market", handleAnalyzeMarket)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
 pipelineRouter.post("/:id/suppliers/manual", handleAddManualSupplier)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
