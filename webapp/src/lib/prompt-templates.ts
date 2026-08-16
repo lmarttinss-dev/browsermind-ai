@@ -86,7 +86,7 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Análise pela idade do anúncio (use a Data de criação do AvantPro):
   - 🟢 Menos de 180 dias (6 meses) com bom ritmo de vendas → indica ALTA DEMANDA RECENTE e produto em ascensão (tendência de crescimento)
   - 🟡 Entre 180 e 365 dias com vendas consistentes → demanda CONSOLIDADA e estável
-  - � Mais de 365 dias → demanda MADURA, verifique se o ritmo de vendas ainda é relevante ou se o produto já passou do pico
+  - 🔴 Mais de 365 dias → demanda MADURA, verifique se o ritmo de vendas ainda é relevante ou se o produto já passou do pico
   - Cruze SEMPRE a idade do anúncio com o Ritmo atual: um anúncio jovem (< 180 dias) com alto volume de vendas é o melhor indicador de oportunidade quente
 
 ### Concorrência
@@ -129,7 +129,7 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Embalagem diferenciada
 - Atendimento pós-venda superior
 
-## � Análise de Perguntas, Respostas e Opiniões dos Clientes
+## 💬 Análise de Perguntas, Respostas e Opiniões dos Clientes
 
 > 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página.
 
@@ -160,7 +160,7 @@ PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Com
 - Oportunidades de melhoria no produto: qualidade, embalagem, manual, acessórios
 - Como o vendedor atual lida com reclamações (oportunidade de atendimento superior)
 
-## �🚚 Viabilidade para Importação Simplificada
+## 🚚 Viabilidade para Importação Simplificada
 
 ### Características do produto para importação
 
@@ -733,7 +733,7 @@ Determinar:
 | **Outros** | (quantos anúncios) | (Outros ÷ total × 100)% |
 | **Total** | (FULL + Flex + Correios + Outros) | **100%** |
 
-#### � Gráfico do Perfil Logístico (Mermaid)
+#### 📊 Gráfico do Perfil Logístico (Mermaid)
 
 Gere um gráfico de pizza com a distribuição dos tipos de envio na categoria:
 
@@ -748,7 +748,7 @@ pie
     "Outros" : 8
 \`\`\`
 
-#### �📝 Análise do Perfil Logístico
+#### 📝 Análise do Perfil Logístico
 
 - **Predominância:** identifique o tipo de envio dominante (ex: "58% dos anúncios usam FULL")
 - **Impacto competitivo:**
@@ -1371,7 +1371,7 @@ O relatório DEVE começar exatamente com este formato:
 
 ---
 
-## �📊 Métricas da Categoria (AvantPro)
+## 📊 Métricas da Categoria (AvantPro)
 [Aqui vai a tabela de métricas — SEMPRE em formato de tabela Markdown de 2 colunas: Métrica | Valor]
 \`\`\`
 
@@ -1593,7 +1593,7 @@ Bullet points.
 
 ---
 
-### � Sugestão de Precificação para Venda
+### 💲 Sugestão de Precificação para Venda
 
 #### 📊 Análise das Faixas de Preço da Concorrência
 Tabela Markdown: Faixa | Intervalo de Preço | Concorrentes | % do Mercado.
@@ -1615,7 +1615,7 @@ Tabela Markdown: Fase | Preço | Objetivo | Gatilho para Mudança.
 
 ---
 
-### �📋 Conclusão Executiva
+### 📋 Conclusão Executiva
 
 Lista numerada de 1 a 6 respondendo exatamente:
 
@@ -1881,7 +1881,7 @@ Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
 
 ---
 
-## � Análise de Perguntas, Respostas e Opiniões dos Clientes (Catálogo)
+## 💬 Análise de Perguntas, Respostas e Opiniões dos Clientes (Catálogo)
 
 > 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. No catálogo, as opiniões e perguntas são COMPARTILHADAS entre todos os vendedores — problemas de um vendedor afetam a percepção de todos.
 
@@ -1915,7 +1915,7 @@ Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
 
 ---
 
-## �📊 Market Share Estimado no Catálogo
+## 📊 Market Share Estimado no Catálogo
 
 > Calcule a fatia de mercado de cada vendedor com base nas vendas proporcionais.
 
@@ -2092,7 +2092,50 @@ Escolha UMA estratégia principal:
 
 ---
 
-## 📊 Métricas do AvantPro
+## � Características do Produto
+
+### ⚙️ Especificações Técnicas
+
+- Categoria / subcategoria:
+- Material e composição:
+- Dimensões e peso:
+- Cores / tamanhos / modelos (e variações disponíveis):
+- Compatibilidade: (quando aplicável)
+- Especificações relevantes: (voltagem, conectividade, capacidade, etc.)
+- Itens inclusos na embalagem:
+
+### 📋 Compliance e Certificação
+
+- Certificações exigidas no Brasil (Anatel, INMETRO, MAPA, etc.): possui ou não?
+- Tamanho/peso adequado para envio? (Sim / Não — impacto no frete)
+- Produto frágil? (Sim / Não — risco de avaria no transporte)
+- Embalagem adequada ao transporte? (Sim / Não)
+
+### ✈️ Viabilidade de Importação
+
+- NCM provável:
+- Alíquota de Imposto de Importação (II) estimada:
+- Tamanho/peso para courier: (Ideal / Viável / Problemático)
+- Risco alfandegário: (Baixo / Médio / Alto)
+- Fornecedor: (Nacional / Internacional / Importado por terceiros)
+
+### ⚠️ Sinais de Qualidade e Risco
+
+- Histórico de defeitos: (cruzar com reclamações das avaliações)
+- Material de reposição ou durável?
+- Garantia informada? (Sim / Não)
+- Política de troca/devolução informada? (Sim / Não)
+
+### 🎯 Diferenciação e Oportunidade
+
+- Variações que faltam no mercado:
+- Acessórios / complementares para kits:
+- O que os clientes pedem e não encontram:
+- Ponto forte a reforçar vs. ponto fraco a corrigir:
+
+---
+
+## �📊 Métricas do AvantPro
 
 | Métrica | Valor |
 |---------|-------|
@@ -2123,65 +2166,26 @@ Escolha UMA estratégia principal:
 
 ---
 
-## � Análise da Descrição do Anúncio
+## 📝 Análise da Descrição do Anúncio
 
 > A descrição é um dos fatores mais importantes para conversão. Analise o conteúdo da página do produto e extraia insights acionáveis.
 
-### 📄 Estrutura e Qualidade
+### 🧠 Síntese da Descrição
 
-- Tamanho da descrição: (Curta < 500 chars / Média 500-2000 / Longa > 2000)
-- Formatação: (✅ usa bullet points / ❌ texto corrido / ✅ usa negrito e destaques / ❌ sem formatação)
-- Clareza: (✅ fácil de entender / ⚠️ confusa ou mal escrita / ❌ incompreensível)
-- Ortografia e gramática: (✅ impecável / ⚠️ pequenos erros / ❌ muitos erros)
+> Antes de avaliar cada aspecto, SINTETIZE a descrição: leia o texto completo e produza um resumo fiel e condensado do que o anúncio comunica. NÃO copie o texto integral — extraia a essência.
 
-### 🔍 Cobertura de Informações
-
-Marque o que a descrição CONTÉM e o que está FALTANDO:
-
-| Informação | Presente? | Qualidade |
-|-----------|-----------|----------|
-| Especificações técnicas | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Dimensões e peso | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Material / composição | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Modo de usar / instruções | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Compatibilidade | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Garantia | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Política de troca/devolução | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Prazo de entrega | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Itens inclusos na embalagem | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| FAQ / perguntas frequentes | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-| Comparação com concorrentes | ✅ / ❌ | ⭐⭐⭐⭐⭐ |
-
-### 🎯 Gatilhos de Venda Utilizados
-
-- Gatilho de escassez: ("últimas unidades", "estoque limitado") — ✅ / ❌
-- Gatilho de urgência: ("promoção por tempo limitado", "aproveite hoje") — ✅ / ❌
-- Gatilho de prova social: ("mais vendido", "X clientes satisfeitos") — ✅ / ❌
-- Gatilho de autoridade: ("recomendado por", "certificado por") — ✅ / ❌
-- Gatilho de reciprocidade: ("brinde", "garantia estendida grátis") — ✅ / ❌
-- Call to action claro: ("compre agora", "garanta o seu") — ✅ / ❌
-
-### 🔑 Análise de SEO na Descrição
-
-- Palavras-chave principais presentes: (liste as 3-5 keywords mais relevantes encontradas)
-- Palavras-chave FALTANDO: (quais keywords de alto volume NÃO estão na descrição?)
-- Densidade de keywords: (excessiva / equilibrada / insuficiente)
-- Uso de sinônimos e variações: (Sim / Não — importante para SEO semântico)
-
-### 💡 Oportunidades de Melhoria na Descrição
-
-- Top 3 informações que FALTAM e que aumentariam a conversão:
+- Resumo da descrição (3-5 tópicos objetivos):
   1.
   2.
   3.
-- Sugestão de estrutura melhorada: (ex: "comece com benefícios, depois especificações, depois FAQ")
-- Gatilhos que deveriam ser adicionados:
-- Tom da descrição atual: (muito técnico / muito vendedor / equilibrado / frio)
-- Tom recomendado: (sugestão baseada no público-alvo do produto)
+- Proposta de valor central: (o principal benefício ou diferencial que a descrição vende)
+- Público-alvo implícito: (para quem a descrição foi escrita)
+- Mensagem principal: (frase-síntese que resume o apelo do anúncio)
+- Tom e persona da descrição: (técnico / vendedor / institucional / informal — e a "voz" que o texto assume)
 
 ---
 
-## �💰 Análise Financeira
+## 💰 Análise Financeira
 
 ### Demonstração por Unidade
 
@@ -2262,7 +2266,7 @@ Cruze a idade do anúncio com as Vendas mensais para avaliar maturidade:
 
 ---
 
-## � Análise de Perguntas, Respostas e Opiniões dos Clientes
+## 💬 Análise de Perguntas, Respostas e Opiniões dos Clientes
 
 > 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página. As opiniões dos clientes são a FONTE MAIS RICA de pontos negativos e oportunidades de melhoria.
 
@@ -2295,7 +2299,7 @@ Cruze a idade do anúncio com as Vendas mensais para avaliar maturidade:
 
 ---
 
-## �🚨 Pontos Negativos e Riscos
+## 🚨 Pontos Negativos e Riscos
 
 > ⚠️ Esta é a seção mais importante do relatório. Seja CRÍTICO e DIRETO. Liste TODO e QUALQUER ponto negativo identificado, por menor que pareça.
 
