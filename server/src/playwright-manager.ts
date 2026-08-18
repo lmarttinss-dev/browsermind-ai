@@ -272,7 +272,7 @@ export class PlaywrightManager {
     if (!isMlPage) return false
 
     // Espera a extensão injetar qualquer elemento no DOM (classe, id, ou data attribute)
-    const avantproSelector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro]"
+    const avantproSelector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro], [id*=avantauth], [class*=avantauth]"
     try {
       await page.waitForSelector(avantproSelector, { timeout: 10000 })
     } catch {
@@ -282,59 +282,41 @@ export class PlaywrightManager {
 
     console.log("✅ AvantPro: elementos detectados no DOM")
 
-    // Polling: verifica o BODY INTEIRO e os elementos injetados pela extensão
-    // (incluindo shadow roots abertos) para garantir que as MÉTRICAS REAIS
-    // do AvantPro carregaram — e não apenas a interface/login da extensão.
-    const checkScript = `(() => {
-      const body = document.body.innerText || "";
-
-      // Verifica se extensão está pedindo login/cadastro
-      if (/comece a usar o avantpro|avantpro.*faça login|avantpro.*cadastre-se|avantpro.*sign in|avantpro.*log in/i.test(body)) return "not_auth";
-
-      // Coleta o texto de elementos AvantPro (DOM normal + shadow roots abertos)
-      const selector = "${avantproSelector}";
-      const collect = (root) => {
-        let text = "";
-        root.querySelectorAll(selector).forEach(el => {
-          const t = (el.textContent || "").trim();
-          if (t) text += " " + t;
-        });
-        return text;
-      };
-      let avantText = collect(document);
-      document.querySelectorAll("*").forEach(el => {
-        if (el.shadowRoot) avantText += " " + collect(el.shadowRoot);
-      });
-
-      const lower = avantText.toLowerCase();
-
-      // Login/CTA da extensão ainda visível
-      if (/faça login|cadastre-se|comece a usar|digite seu e-mail|sign in|log in|criar conta/i.test(lower)) return "not_auth";
-
-      // Ainda carregando
-      if (/carregando|loading/i.test(lower)) return "loading";
-
-      // MÉTRICAS REAIS: exige label de métrica + ao menos um valor numérico
-      const hasMetricLabel = /(vendas|faturamento|estoque|visitas|conversão|receita|vendedores|catálogos|logística|full|flex|correios|preço|taxa|medalha)/i.test(lower);
-      const hasMetricValue = /[0-9]{2,}/.test(avantText);
-      if (avantText.trim() && hasMetricLabel && hasMetricValue) return "ready";
-
-      return "waiting";
-    })()`
+    const deadline = Date.now() + timeout
+    let readyStreak = 0
+    let notAuthStreak = 0
+    let lastStatus = "waiting"
 
     const readStatus = async (): Promise<string> => {
       try {
-        return (await page.evaluate(checkScript)) as string
+        // Verifica login/CTA no corpo e presença do form avantauth-root
+        const loginStatus = (await page.evaluate(`(() => {
+          const body = document.body.innerText || "";
+          if (/comece a usar o avantpro|avantpro.*faça login|avantpro.*cadastre-se|avantpro.*sign in|avantpro.*log in/i.test(body)) return "not_auth";
+          const loginForm = document.querySelector("#avantauth-root, [id*=avantauth], [class*=avantauth]");
+          if (loginForm && loginForm.querySelector("input")) return "not_auth";
+          return "";
+        })()`)) as string
+        if (loginStatus) return loginStatus
+
+        // Coleta as métricas do AvantPro (DOM normal + shadow roots + iframes)
+        const avantText = await this.extractAvantproContent()
+        if (!avantText) return "waiting"
+
+        const lower = avantText.toLowerCase()
+        if (/faça login|cadastre-se|comece a usar|digite seu e-mail|sign in|log in|criar conta/i.test(lower)) return "not_auth"
+        if (/carregando|loading/i.test(lower)) return "loading"
+
+        const hasMetricLabel = /(vendas|faturamento|estoque|visitas|conversão|receita|vendedores|catálogos|logística|full|flex|correios|preço|taxa|medalha)/i.test(lower)
+        const hasMetricValue = /[0-9]{2,}/.test(avantText)
+        if (hasMetricLabel && hasMetricValue) return "ready"
+
+        return "waiting"
       } catch {
         // Página pode estar navegando/renderizando
         return "waiting"
       }
     }
-
-    const deadline = Date.now() + timeout
-    let readyStreak = 0
-    let notAuthStreak = 0
-    let lastStatus = "waiting"
 
     while (Date.now() < deadline) {
       const status = await readStatus()
@@ -371,7 +353,7 @@ export class PlaywrightManager {
       console.log("⚠️ AvantPro: extensão não autenticada")
       return "not_authenticated"
     }
-    console.log("⚠️ AvantPro: timeout aguardando dados carregarem")
+    console.log(`⚠️ AvantPro: timeout aguardando dados carregarem (último status: ${lastStatus})`)
     return false
   }
 
@@ -481,7 +463,7 @@ export class PlaywrightManager {
    */
   async extractAvantproContent(): Promise<string> {
     const page = await this.getPage()
-    const selector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro]"
+    const selector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [class*=AVANTPRO], [id*=avantpro], [id*=Avantpro], [id*=AVANTPRO], [data-avantpro]"
 
     const collectScript = `(() => {
       const selector = ${JSON.stringify(selector)};
