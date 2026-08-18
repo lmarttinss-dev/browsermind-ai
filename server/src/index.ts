@@ -319,8 +319,8 @@ Diretrizes:
 - NUNCA use expressões JavaScript como document.URL, window.location etc. como selector — use "evaluate" em vez disso
 - Se não puder executar uma ação, explique o motivo`;
 
-/** Chama o modelo de IA configurado (Gemini/OpenAI/Claude/DeepSeek) e retorna o texto da resposta */
-async function callAI(
+/** Chama o modelo de IA configurado (Gemini/OpenAI/Claude/DeepSeek) — uma única tentativa */
+async function callAIOnce(
   model: string,
   systemPrompt: string,
   userMessage: string,
@@ -413,6 +413,42 @@ async function callAI(
 
   if (!aiResponse) throw new Error("Resposta vazia da IA")
   return aiResponse
+}
+
+/** Verifica se o erro do provedor de IA é transitório (sobrecarga/rate limit) */
+function isTransientAiError(message: string): boolean {
+  return /high demand|overloaded|rate limit|too many requests|temporarily unavailable|try again later|capacity|quota/i.test(message)
+}
+
+/** Chama o modelo de IA com retry em erros transitórios (ex: sobrecarga do provedor) */
+async function callAI(
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+  screenshot?: string,
+  maxRetries = 3
+): Promise<string> {
+  let lastError: unknown = null
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await callAIOnce(model, systemPrompt, userMessage, screenshot)
+    } catch (error) {
+      lastError = error
+      const message = axios.isAxiosError(error)
+        ? (error.response?.data?.error?.message || error.message || String(error))
+        : error instanceof Error ? error.message : String(error)
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined
+      const transient = status === 429 || status === 503 || isTransientAiError(message)
+      if (transient && attempt < maxRetries) {
+        const waitMs = 2000 * Math.pow(2, attempt)
+        console.log(`🔄 IA: erro transitório, nova tentativa em ${waitMs / 1000}s (${attempt + 1}/${maxRetries}): ${message}`)
+        await new Promise((r) => setTimeout(r, waitMs))
+        continue
+      }
+      throw error
+    }
+  }
+  throw lastError
 }
 
 app.post("/api/analyze", async (req, res) => {
