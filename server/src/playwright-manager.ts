@@ -282,11 +282,6 @@ export class PlaywrightManager {
 
     console.log("✅ AvantPro: elementos detectados no DOM")
 
-    // Em páginas de listagem (lista.mercadolivre.com.br) as métricas já são
-    // injetadas abertas — o clique no botão do overlay é específico de páginas
-    // de produto e pode FECHAR um painel já aberto (causando oscilação).
-    const isListingPage = /lista\.mercadolivre\.com\.br\//.test(page.url())
-
     // Polling: verifica o BODY INTEIRO e os elementos injetados pela extensão
     // (incluindo shadow roots abertos) para garantir que as MÉTRICAS REAIS
     // do AvantPro carregaram — e não apenas a interface/login da extensão.
@@ -336,28 +331,10 @@ export class PlaywrightManager {
       }
     }
 
-    const clickPanelButton = async (): Promise<boolean> => {
-      const buttonTexts = ["Informações Avantpro", "Informações AvantPro", "Dados Avantpro", "Dados AvantPro"]
-      for (const text of buttonTexts) {
-        try {
-          const btn = page.getByText(text, { exact: false }).first()
-          if (await btn.isVisible()) {
-            await btn.click({ timeout: 5000 })
-            console.log(`✅ AvantPro: clicou em "${text}"`)
-            return true
-          }
-        } catch {
-          // Tenta o próximo texto
-        }
-      }
-      return false
-    }
-
     const deadline = Date.now() + timeout
     let readyStreak = 0
     let notAuthStreak = 0
     let lastStatus = "waiting"
-    let clicked = false
 
     while (Date.now() < deadline) {
       const status = await readStatus()
@@ -383,17 +360,6 @@ export class PlaywrightManager {
       } else {
         readyStreak = 0
         notAuthStreak = 0
-      }
-
-      // Em página de produto, tenta abrir o painel UMA vez (somente se ainda
-      // não carregou). Em listagem, NÃO clica — evita fechar painel já aberto.
-      if (!clicked && !isListingPage && (status === "loading" || status === "waiting")) {
-        clicked = true
-        const didClick = await clickPanelButton()
-        if (didClick) {
-          await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {})
-          continue
-        }
       }
 
       const remaining = deadline - Date.now()
