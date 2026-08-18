@@ -1909,7 +1909,7 @@ const handleAnalyzeProduct: import("express").RequestHandler = async (req, res) 
       return
     }
 
-    const { email, model, prompt } = req.body as { email?: string; model?: string; prompt?: string }
+    const { email, model, prompt, qnaContent } = req.body as { email?: string; model?: string; prompt?: string; qnaContent?: string }
 
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
       res.status(400).json({ error: "Campo 'prompt' é obrigatório" })
@@ -1982,18 +1982,22 @@ const handleAnalyzeProduct: import("express").RequestHandler = async (req, res) 
       return
     }
 
-    // Extrai o conteúdo da página, os dados AvantPro e as perguntas/respostas
+    // Extrai o conteúdo da página e os dados AvantPro (fonte da verdade)
     const extracted = await playwrightManager.extractPageContent()
     const avantproContent = await playwrightManager.extractAvantproContent()
-    const qnaContent = await playwrightManager.extractProductQuestions()
+
+    // Q&A manual (se enviado pelo usuário) tem prioridade sobre a extração automática
+    const manualQna = (qnaContent || "").trim()
+    const finalQna = manualQna || (await playwrightManager.extractProductQuestions())
+
     const content = [
       `URL: ${extracted.url}`,
       `Title: ${extracted.title}`,
       avantproContent
         ? `\n===== DADOS AVANTPRO (FONTE DA VERDADE — USE ESTES NÚMEROS) =====\n${avantproContent}\n===== FIM DOS DADOS AVANTPRO =====`
         : "",
-      qnaContent
-        ? `\n===== PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (EXTRAÍDAS DO MODAL) =====\n${qnaContent}\n===== FIM DAS PERGUNTAS E RESPOSTAS =====`
+      finalQna
+        ? `\n===== PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES =====\n${finalQna}\n===== FIM DAS PERGUNTAS E RESPOSTAS =====`
         : "",
       `\nHeadings:\n${extracted.headings.join("\n")}`,
       Object.keys(extracted.metaTags).length > 0

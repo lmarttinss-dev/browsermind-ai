@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Copy, Loader2, Check, MessageCircle } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -46,6 +46,8 @@ export const ProductDetailPage = () => {
   const [marketError, setMarketError] = useState<string | null>(null)
   const [isAnalyzingProduct, setIsAnalyzingProduct] = useState(false)
   const [productError, setProductError] = useState<string | null>(null)
+  const [showQnaModal, setShowQnaModal] = useState(false)
+  const [qnaContent, setQnaContent] = useState("")
 
   useEffect(() => {
     if (!id) return
@@ -141,6 +143,7 @@ export const ProductDetailPage = () => {
         email: avantproEmail || undefined,
         model: selectedModel,
         prompt: productTemplate.content,
+        qnaContent: qnaContent.trim() || undefined,
       })
       setProduct(res.product)
     } catch (err) {
@@ -438,18 +441,31 @@ export const ProductDetailPage = () => {
                   <BarChart3 className="w-4 h-4" />
                   Relatório de Análise
                 </h3>
-                <button
-                  onClick={handleAnalyzeProduct}
-                  disabled={isAnalyzingProduct}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-700/50 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-blue-300 rounded-lg transition-colors"
-                >
-                  {isAnalyzingProduct ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <BarChart3 className="w-3.5 h-3.5" />
-                  )}
-                  {isAnalyzingProduct ? "Analisando..." : product.analysisReport ? "Reanalisar Produto" : "Analisar Produto"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowQnaModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+                    title="Inserir perguntas, respostas e opiniões dos clientes"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Q&A
+                    {qnaContent.trim() && (
+                      <span className="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-full">✓</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleAnalyzeProduct}
+                    disabled={isAnalyzingProduct}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-700/50 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-blue-300 rounded-lg transition-colors"
+                  >
+                    {isAnalyzingProduct ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <BarChart3 className="w-3.5 h-3.5" />
+                    )}
+                    {isAnalyzingProduct ? "Analisando..." : product.analysisReport ? "Reanalisar Produto" : "Analisar Produto"}
+                  </button>
+                </div>
               </div>
 
               {productError && (
@@ -741,6 +757,48 @@ export const ProductDetailPage = () => {
                   Cancelar
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Q&A / Opiniões dos clientes */}
+      {showQnaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
+              <div>
+                <h3 className="text-base font-semibold text-gray-100">Perguntas, Respostas e Opiniões</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Cole o Q&A dos clientes (opcional — se vazio, extraímos do anúncio automaticamente).</p>
+              </div>
+              <button
+                onClick={() => setShowQnaModal(false)}
+                className="p-1 text-gray-400 hover:text-gray-200 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <textarea
+                value={qnaContent}
+                onChange={(e) => setQnaContent(e.target.value)}
+                placeholder="Cole aqui o conteúdo das perguntas e respostas (Q&A) e opiniões dos clientes visíveis na página do anúncio do Mercado Livre..."
+                className="w-full h-64 resize-none bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="px-5 py-3 border-t border-gray-700 flex items-center justify-between">
+              <button
+                onClick={() => setQnaContent("")}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Limpar
+              </button>
+              <button
+                onClick={() => setShowQnaModal(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Salvar
+              </button>
             </div>
           </div>
         </div>

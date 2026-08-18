@@ -138,7 +138,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify(params),
     }),
-  analyzeProduct: (id: string, params: { email?: string; model?: string; prompt: string }) =>
+  analyzeProduct: (id: string, params: { email?: string; model?: string; prompt: string; qnaContent?: string }) =>
     request<{ success: boolean; report: string; product: PipelineProduct }>(`/api/pipeline/${id}/analyze-product`, {
       method: "POST",
       body: JSON.stringify(params),
