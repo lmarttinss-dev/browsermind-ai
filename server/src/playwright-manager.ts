@@ -558,6 +558,69 @@ export class PlaywrightManager {
     return content.trim()
   }
 
+  /**
+   * Abre o modal "Ver todas as perguntas" do produto no Mercado Livre e extrai
+   * o texto das perguntas e respostas. Retorna "" se não conseguir.
+   */
+  async extractProductQuestions(): Promise<string> {
+    const page = await this.getPage()
+    try {
+      // Clica no link "Ver todas as perguntas" (link, texto ou botão)
+      let clicked = false
+      try {
+        await page.getByRole("link", { name: /ver todas as perguntas/i }).first().click({ timeout: 5000 })
+        clicked = true
+      } catch {
+        try {
+          await page.getByText("Ver todas as perguntas", { exact: false }).first().click({ timeout: 5000 })
+          clicked = true
+        } catch { /* tenta botão */ }
+      }
+      if (!clicked) {
+        try {
+          await page.getByRole("button", { name: /ver todas as perguntas/i }).first().click({ timeout: 5000 })
+          clicked = true
+        } catch { /* não encontrou */ }
+      }
+      if (!clicked) {
+        console.log("⏳ Q&A: link 'Ver todas as perguntas' não encontrado")
+        return ""
+      }
+
+      console.log("✅ Q&A: clicou em 'Ver todas as perguntas'")
+
+      // Aguarda o modal de perguntas abrir
+      const modal = page.locator('[class*="ui-pdp-questions"]').first()
+      try {
+        await modal.waitFor({ state: "visible", timeout: 10000 })
+      } catch {
+        try {
+          await page.locator(".andes-modal").first().waitFor({ state: "visible", timeout: 5000 })
+        } catch {
+          console.log("⏳ Q&A: modal não abriu")
+          return ""
+        }
+      }
+
+      // Aguarda o conteúdo das perguntas carregar
+      await page.waitForTimeout(1500)
+
+      const qnaText = (await page.evaluate(`(() => {
+        const modal = document.querySelector('[class*="ui-pdp-questions"]') || document.querySelector(".andes-modal");
+        return modal ? (modal.innerText || "").trim() : "";
+      })()`)) as string
+
+      if (qnaText) {
+        console.log(`✅ Q&A: extraiu ${qnaText.length} caracteres`)
+      } else {
+        console.log("⏳ Q&A: modal vazio")
+      }
+      return qnaText
+    } catch {
+      return ""
+    }
+  }
+
   async extractPageContent(): Promise<{
     url: string;
     title: string;
