@@ -44,6 +44,8 @@ export const ProductDetailPage = () => {
   const [urlCopied, setUrlCopied] = useState(false)
   const [isAnalyzingMarket, setIsAnalyzingMarket] = useState(false)
   const [marketError, setMarketError] = useState<string | null>(null)
+  const [isAnalyzingProduct, setIsAnalyzingProduct] = useState(false)
+  const [productError, setProductError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -117,6 +119,34 @@ export const ProductDetailPage = () => {
       setMarketError(err instanceof Error ? err.message : "Erro ao analisar mercado")
     } finally {
       setIsAnalyzingMarket(false)
+    }
+  }
+
+  const handleAnalyzeProduct = async () => {
+    if (!product) return
+    const productTemplate = PROMPT_TEMPLATES.find((t) => t.id === "importacao-simplificada")
+    if (!productTemplate) {
+      setProductError("Template de análise de produto não encontrado.")
+      return
+    }
+    setIsAnalyzingProduct(true)
+    setProductError(null)
+    try {
+      // Inicia o browser automaticamente (modo headed, necessário para a extensão AvantPro)
+      if (!browserActive) {
+        await launchBrowser(false)
+      }
+
+      const res = await api.analyzeProduct(product._id, {
+        email: avantproEmail || undefined,
+        model: selectedModel,
+        prompt: productTemplate.content,
+      })
+      setProduct(res.product)
+    } catch (err) {
+      setProductError(err instanceof Error ? err.message : "Erro ao analisar produto")
+    } finally {
+      setIsAnalyzingProduct(false)
     }
   }
 
@@ -403,26 +433,53 @@ export const ProductDetailPage = () => {
 
             {/* Relatório */}
             <div className="p-5">
-              {product.analysisReport ? (
-                <>
-                  <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Relatório de Análise
-                  </h3>
-                  <div className="prose prose-invert max-w-none">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={markdownComponents}
-                    >
-                      {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
-                    </ReactMarkdown>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Relatório de Análise
+                </h3>
+                <button
+                  onClick={handleAnalyzeProduct}
+                  disabled={isAnalyzingProduct}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-700/50 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-blue-300 rounded-lg transition-colors"
+                >
+                  {isAnalyzingProduct ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <BarChart3 className="w-3.5 h-3.5" />
+                  )}
+                  {isAnalyzingProduct ? "Analisando..." : product.analysisReport ? "Reanalisar Produto" : "Analisar Produto"}
+                </button>
+              </div>
+
+              {productError && (
+                <div className="mb-4 px-3 py-2 bg-red-900/30 border border-red-800 rounded-lg text-sm text-red-300">
+                  {productError}
+                </div>
+              )}
+
+              {isAnalyzingProduct ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+                  <div className="text-center">
+                    <p className="text-sm text-gray-300">Navegando e aguardando métricas do AvantPro...</p>
+                    <p className="text-xs text-gray-500 mt-1">Isso pode levar alguns segundos</p>
                   </div>
-                </>
+                </div>
+              ) : product.analysisReport ? (
+                <div className="prose prose-invert max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
+                    {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
+                  </ReactMarkdown>
+                </div>
               ) : (
                 <div className="text-center py-16">
                   <BarChart3 className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">Nenhum relatório de análise disponível.</p>
-                  <p className="text-gray-600 text-xs mt-1">Execute uma análise de viabilidade para gerar o relatório.</p>
+                  <p className="text-gray-600 text-xs mt-1">Clique em "Analisar Produto" para gerar o relatório.</p>
                 </div>
               )}
             </div>

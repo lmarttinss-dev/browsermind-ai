@@ -1846,9 +1846,158 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
   }
 }
 
+// ==========================================
+// Product Analysis — Reanálise automática do produto (aba Produto)
+// ==========================================
+
+const handleAnalyzeProduct: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    const { email, model, prompt } = req.body as { email?: string; model?: string; prompt?: string }
+
+    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+      res.status(400).json({ error: "Campo 'prompt' é obrigatório" })
+      return
+    }
+
+    if (!product.url) {
+      res.status(400).json({ success: false, error: "Produto sem URL cadastrada." })
+      return
+    }
+
+    const selectedModel = model || process.env.DEFAULT_MODEL || "gemini-flash-2.5"
+
+    const status = await playwrightManager.getStatus()
+    if (!status.active) {
+      res.status(400).json({ success: false, error: "Browser não está ativo. Inicie o browser primeiro." })
+      return
+    }
+
+    // Resolve o email do AvantPro: corpo da requisição → chrome.storage da extensão
+    let avantproEmail = (email || "").trim()
+    if (!avantproEmail) {
+      try {
+        const storedAuth = await playwrightManager.evaluateInServiceWorker(
+          AVANTPRO_CONFIG.extensionId,
+          `chrome.storage.local.get("avantpro_auth").then(d => JSON.stringify(d.avantpro_auth || null))`
+        )
+        const authData = JSON.parse(storedAuth)
+        avantproEmail = (authData?.email || "").trim()
+      } catch { /* ignora */ }
+    }
+    if (!avantproEmail) {
+      res.status(400).json({ success: false, error: "Email do AvantPro não configurado. Informe em Settings ou no corpo da requisição." })
+      return
+    }
+
+    // Navega até a página do produto
+    await playwrightManager.navigate(product.url)
+    const page = await playwrightManager.getPage()
+    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {})
+
+    // Faz login no form avantauth-root, se presente
+    let form = await playwrightManager.findAvantproAuthForm()
+    if (form) {
+      await playwrightManager.loginAvantproViaForm(avantproEmail)
+    }
+
+    // BLOQUEIO OBRIGATÓRIO: só analisa se as métricas do AvantPro carregarem
+    let avantproResult = await playwrightManager.waitForAvantproData({ timeout: 30000 })
+
+    // Se ainda não autenticado, tenta o login uma última vez
+    if (avantproResult === "not_authenticated") {
+      form = await playwrightManager.findAvantproAuthForm()
+      if (form) {
+        await playwrightManager.loginAvantproViaForm(avantproEmail)
+        avantproResult = await playwrightManager.waitForAvantproData({ timeout: 30000 })
+      }
+    }
+
+    if (avantproResult !== "loaded") {
+      res.status(422).json({
+        success: false,
+        error: avantproResult === "not_authenticated"
+          ? "Não foi possível autenticar no AvantPro. Verifique o email cadastrado."
+          : "As métricas do AvantPro não carregaram. A reanálise foi cancelada.",
+      })
+      return
+    }
+
+    // Extrai o conteúdo da página e os dados AvantPro (fonte da verdade)
+    const extracted = await playwrightManager.extractPageContent()
+    const avantproContent = await playwrightManager.extractAvantproContent()
+    const content = [
+      `URL: ${extracted.url}`,
+      `Title: ${extracted.title}`,
+      avantproContent
+        ? `\n===== DADOS AVANTPRO (FONTE DA VERDADE — USE ESTES NÚMEROS) =====\n${avantproContent}\n===== FIM DOS DADOS AVANTPRO =====`
+        : "",
+      `\nHeadings:\n${extracted.headings.join("\n")}`,
+      Object.keys(extracted.metaTags).length > 0
+        ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
+        : "",
+      extracted.links.length > 0
+        ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
+        : "",
+      `\nContent:\n${extracted.visibleText}`,
+    ].filter(Boolean).join("\n")
+
+    const userMessage = `Conteúdo da página:\n${content.slice(0, 45000)}`
+
+    // Usa APENAS o template de produto como system prompt
+    const aiResponse = await callAI(selectedModel, prompt, userMessage)
+
+    // Atualiza o relatório e re-parseia as métricas do "Resumo para Esteira"
+    product.analysisReport = aiResponse
+    product.analyzedAt = new Date()
+
+    const titleMatch = aiResponse.match(/(?:Nome|Título)\s*:\s*(.+)/im)
+    const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
+    const scoreMatch = aiResponse.match(/(?:Score\s*Final|Demanda)\s*:\s*(\d+(?:[.,]\d+)?)/im)
+    const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:]*:\s*([\d.,]+)/im)
+    const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+    const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
+    const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
+
+    if (titleMatch?.[1]?.trim()) product.title = titleMatch[1].trim().slice(0, 200)
+    if (categoryMatch?.[1]?.trim()) product.category = categoryMatch[1].trim().slice(0, 100)
+
+    const parsedPrice = priceMatch?.[1] ? parseBrPrice(priceMatch[1]) : 0
+    if (parsedPrice > 0) product.price = parsedPrice
+
+    const parsedScore = scoreMatch?.[1] ? parseFloat(scoreMatch[1].replace(",", ".")) : 0
+    if (parsedScore > 0) product.score = parsedScore
+
+    const parsedSales = salesMatch?.[1] ? parseBrInt(salesMatch[1]) : 0
+    if (parsedSales > 0) product.monthlySales = parsedSales
+
+    const competition = competitionMatch?.[1]
+    if (competition === "Baixa" || competition === "Média" || competition === "Alta" || competition === "Saturado") {
+      product.competitionLevel = competition
+    }
+
+    if (marginMatch?.[1]?.trim()) product.potentialMargin = marginMatch[1].trim().slice(0, 100)
+
+    await product.save()
+
+    res.json({ success: true, report: aiResponse, product })
+  } catch (error) {
+    const msg = axios.isAxiosError(error)
+      ? error.response?.data?.error?.message || error.message
+      : error instanceof Error ? error.message : String(error)
+    res.status(500).json({ success: false, error: msg })
+  }
+}
+
 // Registrar rotas de suppliers e compare no pipeline router
 pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/analyze-market", handleAnalyzeMarket)
+pipelineRouter.post("/:id/analyze-product", handleAnalyzeProduct)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
 pipelineRouter.post("/:id/suppliers/manual", handleAddManualSupplier)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
