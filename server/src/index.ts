@@ -1895,6 +1895,8 @@ const handleAnalyzeProduct: import("express").RequestHandler = async (req, res) 
       return
     }
 
+    console.log("🧭 Produto: navegando para:", product.url)
+
     // Navega até a página do produto
     await playwrightManager.navigate(product.url)
     const page = await playwrightManager.getPage()
