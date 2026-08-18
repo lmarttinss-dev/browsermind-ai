@@ -264,12 +264,13 @@ export class PlaywrightManager {
     const page = await this.getPage()
     const timeout = options?.timeout ?? 25000
 
-    // Verifica se estamos em página de produto/anúncio do Mercado Livre
+    // Verifica se estamos em página do Mercado Livre
     const url = page.url()
-    const isMlPage = /mercadolivre\.com\.br\/(.*\/p\/MLB|MLB[-\d])/.test(url)
-      || /produto\.mercadolivre\.com\.br\/MLB/.test(url)
-      || /lista\.mercadolivre\.com\.br\//.test(url)
-    if (!isMlPage) return false
+    const isMlPage = /mercadolivre\.com(\.br)?\//.test(url)
+    if (!isMlPage) {
+      console.log("⚠️ AvantPro: URL não é do Mercado Livre, abortando detecção", url)
+      return false
+    }
 
     // Espera a extensão injetar qualquer elemento no DOM (classe, id, ou data attribute)
     const avantproSelector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro], [id*=avantauth], [class*=avantauth]"
@@ -298,8 +299,12 @@ export class PlaywrightManager {
         const loginStatus = (await page.evaluate(`(() => {
           const body = document.body.innerText || "";
           if (/comece a usar o avantpro|avantpro.*faça login|avantpro.*cadastre-se|avantpro.*sign in|avantpro.*log in/i.test(body)) return "not_auth";
-          const loginForm = document.querySelector("#avantauth-root, [id*=avantauth], [class*=avantauth]");
-          if (loginForm && loginForm.querySelector("input")) return "not_auth";
+          const hasInput = (root) => !!root.querySelector("input");
+          const roots = Array.from(document.querySelectorAll("#avantauth-root, [id*=avantauth], [class*=avantauth]"));
+          for (const el of roots) {
+            if (hasInput(el)) return "not_auth";
+            if (el.shadowRoot && hasInput(el.shadowRoot)) return "not_auth";
+          }
           return "";
         })()`)) as string
         if (loginStatus) return loginStatus
