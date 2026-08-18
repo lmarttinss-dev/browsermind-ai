@@ -602,8 +602,25 @@ export class PlaywrightManager {
         }
       }
 
-      // Aguarda o conteúdo das perguntas carregar
-      await page.waitForTimeout(1500)
+      // Rola o modal até carregar todas as perguntas/respostas (conteúdo lazy)
+      for (let i = 0; i < 20; i++) {
+        const scrolled = (await page.evaluate(`(() => {
+          const modal = document.querySelector('[class*="ui-pdp-questions"]') || document.querySelector(".andes-modal");
+          if (!modal) return false;
+          const candidates = [modal, ...modal.querySelectorAll("*")];
+          let moved = false;
+          for (const el of candidates) {
+            if (el.scrollHeight > el.clientHeight + 10 && el.clientHeight > 0) {
+              const before = el.scrollTop;
+              el.scrollTop = el.scrollHeight;
+              if (el.scrollTop > before) moved = true;
+            }
+          }
+          return moved;
+        })()`)) as boolean
+        if (!scrolled) break
+        await page.waitForTimeout(400)
+      }
 
       const qnaText = (await page.evaluate(`(() => {
         const modal = document.querySelector('[class*="ui-pdp-questions"]') || document.querySelector(".andes-modal");
