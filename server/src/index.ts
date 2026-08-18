@@ -1846,6 +1846,21 @@ const handleAnalyzeMarket: import("express").RequestHandler = async (req, res) =
   }
 }
 
+/** Remove fragmento e parâmetros de tracking da URL do Mercado Livre */
+function cleanMlUrl(raw: string): string {
+  try {
+    const url = new URL(raw)
+    url.hash = ""
+    const trackingParams = ["wid", "sid", "tracking_id", "position", "type", "search_layout", "overlay_label", "be_origin", "polycard_client"]
+    for (const p of trackingParams) {
+      url.searchParams.delete(p)
+    }
+    return url.toString()
+  } catch {
+    return raw.split("#")[0]
+  }
+}
+
 // ==========================================
 // Product Analysis — Reanálise automática do produto (aba Produto)
 // ==========================================
@@ -1895,10 +1910,11 @@ const handleAnalyzeProduct: import("express").RequestHandler = async (req, res) 
       return
     }
 
-    console.log("🧭 Produto: navegando para:", product.url)
+    const productUrl = cleanMlUrl(product.url)
+    console.log("🧭 Produto: navegando para:", productUrl)
 
     // Navega até a página do produto
-    await playwrightManager.navigate(product.url)
+    await playwrightManager.navigate(productUrl, { timeout: 60000 })
     const page = await playwrightManager.getPage()
     await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {})
 
