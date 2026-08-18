@@ -282,10 +282,15 @@ export class PlaywrightManager {
 
     console.log("✅ AvantPro: elementos detectados no DOM")
 
+    // Em páginas de produto o AvantPro exige abrir o painel de métricas.
+    // Em páginas de listagem as métricas já são injetadas abertas.
+    const isListingPage = /lista\.mercadolivre\.com\.br\//.test(page.url())
+
     const deadline = Date.now() + timeout
     let readyStreak = 0
     let notAuthStreak = 0
     let lastStatus = "waiting"
+    let clicked = false
 
     const readStatus = async (): Promise<string> => {
       try {
@@ -318,6 +323,45 @@ export class PlaywrightManager {
       }
     }
 
+    const clickAvantproPanel = async (): Promise<boolean> => {
+      const buttonTexts = ["Informações Avantpro", "Informações AvantPro", "Dados Avantpro", "Dados AvantPro", "Avantpro", "AvantPro"]
+      // 1) Botão por texto no frame principal (getByText perfura shadow DOM aberto)
+      for (const text of buttonTexts) {
+        try {
+          const btn = page.getByText(text, { exact: false }).first()
+          if (await btn.isVisible()) {
+            await btn.click({ timeout: 5000 })
+            console.log(`✅ AvantPro: clicou em "${text}"`)
+            return true
+          }
+        } catch { /* tenta próximo */ }
+      }
+      // 2) Botão dentro de elementos da extensão
+      try {
+        const btn = page.locator("[class*=avantpro] button, [id*=avantpro] button, [class*=Avantpro] button").first()
+        if (await btn.isVisible()) {
+          await btn.click({ timeout: 5000 })
+          console.log("✅ AvantPro: clicou no botão dentro do elemento da extensão")
+          return true
+        }
+      } catch { /* tenta iframe */ }
+      // 3) Botão dentro de iframes da extensão
+      for (const frame of page.frames()) {
+        if (frame === page.mainFrame()) continue
+        try {
+          for (const text of buttonTexts) {
+            const btn = frame.getByText(text, { exact: false }).first()
+            if (await btn.isVisible()) {
+              await btn.click({ timeout: 5000 })
+              console.log(`✅ AvantPro: clicou em "${text}" no iframe`)
+              return true
+            }
+          }
+        } catch { /* frame cross-origin */ }
+      }
+      return false
+    }
+
     while (Date.now() < deadline) {
       const status = await readStatus()
       lastStatus = status
@@ -342,6 +386,17 @@ export class PlaywrightManager {
       } else {
         readyStreak = 0
         notAuthStreak = 0
+      }
+
+      // Em página de produto, abre o painel de métricas UMA vez se não houver
+      // conteúdo algum (status "waiting"). Em listagem, não clica.
+      if (!clicked && !isListingPage && status === "waiting") {
+        clicked = true
+        const didClick = await clickAvantproPanel()
+        if (didClick) {
+          await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {})
+          continue
+        }
       }
 
       const remaining = deadline - Date.now()
