@@ -641,9 +641,12 @@ export class PlaywrightManager {
 
     // 2) Opiniões/avaliações dos clientes
     if (await clickLink([
+      "Mostrar todas as opiniões",
       "Ver todas as opiniões",
       "Ver todas as avaliações",
+      "Mostrar todas as avaliações",
       "Ver mais opiniões",
+      "Mostrar mais opiniões",
       "Ver todas as opiniões dos clientes",
     ])) {
       console.log("✅ Opiniões: link de opiniões clicado")
