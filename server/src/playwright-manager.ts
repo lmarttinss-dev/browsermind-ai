@@ -559,53 +559,46 @@ export class PlaywrightManager {
   }
 
   /**
-   * Abre o modal "Ver todas as perguntas" do produto no Mercado Livre e extrai
-   * o texto das perguntas e respostas. Retorna "" se não conseguir.
+   * Extrai as perguntas e respostas e as opiniões dos clientes do produto.
+   * Abre o modal correspondente, rola até carregar tudo e extrai o texto.
+   * Retorna "" se não conseguir.
    */
   async extractProductQuestions(): Promise<string> {
     const page = await this.getPage()
-    try {
-      // Clica no link "Ver todas as perguntas" (link, texto ou botão)
-      let clicked = false
+    const sections: string[] = []
+
+    const clickLink = async (texts: string[]): Promise<boolean> => {
+      for (const text of texts) {
+        try {
+          const link = page.getByRole("link", { name: text }).first()
+          if (await link.isVisible()) {
+            await link.click({ timeout: 5000 })
+            return true
+          }
+        } catch { /* tenta por texto */ }
+        try {
+          const el = page.getByText(text, { exact: false }).first()
+          if (await el.isVisible()) {
+            await el.click({ timeout: 5000 })
+            return true
+          }
+        } catch { /* tenta próximo */ }
+      }
+      return false
+    }
+
+    const extractModalText = async (): Promise<string> => {
+      // Aguarda o modal abrir
       try {
-        await page.getByRole("link", { name: /ver todas as perguntas/i }).first().click({ timeout: 5000 })
-        clicked = true
+        await page.locator(".andes-modal").first().waitFor({ state: "visible", timeout: 8000 })
       } catch {
-        try {
-          await page.getByText("Ver todas as perguntas", { exact: false }).first().click({ timeout: 5000 })
-          clicked = true
-        } catch { /* tenta botão */ }
-      }
-      if (!clicked) {
-        try {
-          await page.getByRole("button", { name: /ver todas as perguntas/i }).first().click({ timeout: 5000 })
-          clicked = true
-        } catch { /* não encontrou */ }
-      }
-      if (!clicked) {
-        console.log("⏳ Q&A: link 'Ver todas as perguntas' não encontrado")
         return ""
       }
 
-      console.log("✅ Q&A: clicou em 'Ver todas as perguntas'")
-
-      // Aguarda o modal de perguntas abrir
-      const modal = page.locator('[class*="ui-pdp-questions"]').first()
-      try {
-        await modal.waitFor({ state: "visible", timeout: 10000 })
-      } catch {
-        try {
-          await page.locator(".andes-modal").first().waitFor({ state: "visible", timeout: 5000 })
-        } catch {
-          console.log("⏳ Q&A: modal não abriu")
-          return ""
-        }
-      }
-
-      // Rola o modal até carregar todas as perguntas/respostas (conteúdo lazy)
+      // Rola o modal até carregar todo o conteúdo (lazy)
       for (let i = 0; i < 20; i++) {
         const scrolled = (await page.evaluate(`(() => {
-          const modal = document.querySelector('[class*="ui-pdp-questions"]') || document.querySelector(".andes-modal");
+          const modal = document.querySelector(".andes-modal");
           if (!modal) return false;
           const candidates = [modal, ...modal.querySelectorAll("*")];
           let moved = false;
@@ -622,20 +615,48 @@ export class PlaywrightManager {
         await page.waitForTimeout(400)
       }
 
-      const qnaText = (await page.evaluate(`(() => {
-        const modal = document.querySelector('[class*="ui-pdp-questions"]') || document.querySelector(".andes-modal");
+      // Extrai o texto do modal
+      const text = (await page.evaluate(`(() => {
+        const modal = document.querySelector(".andes-modal");
         return modal ? (modal.innerText || "").trim() : "";
       })()`)) as string
 
+      // Fecha o modal para liberar a página
+      await page.keyboard.press("Escape").catch(() => {})
+      await page.waitForTimeout(400)
+      return text
+    }
+
+    // 1) Perguntas e respostas
+    if (await clickLink(["Ver todas as perguntas"])) {
+      console.log("✅ Q&A: clicou em 'Ver todas as perguntas'")
+      const qnaText = await extractModalText()
       if (qnaText) {
         console.log(`✅ Q&A: extraiu ${qnaText.length} caracteres`)
-      } else {
-        console.log("⏳ Q&A: modal vazio")
+        sections.push(`===== PERGUNTAS E RESPOSTAS =====\n${qnaText}`)
       }
-      return qnaText
-    } catch {
-      return ""
+    } else {
+      console.log("⏳ Q&A: link 'Ver todas as perguntas' não encontrado")
     }
+
+    // 2) Opiniões/avaliações dos clientes
+    if (await clickLink([
+      "Ver todas as opiniões",
+      "Ver todas as avaliações",
+      "Ver mais opiniões",
+      "Ver todas as opiniões dos clientes",
+    ])) {
+      console.log("✅ Opiniões: link de opiniões clicado")
+      const reviewsText = await extractModalText()
+      if (reviewsText) {
+        console.log(`✅ Opiniões: extraiu ${reviewsText.length} caracteres`)
+        sections.push(`===== OPINIÕES DOS CLIENTES =====\n${reviewsText}`)
+      }
+    } else {
+      console.log("⏳ Opiniões: link de opiniões não encontrado")
+    }
+
+    return sections.join("\n\n")
   }
 
   async extractPageContent(): Promise<{
