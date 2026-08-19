@@ -588,40 +588,49 @@ export class PlaywrightManager {
     }
 
     const extractModalText = async (): Promise<string> => {
-      // Aguarda o modal abrir
-      try {
-        await page.locator(".andes-modal").first().waitFor({ state: "visible", timeout: 8000 })
-      } catch {
-        return ""
-      }
+      // Aguarda o conteúdo abrir (modal ou seção)
+      await page.waitForTimeout(800)
 
-      // Rola o modal até carregar todo o conteúdo (lazy)
-      for (let i = 0; i < 20; i++) {
-        const scrolled = (await page.evaluate(`(() => {
-          const modal = document.querySelector(".andes-modal");
-          if (!modal) return false;
-          const candidates = [modal, ...modal.querySelectorAll("*")];
+      // Rola (modal ou página) até carregar todo o conteúdo (lazy/infinite scroll)
+      for (let i = 0; i < 30; i++) {
+        const moved = (await page.evaluate(`(() => {
+          const modals = document.querySelectorAll(".andes-modal");
           let moved = false;
-          for (const el of candidates) {
-            if (el.scrollHeight > el.clientHeight + 10 && el.clientHeight > 0) {
-              const before = el.scrollTop;
-              el.scrollTop = el.scrollHeight;
-              if (el.scrollTop > before) moved = true;
-            }
+          if (modals.length > 0) {
+            modals.forEach(el => {
+              if (el.scrollHeight > el.clientHeight + 10) {
+                const before = el.scrollTop;
+                el.scrollTop += 800;
+                if (el.scrollTop > before) moved = true;
+              }
+            });
+          } else {
+            const before = window.scrollY;
+            window.scrollBy(0, 1500);
+            if (window.scrollY > before) moved = true;
+            document.querySelectorAll("[class*='ui-review'], [class*='opinion'], [class*='reviews']").forEach(el => {
+              if (el.scrollHeight > el.clientHeight + 10) {
+                const b = el.scrollTop;
+                el.scrollTop += 800;
+                if (el.scrollTop > b) moved = true;
+              }
+            });
           }
           return moved;
         })()`)) as boolean
-        if (!scrolled) break
-        await page.waitForTimeout(400)
+        if (!moved) break
+        await page.waitForTimeout(500)
       }
 
-      // Extrai o texto do modal
+      // Extrai do modal, senão da seção de opiniões/avaliações
       const text = (await page.evaluate(`(() => {
         const modal = document.querySelector(".andes-modal");
-        return modal ? (modal.innerText || "").trim() : "";
+        if (modal && (modal.innerText || "").trim()) return (modal.innerText || "").trim();
+        const section = document.querySelector("[class*='ui-review'], [class*='ui-reviews'], [class*='opinion'], [class*='opinions'], [class*='reviews']");
+        return section ? (section.innerText || "").trim() : "";
       })()`)) as string
 
-      // Fecha o modal para liberar a página
+      // Fecha o modal se estiver aberto
       await page.keyboard.press("Escape").catch(() => {})
       await page.waitForTimeout(400)
       return text
