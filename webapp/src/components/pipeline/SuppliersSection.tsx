@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
-import { parseCurrency, parseMoq, maskReal, formatBrl, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
+import { parseCurrency, parseMoq, maskReal, formatUsd, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
 
 const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top5-fornecedores-alibaba")!
 
@@ -370,7 +370,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                             const b = parseCurrency(latestQuote.totalShippingCost)
                             if (a === null && b === null) return null
                             const total = (a || 0) + (b || 0)
-                            return formatBrl(total)
+                            return formatUsd(total)
                           })() || "—"}
                         </span>
                       ) : (

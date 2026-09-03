@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { sanitizeFilename, parseCurrency, parseMoq, maskReal, formatBrl, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
+import { sanitizeFilename, parseCurrency, parseMoq, maskReal, formatBrl, formatUsd, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
 
 // Mock de data fixa para fallback previsível
 const FIXED_DATE = "2026-05-13"
@@ -187,6 +187,28 @@ describe("formatBrl", () => {
 
   it("deve formatar zero", () => {
     expect(formatBrl(0)).toBe("R$ 0,00")
+  })
+})
+
+describe("formatUsd", () => {
+  it("deve formatar número como dólar americano", () => {
+    expect(formatUsd(1234.56)).toBe("US$ 1,234.56")
+  })
+
+  it("deve formatar valor inteiro com centavos", () => {
+    expect(formatUsd(500)).toBe("US$ 500.00")
+  })
+
+  it("deve formatar valor com centavos", () => {
+    expect(formatUsd(99.9)).toBe("US$ 99.90")
+  })
+
+  it("deve formatar milhão", () => {
+    expect(formatUsd(1000000)).toBe("US$ 1,000,000.00")
+  })
+
+  it("deve formatar zero", () => {
+    expect(formatUsd(0)).toBe("US$ 0.00")
   })
 })
 
