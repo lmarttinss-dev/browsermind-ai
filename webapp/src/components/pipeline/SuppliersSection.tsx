@@ -62,20 +62,26 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isAddingManual, setIsAddingManual] = useState(false)
   const [manualError, setManualError] = useState<string | null>(null)
 
-  // Helper: extrai o custo total (produto + frete) da última cotação
-  const getTotalCost = (s: Supplier): number | null => {
+  // Helper: extrai o primeiro número de uma string monetária (aceita faixas como "R$ 1,55 - 2,47")
+  const parseFirstNumber = (v: string): number | null => {
+    if (!v) return null
+    const m = v.replace(/\s/g, "").match(/(\d[\d.,]*)/)
+    if (!m) return null
+    const cleaned = m[1].replace(/\.(?=.*,)/g, "").replace(",", ".")
+    const num = parseFloat(cleaned)
+    return isNaN(num) ? null : num
+  }
+
+  // Helper: valor de custo para ordenação — prioriza o custo total da última cotação
+  // e, na ausência dela, usa o preço unitário do fornecedor
+  const getSortCost = (s: Supplier): number | null => {
     const q = s.quotes?.length > 0 ? s.quotes[s.quotes.length - 1] : null
-    if (!q) return null
-    const parse = (v: string) => {
-      if (!v) return null
-      const cleaned = v.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
-      const num = parseFloat(cleaned)
-      return isNaN(num) ? null : num
+    if (q) {
+      const a = parseFirstNumber(q.totalProductCost)
+      const b = parseFirstNumber(q.totalShippingCost)
+      if (a !== null || b !== null) return (a || 0) + (b || 0)
     }
-    const a = parse(q.totalProductCost)
-    const b = parse(q.totalShippingCost)
-    if (a === null && b === null) return null
-    return (a || 0) + (b || 0)
+    return parseFirstNumber(q?.unitPrice || s.unitPrice)
   }
 
   const filteredSuppliers = suppliers.filter(s => {
@@ -88,16 +94,16 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const sortedSuppliers = [...filteredSuppliers].sort((a, b) => {
     switch (sortBy) {
       case "total-asc": {
-        const ca = getTotalCost(a)
-        const cb = getTotalCost(b)
+        const ca = getSortCost(a)
+        const cb = getSortCost(b)
         if (ca === null && cb === null) return 0
         if (ca === null) return 1
         if (cb === null) return -1
         return ca - cb
       }
       case "total-desc": {
-        const ca = getTotalCost(a)
-        const cb = getTotalCost(b)
+        const ca = getSortCost(a)
+        const cb = getSortCost(b)
         if (ca === null && cb === null) return 0
         if (ca === null) return 1
         if (cb === null) return -1
@@ -386,7 +392,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     {(unitPrice || moq) && (
                       <div className="flex items-center gap-2 mb-1 text-xs">
                         {unitPrice && (
-                          <span className="text-amber-300 font-semibold">{unitPrice}</span>
+                          <span className="text-gray-400 font-semibold">{unitPrice}</span>
                         )}
                         {moq && (
                           <span className="flex items-center gap-1 text-gray-400">
