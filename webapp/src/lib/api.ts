@@ -73,6 +73,10 @@ export const api = {
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${index}`, {
       method: "DELETE",
     }),
+  removeAllSuppliers: (productId: string) =>
+    request<{ success: boolean; suppliers: Supplier[]; supplierReport: string }>(`/api/pipeline/${productId}/suppliers`, {
+      method: "DELETE",
+    }),
   updateSupplierStatus: (productId: string, supplierIndex: number, status: NegotiationStatus) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/status`, {
       method: "PATCH",

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, Trash2, X } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 import { parseCurrency, parseMoq, maskReal, formatUsd, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
@@ -38,6 +38,7 @@ type Props = {
 export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdate }: Props) => {
   const navigate = useNavigate()
   const [isCapturing, setIsCapturing] = useState(false)
+  const [isClearingAll, setIsClearingAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
   type SortOption = "default" | "total-asc" | "total-desc"
@@ -164,6 +165,20 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
     }
   }
 
+  const handleClearAll = async () => {
+    if (!confirm("Excluir todos os fornecedores deste produto? Esta ação não pode ser desfeita.")) return
+    setIsClearingAll(true)
+    setError(null)
+    try {
+      const res = await api.removeAllSuppliers(productId)
+      onUpdate(res.suppliers, res.supplierReport)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setIsClearingAll(false)
+    }
+  }
+
   return (
     <div className="p-5">
       <div className="flex items-center justify-between mb-4">
@@ -209,6 +224,16 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             <Plus className="w-3.5 h-3.5" />
             Adicionar Manualmente
           </button>
+          {suppliers.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              disabled={isClearingAll}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-900/50 hover:bg-red-900 text-red-300 disabled:bg-red-950 disabled:text-red-500 rounded-lg transition-colors"
+            >
+              {isClearingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              Excluir todos
+            </button>
+          )}
         </div>
       </div>
 

@@ -732,6 +732,29 @@ const handleDeleteSupplier: import("express").RequestHandler = async (req, res) 
 }
 
 // ==========================================
+// Suppliers — Excluir todos os fornecedores do produto
+// ==========================================
+
+const handleClearSuppliers: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    product.suppliers = []
+    product.supplierReport = ""
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers, supplierReport: product.supplierReport })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
 // Suppliers — Atualizar status de negociação
 // ==========================================
 
@@ -1616,6 +1639,7 @@ pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
 pipelineRouter.post("/:id/suppliers/manual", handleAddManualSupplier)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
+pipelineRouter.delete("/:id/suppliers", handleClearSuppliers)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
 pipelineRouter.patch("/:id/suppliers/:index/viability", handleUpdateSupplierViability)
