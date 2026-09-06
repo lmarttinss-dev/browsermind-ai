@@ -604,6 +604,37 @@ app.post("/api/analyze", async (req, res) => {
 // Suppliers — Captura fornecedores da página atual do Playwright
 // ==========================================
 
+// Normaliza nome para comparação (case-insensitive, sem espaços extras)
+const normalizeSupplierName = (name: string) => name.trim().toLowerCase()
+
+// Normaliza URL para comparação (remove protocolo, www, query, hash e barra final)
+const normalizeSupplierUrl = (url: string) => {
+  const cleaned = url.replace(/`/g, "").trim()
+  if (!cleaned) return ""
+  const withProtocol = cleaned.startsWith("//")
+    ? `https:${cleaned}`
+    : /^https?:\/\//i.test(cleaned)
+      ? cleaned
+      : `https://${cleaned}`
+  try {
+    const u = new URL(withProtocol)
+    return `${u.hostname.replace(/^www\./i, "")}${u.pathname.replace(/\/+$/, "")}`
+  } catch {
+    return cleaned.toLowerCase()
+  }
+}
+
+// Retorna o índice do fornecedor existente que corresponde à URL ou ao nome (normalizados)
+const findExistingSupplierIndex = (suppliers: Supplier[], url: string, name: string): number => {
+  const normalizedUrl = normalizeSupplierUrl(url)
+  const normalizedName = normalizeSupplierName(name)
+  return suppliers.findIndex(s => {
+    if (normalizedUrl && normalizeSupplierUrl(s.url) === normalizedUrl) return true
+    if (normalizedName && normalizeSupplierName(s.name) === normalizedName) return true
+    return false
+  })
+}
+
 const handleCaptureSuppliers: import("express").RequestHandler = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -627,9 +658,26 @@ const handleCaptureSuppliers: import("express").RequestHandler = async (req, res
       capturedAt: new Date(),
     }))
 
-    // Dedup: remover fornecedores cujo nome já existe no produto
-    const existingNames = new Set(product.suppliers.map(s => s.name))
-    const uniqueSuppliers = newSuppliers.filter(s => s.name && !existingNames.has(s.name))
+    // Dedup: ignorar fornecedores já existentes (por URL ou nome, case-insensitive)
+    // e repetidos dentro do próprio lote vindos da IA
+    const uniqueSuppliers: typeof newSuppliers = []
+    const seenUrls = new Set<string>()
+    const seenNames = new Set<string>()
+
+    for (const s of newSuppliers) {
+      if (!s.name) continue
+      const urlKey = normalizeSupplierUrl(s.url)
+      const nameKey = normalizeSupplierName(s.name)
+
+      const alreadyExists = findExistingSupplierIndex(product.suppliers, s.url, s.name) !== -1
+      const alreadyInBatch = (urlKey && seenUrls.has(urlKey)) || seenNames.has(nameKey)
+      if (alreadyExists || alreadyInBatch) continue
+
+      uniqueSuppliers.push(s)
+      if (urlKey) seenUrls.add(urlKey)
+      seenNames.add(nameKey)
+    }
+
     const skippedCount = newSuppliers.length - uniqueSuppliers.length
 
     // Append ao array existente (não sobrescreve)
@@ -1524,6 +1572,29 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
     }
 
     const parsed = parseIndividualSupplierReport(report, supplierUrl)
+
+    // Dedup: se o fornecedor já existe (por URL ou nome), atualiza em vez de duplicar
+    const existingIndex = findExistingSupplierIndex(product.suppliers, supplierUrl, parsed.name)
+
+    if (existingIndex !== -1) {
+      const existing = product.suppliers[existingIndex]
+      existing.report = report
+      existing.url = supplierUrl
+      if (parsed.name && parsed.name !== "Fornecedor analisado") existing.name = parsed.name
+      if (parsed.rating > 0) existing.rating = parsed.rating
+      if (parsed.yearsInBusiness > 0) existing.yearsInBusiness = parsed.yearsInBusiness
+      existing.tradeAssurance = parsed.tradeAssurance
+      if (parsed.responseRate) existing.responseRate = parsed.responseRate
+      if (parsed.capabilities) existing.capabilities = parsed.capabilities
+      if (parsed.certifications) existing.certifications = parsed.certifications
+      if (parsed.unitPrice) existing.unitPrice = parsed.unitPrice
+      if (parsed.moq) existing.moq = parsed.moq
+      product.markModified("suppliers")
+      await product.save()
+      res.json({ success: true, suppliers: product.suppliers, updated: true })
+      return
+    }
+
     const supplier = { ...parsed, report, capturedAt: new Date() }
 
     product.suppliers.push(supplier as Supplier)
