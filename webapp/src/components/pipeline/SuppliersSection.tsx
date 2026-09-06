@@ -392,7 +392,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                     {(unitPrice || moq) && (
                       <div className="flex items-center gap-2 mb-1 text-xs">
                         {unitPrice && (
-                          <span className="text-gray-400 font-semibold">{unitPrice}</span>
+                          <span className="text-amber-300 font-semibold">{unitPrice}</span>
                         )}
                         {moq && (
                           <span className="flex items-center gap-1 text-gray-400">
