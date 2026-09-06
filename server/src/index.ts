@@ -605,7 +605,7 @@ app.post("/api/analyze", async (req, res) => {
 // ==========================================
 
 // Normaliza nome para comparação (case-insensitive, sem espaços extras)
-const normalizeSupplierName = (name: string) => name.trim().toLowerCase()
+const normalizeSupplierName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, " ")
 
 // Normaliza URL para comparação (remove protocolo, www, query, hash e barra final)
 const normalizeSupplierUrl = (url: string) => {
@@ -624,16 +624,27 @@ const normalizeSupplierUrl = (url: string) => {
   }
 }
 
-// Retorna o índice do fornecedor existente que corresponde à URL ou ao nome (normalizados)
-const findExistingSupplierIndex = (suppliers: Supplier[], url: string, name: string): number => {
-  const normalizedUrl = normalizeSupplierUrl(url)
-  const normalizedName = normalizeSupplierName(name)
-  return suppliers.findIndex(s => {
-    if (normalizedUrl && normalizeSupplierUrl(s.url) === normalizedUrl) return true
-    if (normalizedName && normalizeSupplierName(s.name) === normalizedName) return true
-    return false
-  })
+// Compara dois fornecedores: por URL, por nome exato ou por nome contido
+// (quando um dos lados não tem URL — cobre "X Co., Ltd." vs "X")
+const isSameSupplier = (aName: string, aUrl: string, bName: string, bUrl: string): boolean => {
+  const aNormUrl = normalizeSupplierUrl(aUrl)
+  const bNormUrl = normalizeSupplierUrl(bUrl)
+  if (aNormUrl && bNormUrl && aNormUrl === bNormUrl) return true
+
+  const aNormName = normalizeSupplierName(aName)
+  const bNormName = normalizeSupplierName(bName)
+  if (!aNormName || !bNormName) return false
+  if (aNormName === bNormName) return true
+
+  if (!aNormUrl || !bNormUrl) {
+    if (aNormName.includes(bNormName) || bNormName.includes(aNormName)) return true
+  }
+  return false
 }
+
+// Retorna o índice do fornecedor existente equivalente ao fornecedor informado
+const findExistingSupplierIndex = (suppliers: Supplier[], url: string, name: string): number =>
+  suppliers.findIndex(s => isSameSupplier(s.name, s.url, name, url))
 
 const handleCaptureSuppliers: import("express").RequestHandler = async (req, res) => {
   try {
@@ -661,21 +672,15 @@ const handleCaptureSuppliers: import("express").RequestHandler = async (req, res
     // Dedup: ignorar fornecedores já existentes (por URL ou nome, case-insensitive)
     // e repetidos dentro do próprio lote vindos da IA
     const uniqueSuppliers: typeof newSuppliers = []
-    const seenUrls = new Set<string>()
-    const seenNames = new Set<string>()
 
     for (const s of newSuppliers) {
       if (!s.name) continue
-      const urlKey = normalizeSupplierUrl(s.url)
-      const nameKey = normalizeSupplierName(s.name)
 
       const alreadyExists = findExistingSupplierIndex(product.suppliers, s.url, s.name) !== -1
-      const alreadyInBatch = (urlKey && seenUrls.has(urlKey)) || seenNames.has(nameKey)
+      const alreadyInBatch = uniqueSuppliers.some(u => isSameSupplier(u.name, u.url, s.name, s.url))
       if (alreadyExists || alreadyInBatch) continue
 
       uniqueSuppliers.push(s)
-      if (urlKey) seenUrls.add(urlKey)
-      seenNames.add(nameKey)
     }
 
     const skippedCount = newSuppliers.length - uniqueSuppliers.length
