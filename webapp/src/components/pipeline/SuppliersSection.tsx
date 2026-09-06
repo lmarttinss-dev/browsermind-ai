@@ -345,6 +345,8 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             {sortedSuppliers.map((supplier) => {
               const index = suppliers.indexOf(supplier)
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
+            const unitPrice = latestQuote?.unitPrice || supplier.unitPrice || ""
+            const moq = latestQuote?.moq || supplier.moq || ""
             const isNotViable = supplier.viable === false
 
             return (
@@ -380,7 +382,22 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                       )}
                     </div>
 
-                    {/* Linha 2: Custo total + cotação recebida (sútil) */}
+                    {/* Linha 2: Preço unitário + MOQ */}
+                    {(unitPrice || moq) && (
+                      <div className="flex items-center gap-2 mb-1 text-xs">
+                        {unitPrice && (
+                          <span className="text-amber-300 font-semibold">{unitPrice}</span>
+                        )}
+                        {moq && (
+                          <span className="flex items-center gap-1 text-gray-400">
+                            <Package className="w-3 h-3" />
+                            MOQ {moq}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Linha 3: Custo total + cotação recebida (sútil) */}
                     <div className="flex items-center gap-2 text-xs">
                       {latestQuote ? (
                         <span className="text-emerald-400 font-medium">
