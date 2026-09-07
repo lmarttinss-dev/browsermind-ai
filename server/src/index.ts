@@ -801,7 +801,7 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       return
     }
 
-    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq, tradeAssurance } = req.body || {}
     const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (typeof report !== "string" || !report.trim()) {
@@ -822,7 +822,7 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       if (parsed.name) product.suppliers[index].name = parsed.name
       if (parsed.rating > 0) product.suppliers[index].rating = parsed.rating
       if (parsed.yearsInBusiness > 0) product.suppliers[index].yearsInBusiness = parsed.yearsInBusiness
-      product.suppliers[index].tradeAssurance = parsed.tradeAssurance
+      product.suppliers[index].tradeAssurance = typeof tradeAssurance === "boolean" ? tradeAssurance : parsed.tradeAssurance
       product.suppliers[index].responseRate = parsed.responseRate || product.suppliers[index].responseRate
       product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
       product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
@@ -1417,6 +1417,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       `Title: ${extracted.title}`,
       `\nPreço unitário (range-price): ${extracted.rangePrice || "Não encontrado"}`,
       `MOQ: ${extracted.moq || "Não encontrado"}`,
+      `Trade Assurance: ${extracted.tradeAssurance ? "Sim" : "Não"}`,
       `\nHeadings:\n${extracted.headings.join("\n")}`,
       Object.keys(extracted.metaTags).length > 0
         ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
@@ -1507,6 +1508,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       supplierUrl: url,
       unitPrice: extracted.rangePrice || "",
       moq: extracted.moq || "",
+      tradeAssurance: extracted.tradeAssurance,
       analyzedAt: new Date().toISOString(),
     })
   } catch (error) {
@@ -1526,7 +1528,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       return
     }
 
-    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq, tradeAssurance } = req.body || {}
     const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (!report || typeof report !== "string") {
@@ -1547,6 +1549,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       ...parsed,
       unitPrice: cleanUnitPrice,
       moq: cleanMoq,
+      tradeAssurance: typeof tradeAssurance === "boolean" ? tradeAssurance : parsed.tradeAssurance,
       report,
       capturedAt: new Date(),
     }

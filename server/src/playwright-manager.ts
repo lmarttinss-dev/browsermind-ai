@@ -385,6 +385,7 @@ export class PlaywrightManager {
     links: { text: string; href: string }[];
     rangePrice: string;
     moq: string;
+    tradeAssurance: boolean;
   }> {
     const page = await this.getPage();
 
@@ -467,6 +468,9 @@ export class PlaywrightManager {
         const rangePrice = priceInfo.price;
         const moq = priceInfo.moq;
 
+        // Trade Assurance: presença do módulo module_ta_plus_footer na página
+        const tradeAssurance = !!document.querySelector('[data-module-name="module_ta_plus_footer"], .module_ta_plus_footer');
+
         return {
           url: window.location.href,
           title: document.title,
@@ -475,6 +479,7 @@ export class PlaywrightManager {
           metaTags,
           rangePrice,
           moq,
+          tradeAssurance,
           links: (() => {
             const seen = new Set();
             const result = [];
@@ -515,6 +520,7 @@ export class PlaywrightManager {
       links: { text: string; href: string }[];
       rangePrice: string;
       moq: string;
+      tradeAssurance: boolean;
     }>;
   }
 

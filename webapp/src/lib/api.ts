@@ -88,10 +88,10 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ url }),
     }),
-  updateSupplierReport: (productId: string, supplierIndex: number, report: string, supplierUrl?: string, unitPrice?: string, moq?: string) =>
+  updateSupplierReport: (productId: string, supplierIndex: number, report: string, supplierUrl?: string, unitPrice?: string, moq?: string, tradeAssurance?: boolean) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/report`, {
       method: "PATCH",
-      body: JSON.stringify({ report, supplierUrl, unitPrice, moq }),
+      body: JSON.stringify({ report, supplierUrl, unitPrice, moq, tradeAssurance }),
     }),
   addSupplierQuote: (productId: string, supplierIndex: number, quote: Omit<SupplierQuote, "quotedAt">) =>
     request<{ success: boolean; suppliers: Supplier[] }>(`/api/pipeline/${productId}/suppliers/${supplierIndex}/quotes`, {
@@ -110,14 +110,14 @@ export const api = {
 
   // Supplier Analysis (individual)
   analyzeSupplier: (url: string, model: string) =>
-    request<{ success: boolean; report: string; supplierUrl: string; unitPrice?: string; moq?: string; analyzedAt: string }>("/api/supplier/analyze", {
+    request<{ success: boolean; report: string; supplierUrl: string; unitPrice?: string; moq?: string; tradeAssurance?: boolean; analyzedAt: string }>("/api/supplier/analyze", {
       method: "POST",
       body: JSON.stringify({ url, model }),
     }),
-  linkSupplierToProduct: (productId: string, report: string, supplierUrl: string, unitPrice?: string, moq?: string) =>
+  linkSupplierToProduct: (productId: string, report: string, supplierUrl: string, unitPrice?: string, moq?: string, tradeAssurance?: boolean) =>
     request<{ success: boolean; suppliers: Supplier[]; supplierReport: string }>(`/api/pipeline/${productId}/suppliers/link`, {
       method: "POST",
-      body: JSON.stringify({ report, supplierUrl, unitPrice, moq }),
+      body: JSON.stringify({ report, supplierUrl, unitPrice, moq, tradeAssurance }),
     }),
 
   // Calculator
