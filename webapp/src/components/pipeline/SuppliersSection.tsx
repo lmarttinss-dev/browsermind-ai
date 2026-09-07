@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, X } from "lucide-react"
+import { ShieldCheck, Clock, Star, Package, Loader2, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, ChevronRight, Search, AlertTriangle, ArrowUp, ArrowDown, Plus, Trash2, X } from "lucide-react"
 import { api, type Supplier, type NegotiationStatus, MODELS } from "@/lib/api"
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
-import { parseCurrency, parseMoq, maskReal, formatBrl, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
+import { parseCurrency, parseMoq, maskReal, formatUsd, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
 
 const SUPPLIER_TEMPLATE = PROMPT_TEMPLATES.find(t => t.id === "top5-fornecedores-alibaba")!
 
@@ -38,6 +38,7 @@ type Props = {
 export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdate }: Props) => {
   const navigate = useNavigate()
   const [isCapturing, setIsCapturing] = useState(false)
+  const [isClearingAll, setIsClearingAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
   type SortOption = "default" | "total-asc" | "total-desc"
@@ -61,20 +62,26 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [isAddingManual, setIsAddingManual] = useState(false)
   const [manualError, setManualError] = useState<string | null>(null)
 
-  // Helper: extrai o custo total (produto + frete) da última cotação
-  const getTotalCost = (s: Supplier): number | null => {
+  // Helper: extrai o primeiro número de uma string monetária (aceita faixas como "R$ 1,55 - 2,47")
+  const parseFirstNumber = (v: string): number | null => {
+    if (!v) return null
+    const m = v.replace(/\s/g, "").match(/(\d[\d.,]*)/)
+    if (!m) return null
+    const cleaned = m[1].replace(/\.(?=.*,)/g, "").replace(",", ".")
+    const num = parseFloat(cleaned)
+    return isNaN(num) ? null : num
+  }
+
+  // Helper: valor de custo para ordenação — prioriza o custo total da última cotação
+  // e, na ausência dela, usa o preço unitário do fornecedor
+  const getSortCost = (s: Supplier): number | null => {
     const q = s.quotes?.length > 0 ? s.quotes[s.quotes.length - 1] : null
-    if (!q) return null
-    const parse = (v: string) => {
-      if (!v) return null
-      const cleaned = v.replace(/[^0-9.,]/g, "").replace(/\.(?=.*[.,])/g, "").replace(",", ".")
-      const num = parseFloat(cleaned)
-      return isNaN(num) ? null : num
+    if (q) {
+      const a = parseFirstNumber(q.totalProductCost)
+      const b = parseFirstNumber(q.totalShippingCost)
+      if (a !== null || b !== null) return (a || 0) + (b || 0)
     }
-    const a = parse(q.totalProductCost)
-    const b = parse(q.totalShippingCost)
-    if (a === null && b === null) return null
-    return (a || 0) + (b || 0)
+    return parseFirstNumber(q?.unitPrice || s.unitPrice)
   }
 
   const filteredSuppliers = suppliers.filter(s => {
@@ -87,16 +94,16 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const sortedSuppliers = [...filteredSuppliers].sort((a, b) => {
     switch (sortBy) {
       case "total-asc": {
-        const ca = getTotalCost(a)
-        const cb = getTotalCost(b)
+        const ca = getSortCost(a)
+        const cb = getSortCost(b)
         if (ca === null && cb === null) return 0
         if (ca === null) return 1
         if (cb === null) return -1
         return ca - cb
       }
       case "total-desc": {
-        const ca = getTotalCost(a)
-        const cb = getTotalCost(b)
+        const ca = getSortCost(a)
+        const cb = getSortCost(b)
         if (ca === null && cb === null) return 0
         if (ca === null) return 1
         if (cb === null) return -1
@@ -164,6 +171,20 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
     }
   }
 
+  const handleClearAll = async () => {
+    if (!confirm("Excluir todos os fornecedores deste produto? Esta ação não pode ser desfeita.")) return
+    setIsClearingAll(true)
+    setError(null)
+    try {
+      const res = await api.removeAllSuppliers(productId)
+      onUpdate(res.suppliers, res.supplierReport)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setIsClearingAll(false)
+    }
+  }
+
   return (
     <div className="p-5">
       <div className="flex items-center justify-between mb-4">
@@ -209,6 +230,16 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             <Plus className="w-3.5 h-3.5" />
             Adicionar Manualmente
           </button>
+          {suppliers.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              disabled={isClearingAll}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-900/50 hover:bg-red-900 text-red-300 disabled:bg-red-950 disabled:text-red-500 rounded-lg transition-colors"
+            >
+              {isClearingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              Excluir todos
+            </button>
+          )}
         </div>
       </div>
 
@@ -320,6 +351,8 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
             {sortedSuppliers.map((supplier) => {
               const index = suppliers.indexOf(supplier)
             const latestQuote = supplier.quotes?.length > 0 ? supplier.quotes[supplier.quotes.length - 1] : null
+            const unitPrice = latestQuote?.unitPrice || supplier.unitPrice || ""
+            const moq = latestQuote?.moq || supplier.moq || ""
             const isNotViable = supplier.viable === false
 
             return (
@@ -355,7 +388,22 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                       )}
                     </div>
 
-                    {/* Linha 2: Custo total + cotação recebida (sútil) */}
+                    {/* Linha 2: Preço unitário + MOQ */}
+                    {(unitPrice || moq) && (
+                      <div className="flex items-center gap-2 mb-1 text-xs">
+                        {unitPrice && (
+                          <span className="text-amber-300 font-semibold">{unitPrice}</span>
+                        )}
+                        {moq && (
+                          <span className="flex items-center gap-1 text-gray-400">
+                            <Package className="w-3 h-3" />
+                            MOQ {moq}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Linha 3: Custo total + cotação recebida (sútil) */}
                     <div className="flex items-center gap-2 text-xs">
                       {latestQuote ? (
                         <span className="text-emerald-400 font-medium">
@@ -370,7 +418,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                             const b = parseCurrency(latestQuote.totalShippingCost)
                             if (a === null && b === null) return null
                             const total = (a || 0) + (b || 0)
-                            return formatBrl(total)
+                            return formatUsd(total)
                           })() || "—"}
                         </span>
                       ) : (

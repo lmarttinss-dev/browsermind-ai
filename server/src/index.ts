@@ -604,6 +604,48 @@ app.post("/api/analyze", async (req, res) => {
 // Suppliers — Captura fornecedores da página atual do Playwright
 // ==========================================
 
+// Normaliza nome para comparação (case-insensitive, sem espaços extras)
+const normalizeSupplierName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, " ")
+
+// Normaliza URL para comparação (remove protocolo, www, query, hash e barra final)
+const normalizeSupplierUrl = (url: string) => {
+  const cleaned = url.replace(/`/g, "").trim()
+  if (!cleaned) return ""
+  const withProtocol = cleaned.startsWith("//")
+    ? `https:${cleaned}`
+    : /^https?:\/\//i.test(cleaned)
+      ? cleaned
+      : `https://${cleaned}`
+  try {
+    const u = new URL(withProtocol)
+    return `${u.hostname.replace(/^www\./i, "")}${u.pathname.replace(/\/+$/, "")}`
+  } catch {
+    return cleaned.toLowerCase()
+  }
+}
+
+// Compara dois fornecedores: por URL, por nome exato ou por nome contido
+// (quando um dos lados não tem URL — cobre "X Co., Ltd." vs "X")
+const isSameSupplier = (aName: string, aUrl: string, bName: string, bUrl: string): boolean => {
+  const aNormUrl = normalizeSupplierUrl(aUrl)
+  const bNormUrl = normalizeSupplierUrl(bUrl)
+  if (aNormUrl && bNormUrl && aNormUrl === bNormUrl) return true
+
+  const aNormName = normalizeSupplierName(aName)
+  const bNormName = normalizeSupplierName(bName)
+  if (!aNormName || !bNormName) return false
+  if (aNormName === bNormName) return true
+
+  if (!aNormUrl || !bNormUrl) {
+    if (aNormName.includes(bNormName) || bNormName.includes(aNormName)) return true
+  }
+  return false
+}
+
+// Retorna o índice do fornecedor existente equivalente ao fornecedor informado
+const findExistingSupplierIndex = (suppliers: Supplier[], url: string, name: string): number =>
+  suppliers.findIndex(s => isSameSupplier(s.name, s.url, name, url))
+
 const handleCaptureSuppliers: import("express").RequestHandler = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -627,9 +669,20 @@ const handleCaptureSuppliers: import("express").RequestHandler = async (req, res
       capturedAt: new Date(),
     }))
 
-    // Dedup: remover fornecedores cujo nome já existe no produto
-    const existingNames = new Set(product.suppliers.map(s => s.name))
-    const uniqueSuppliers = newSuppliers.filter(s => s.name && !existingNames.has(s.name))
+    // Dedup: ignorar fornecedores já existentes (por URL ou nome, case-insensitive)
+    // e repetidos dentro do próprio lote vindos da IA
+    const uniqueSuppliers: typeof newSuppliers = []
+
+    for (const s of newSuppliers) {
+      if (!s.name) continue
+
+      const alreadyExists = findExistingSupplierIndex(product.suppliers, s.url, s.name) !== -1
+      const alreadyInBatch = uniqueSuppliers.some(u => isSameSupplier(u.name, u.url, s.name, s.url))
+      if (alreadyExists || alreadyInBatch) continue
+
+      uniqueSuppliers.push(s)
+    }
+
     const skippedCount = newSuppliers.length - uniqueSuppliers.length
 
     // Append ao array existente (não sobrescreve)
@@ -673,6 +726,29 @@ const handleDeleteSupplier: import("express").RequestHandler = async (req, res) 
     await product.save()
 
     res.json({ success: true, suppliers: product.suppliers })
+  } catch (error) {
+    res.status(500).json({ error: String(error) })
+  }
+}
+
+// ==========================================
+// Suppliers — Excluir todos os fornecedores do produto
+// ==========================================
+
+const handleClearSuppliers: import("express").RequestHandler = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+    if (!product) {
+      res.status(404).json({ error: "Produto não encontrado" })
+      return
+    }
+
+    product.suppliers = []
+    product.supplierReport = ""
+    product.markModified("suppliers")
+    await product.save()
+
+    res.json({ success: true, suppliers: product.suppliers, supplierReport: product.supplierReport })
   } catch (error) {
     res.status(500).json({ error: String(error) })
   }
@@ -1538,10 +1614,35 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
 
     const parsed = parseIndividualSupplierReport(report, supplierUrl)
     // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
+    const cleanUnitPrice = typeof unitPrice === "string" && unitPrice.trim() ? unitPrice.trim() : parsed.unitPrice
+    const cleanMoq = typeof moq === "string" && moq.trim() ? moq.trim() : parsed.moq
+
+    // Dedup: se o fornecedor já existe (por URL ou nome), atualiza em vez de duplicar
+    const existingIndex = findExistingSupplierIndex(product.suppliers, supplierUrl, parsed.name)
+
+    if (existingIndex !== -1) {
+      const existing = product.suppliers[existingIndex]
+      existing.report = report
+      existing.url = supplierUrl
+      if (parsed.name && parsed.name !== "Fornecedor analisado") existing.name = parsed.name
+      if (parsed.rating > 0) existing.rating = parsed.rating
+      if (parsed.yearsInBusiness > 0) existing.yearsInBusiness = parsed.yearsInBusiness
+      existing.tradeAssurance = parsed.tradeAssurance
+      if (parsed.responseRate) existing.responseRate = parsed.responseRate
+      if (parsed.capabilities) existing.capabilities = parsed.capabilities
+      if (parsed.certifications) existing.certifications = parsed.certifications
+      if (cleanUnitPrice) existing.unitPrice = cleanUnitPrice
+      if (cleanMoq) existing.moq = cleanMoq
+      product.markModified("suppliers")
+      await product.save()
+      res.json({ success: true, suppliers: product.suppliers, updated: true })
+      return
+    }
+
     const supplier = {
       ...parsed,
-      unitPrice: typeof unitPrice === "string" && unitPrice.trim() ? unitPrice.trim() : parsed.unitPrice,
-      moq: typeof moq === "string" && moq.trim() ? moq.trim() : parsed.moq,
+      unitPrice: cleanUnitPrice,
+      moq: cleanMoq,
       report,
       capturedAt: new Date(),
     }
@@ -1560,6 +1661,7 @@ pipelineRouter.post("/compare", handleCompareProducts)
 pipelineRouter.post("/:id/suppliers", handleCaptureSuppliers)
 pipelineRouter.post("/:id/suppliers/manual", handleAddManualSupplier)
 pipelineRouter.post("/:id/suppliers/link", handleLinkSupplier)
+pipelineRouter.delete("/:id/suppliers", handleClearSuppliers)
 pipelineRouter.delete("/:id/suppliers/:index", handleDeleteSupplier)
 pipelineRouter.patch("/:id/suppliers/:index/status", handleUpdateSupplierStatus)
 pipelineRouter.patch("/:id/suppliers/:index/viability", handleUpdateSupplierViability)

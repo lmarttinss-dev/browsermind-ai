@@ -76,6 +76,11 @@ export function formatBrl(num: number): string {
   return `R$ ${num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+/** Formata número → US$ 1,234.56 via toLocaleString */
+export function formatUsd(num: number): string {
+  return `US$ ${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
 /** Calcula custo total do produto: preço unitário × MOQ */
 export function calculateProductCost(unitPrice: string, moq: string): string {
   const price = parseCurrency(unitPrice)
