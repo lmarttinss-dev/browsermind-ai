@@ -1,6 +1,19 @@
 import type { Supplier } from "./models/product.js"
 import type { KitItem } from "./models/product.js"
 
+/**
+ * Limpa o valor de MOQ mantendo apenas o número e a unidade,
+ * removendo notas entre parênteses.
+ * Ex: "10 peças (implícito nas faixas de preço)" → "10 peças"
+ */
+function sanitizeMoq(value: string): string {
+  return value
+    .replace(/\*+/g, "")
+    .replace(/\s*\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 export function parseSuppliersFromReport(report: string): Omit<Supplier, "capturedAt">[] {
   const suppliers: Omit<Supplier, "capturedAt">[] = []
   // Dividir por seções de fornecedor (### 🥇 1º —, ### 🥈 2º —, ### 1º —, etc.)
@@ -44,7 +57,7 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
         name: cleanName,
         url: rawUrl,
         unitPrice: priceMatch?.[1]?.trim() || "",
-        moq: moqMatch?.[1]?.trim() || "",
+        moq: sanitizeMoq(moqMatch?.[1] || ""),
         rating: parseFloat(ratingMatch?.[1]?.replace(",", ".") || "0") || 0,
         tradeAssurance: !!tradeMatch,
         yearsInBusiness: parseInt(yearsMatch?.[1] || "0") || 0,
@@ -85,7 +98,7 @@ export function parseIndividualSupplierReport(report: string, supplierUrl: strin
     name: nameMatch?.[1]?.replace(/\*+/g, "").trim() || "Fornecedor analisado",
     url: supplierUrl,
     unitPrice: priceMatch?.[1]?.replace(/\*+/g, "").trim() || "",
-    moq: moqMatch?.[1]?.replace(/\*+/g, "").trim() || "",
+    moq: sanitizeMoq(moqMatch?.[1] || ""),
     rating: parseFloat(ratingMatch?.[1]?.replace(",", ".") || "0") || 0,
     tradeAssurance: !!tradeMatch,
     yearsInBusiness: parseInt(yearsMatch?.[1] || "0") || 0,
