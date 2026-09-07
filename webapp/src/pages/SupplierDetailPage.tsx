@@ -90,6 +90,27 @@ export const SupplierDetailPage = () => {
   const index = parseInt(supplierIndex || "")
   const supplier: Supplier | undefined = product?.suppliers?.[index]
 
+  // Cotação com o menor MOQ — usada para exibir o preço unitário do produto
+  // principal e a quantidade mínima do fornecedor.
+  const lowestMoqQuote = useMemo(() => {
+    if (!supplier?.quotes?.length) return null
+    let best: SupplierQuote | null = null
+    let bestMoq: number | null = null
+    for (const q of supplier.quotes) {
+      const moq = parseMoq(q.moq)
+      if (moq === null) continue
+      if (bestMoq === null || moq < bestMoq) {
+        bestMoq = moq
+        best = q
+      }
+    }
+    return best
+  }, [supplier])
+
+  // Preço unitário vem da cotação de menor MOQ; sem cotações, usa o preço listado.
+  const displayUnitPrice = lowestMoqQuote?.unitPrice?.trim() || supplier?.unitPrice || ""
+  const displayMoq = lowestMoqQuote ? parseMoq(lowestMoqQuote.moq) : parseMoq(supplier?.moq || "")
+
   const markdownComponents = useMemo(() => ({
     a: ({ href, children }: any) => (
       <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
@@ -450,16 +471,16 @@ export const SupplierDetailPage = () => {
             <div className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-lg">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Informações</h3>
               <div className="space-y-2">
-                {supplier.unitPrice && (
+                {displayUnitPrice && (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">Preço listado</span>
-                    <span className="text-sm text-emerald-400 font-medium">{supplier.unitPrice}</span>
+                    <span className="text-xs text-gray-500">Preço Unitário</span>
+                    <span className="text-sm text-emerald-400 font-medium">{displayUnitPrice}</span>
                   </div>
                 )}
-                {supplier.moq && (
+                {displayMoq !== null && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500">MOQ</span>
-                    <span className="text-sm text-gray-200">{supplier.moq}</span>
+                    <span className="text-sm text-gray-200">{displayMoq}</span>
                   </div>
                 )}
                 {supplier.rating > 0 && (
@@ -487,12 +508,6 @@ export const SupplierDetailPage = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500">Capacidades</span>
                     <span className="text-xs text-gray-300 text-right max-w-[60%]">{supplier.capabilities}</span>
-                  </div>
-                )}
-                {supplier.certifications && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">Certificações</span>
-                    <span className="text-xs text-gray-300 text-right max-w-[60%]">{supplier.certifications}</span>
                   </div>
                 )}
                 {supplier.url && (
