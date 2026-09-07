@@ -41,6 +41,39 @@ export function parseReportMetrics(analysisReport: string) {
   return { price, score, monthlySales, potentialMargin }
 }
 
+/**
+ * Normaliza markdown gerado por IA para evitar que as tags apareçam cruas na
+ * renderização. Corrige:
+ *  - Fence de código envolvendo o documento inteiro (ex.: ```markdown ... ```)
+ *  - Fences de código desbalanceadas (abertura sem fechamento), que fazem o
+ *    ReactMarkdown tratar todo o restante como texto literal.
+ */
+export function normalizeMarkdown(md: string): string {
+  if (!md) return md
+
+  const text = md.replace(/\r\n/g, "\n").trim()
+  if (!text) return md
+
+  // Remove fence que envolve o documento inteiro (```markdown / ```md / ```).
+  const outer = text.match(/^`{3,}(?:markdown|md)?[ \t]*\n([\s\S]*?)\n?`{3,}[ \t]*$/i)
+  if (outer) return normalizeMarkdown(outer[1])
+
+  const fenceCount = (text.match(/^[ \t]*`{3,}/gm) || []).length
+
+  // Número ímpar de fences = há abertura sem fechamento correspondente.
+  if (fenceCount % 2 === 1) {
+    // Padrão comum: a IA envolve a resposta em ``` e esquece de fechar.
+    // Remove a abertura para o restante ser interpretado como markdown.
+    if (/^[ \t]*`{3,}/.test(text)) {
+      return normalizeMarkdown(text.replace(/^[ \t]*`{3,}[^\n]*\n?/, ""))
+    }
+    // Fence órfão no meio do texto: fecha no fim para não engolir o restante.
+    return text + "\n```"
+  }
+
+  return text
+}
+
 // --- Currency / formatting helpers (padrão brasileiro) ---
 
 /** Extrai valor numérico de string monetária (R$ 1.234,56 → 1234.56) */

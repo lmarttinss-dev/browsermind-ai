@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { sanitizeFilename, parseCurrency, parseMoq, maskReal, formatBrl, calculateProductCost, formatTotal, calculateUnitCost } from "@/lib/utils"
+import { sanitizeFilename, parseCurrency, parseMoq, maskReal, formatBrl, calculateProductCost, formatTotal, calculateUnitCost, normalizeMarkdown } from "@/lib/utils"
 
 // Mock de data fixa para fallback previsível
 const FIXED_DATE = "2026-05-13"
@@ -258,5 +258,41 @@ describe("calculateUnitCost", () => {
 
   it("deve calcular com valores grandes e centavos", () => {
     expect(calculateUnitCost("R$ 1.234,56", "R$ 765,44", "200")).toBe("R$ 10,00")
+  })
+})
+
+describe("normalizeMarkdown", () => {
+  it("deve remover fence markdown que envolve o documento inteiro", () => {
+    const input = "```markdown\n## Título\n\n**negrito** e - lista\n```"
+    expect(normalizeMarkdown(input)).toBe("## Título\n\n**negrito** e - lista")
+  })
+
+  it("deve remover fence simples (sem linguagem) que envolve o documento", () => {
+    const input = "```\n## Título\n```"
+    expect(normalizeMarkdown(input)).toBe("## Título")
+  })
+
+  it("deve remover abertura de fence sem fechamento no início", () => {
+    const input = "```markdown\n## Título\n\n**negrito**"
+    expect(normalizeMarkdown(input)).toBe("## Título\n\n**negrito**")
+  })
+
+  it("deve fechar fence órfão no meio do documento", () => {
+    const input = "## Título\n\n```\ntrecho solto"
+    expect(normalizeMarkdown(input)).toBe("## Título\n\n```\ntrecho solto\n```")
+  })
+
+  it("deve manter markdown bem formado sem alterações", () => {
+    const input = "## Título\n\n**negrito**\n\n- item 1\n- item 2"
+    expect(normalizeMarkdown(input)).toBe(input)
+  })
+
+  it("deve preservar bloco mermaid balanceado", () => {
+    const input = "## Título\n\n```mermaid\ngraph TD\n  A --> B\n```\n\n- item"
+    expect(normalizeMarkdown(input)).toBe(input)
+  })
+
+  it("deve retornar string vazia para entrada vazia", () => {
+    expect(normalizeMarkdown("")).toBe("")
   })
 })

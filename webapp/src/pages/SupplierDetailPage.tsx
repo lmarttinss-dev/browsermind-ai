@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, MODELS, type ModelId, type PipelineProduct, type Supplier, type NegotiationStatus, type SupplierQuote, NEGOTIATION_STATUSES } from "@/lib/api"
-import { calculateUnitCost } from "@/lib/utils"
+import { calculateUnitCost, normalizeMarkdown } from "@/lib/utils"
 
 const STATUS_CONFIG: Record<NegotiationStatus, { label: string; color: string; bgColor: string; borderColor: string }> = {
   aguardando_resposta: { label: "Aguardando resposta", color: "text-gray-400", bgColor: "bg-gray-800", borderColor: "border-gray-600" },
@@ -777,7 +777,7 @@ export const SupplierDetailPage = () => {
                   remarkPlugins={[remarkGfm]}
                   components={markdownComponents}
                 >
-                  {supplier.report}
+                  {normalizeMarkdown(supplier.report)}
                 </ReactMarkdown>
               </div>
             </div>

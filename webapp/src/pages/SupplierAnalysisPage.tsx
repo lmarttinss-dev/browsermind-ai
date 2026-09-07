@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, MODELS, type PipelineProduct, type ModelId } from "@/lib/api"
+import { normalizeMarkdown } from "@/lib/utils"
 
 type AnalysisResult = {
   report: string
@@ -265,7 +266,7 @@ export const SupplierAnalysisPage = () => {
                 remarkPlugins={[remarkGfm]}
                 components={markdownComponents}
               >
-                {result.report}
+                {normalizeMarkdown(result.report)}
               </ReactMarkdown>
             </div>
           </div>
