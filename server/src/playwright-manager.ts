@@ -383,6 +383,8 @@ export class PlaywrightManager {
     headings: string[];
     metaTags: Record<string, string>;
     links: { text: string; href: string }[];
+    rangePrice: string;
+    moq: string;
   }> {
     const page = await this.getPage();
 
@@ -427,12 +429,31 @@ export class PlaywrightManager {
           if (key && val) metaTags[key] = val;
         });
 
+        // Preço unitário e MOQ extraídos do elemento range-price (Alibaba)
+        const rangePrice = (() => {
+          const els = Array.from(document.querySelectorAll(".range-price"));
+          return els.map((el) => (el.textContent || "").trim()).filter(Boolean).join(" ");
+        })();
+
+        const moq = (() => {
+          const selectors = [".product-moq", ".minimum-order-quantity", ".moq", "[class*='moq']"];
+          for (const sel of selectors) {
+            const el = document.querySelector(sel);
+            const t = el && (el.textContent || "").trim();
+            if (t) return t;
+          }
+          const m = (document.body?.innerText || "").match(/(?:MOQ|Min\.?\s*Order|Pedido\s*M[íi]nimo)\s*[:：]?\s*([\d.,]+)/i);
+          return m ? m[1] : "";
+        })();
+
         return {
           url: window.location.href,
           title: document.title,
           visibleText: visibleText.slice(0, 50000),
           headings: headings.slice(0, 50),
           metaTags,
+          rangePrice,
+          moq,
           links: (() => {
             const seen = new Set();
             const result = [];
@@ -471,6 +492,8 @@ export class PlaywrightManager {
       headings: string[];
       metaTags: Record<string, string>;
       links: { text: string; href: string }[];
+      rangePrice: string;
+      moq: string;
     }>;
   }
 

@@ -9,6 +9,8 @@ import { api, MODELS, type PipelineProduct, type ModelId } from "@/lib/api"
 type AnalysisResult = {
   report: string
   supplierUrl: string
+  unitPrice?: string
+  moq?: string
   analyzedAt: string
 }
 
@@ -67,6 +69,8 @@ export const SupplierAnalysisPage = () => {
       const analysis: AnalysisResult = {
         report: res.report,
         supplierUrl: res.supplierUrl,
+        unitPrice: res.unitPrice,
+        moq: res.moq,
         analyzedAt: res.analyzedAt,
       }
       setResult(analysis)
@@ -231,7 +235,7 @@ export const SupplierAnalysisPage = () => {
                       setIsLinking(true)
                       setLinkSuccess(null)
                       try {
-                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl.replace(/`/g, ""))
+                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl.replace(/`/g, ""), result.unitPrice, result.moq)
                         const product = products.find(p => p._id === selectedProductId)
                         setLinkSuccess(`Vinculado a "${product?.title}"`);
                       } catch (err) {

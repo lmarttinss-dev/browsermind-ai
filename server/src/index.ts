@@ -801,7 +801,7 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       return
     }
 
-    const { report, supplierUrl: rawSupplierUrl } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq } = req.body || {}
     const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (typeof report !== "string" || !report.trim()) {
@@ -826,8 +826,17 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       product.suppliers[index].responseRate = parsed.responseRate || product.suppliers[index].responseRate
       product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
       product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
-      if (parsed.unitPrice) product.suppliers[index].unitPrice = parsed.unitPrice
-      if (parsed.moq) product.suppliers[index].moq = parsed.moq
+      // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
+      if (typeof unitPrice === "string" && unitPrice.trim()) {
+        product.suppliers[index].unitPrice = unitPrice.trim()
+      } else if (parsed.unitPrice) {
+        product.suppliers[index].unitPrice = parsed.unitPrice
+      }
+      if (typeof moq === "string" && moq.trim()) {
+        product.suppliers[index].moq = moq.trim()
+      } else if (parsed.moq) {
+        product.suppliers[index].moq = parsed.moq
+      }
     }
 
     product.markModified("suppliers")
@@ -1403,6 +1412,8 @@ app.post("/api/supplier/analyze", async (req, res) => {
     const content = [
       `URL: ${extracted.url}`,
       `Title: ${extracted.title}`,
+      `\nPreço unitário (range-price): ${extracted.rangePrice || "Não encontrado"}`,
+      `MOQ: ${extracted.moq || "Não encontrado"}`,
       `\nHeadings:\n${extracted.headings.join("\n")}`,
       Object.keys(extracted.metaTags).length > 0
         ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
@@ -1491,6 +1502,8 @@ app.post("/api/supplier/analyze", async (req, res) => {
       success: true,
       report: aiResponse,
       supplierUrl: url,
+      unitPrice: extracted.rangePrice || "",
+      moq: extracted.moq || "",
       analyzedAt: new Date().toISOString(),
     })
   } catch (error) {
@@ -1510,7 +1523,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       return
     }
 
-    const { report, supplierUrl: rawSupplierUrl } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq } = req.body || {}
     const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (!report || typeof report !== "string") {
@@ -1524,7 +1537,14 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
     }
 
     const parsed = parseIndividualSupplierReport(report, supplierUrl)
-    const supplier = { ...parsed, report, capturedAt: new Date() }
+    // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
+    const supplier = {
+      ...parsed,
+      unitPrice: typeof unitPrice === "string" && unitPrice.trim() ? unitPrice.trim() : parsed.unitPrice,
+      moq: typeof moq === "string" && moq.trim() ? moq.trim() : parsed.moq,
+      report,
+      capturedAt: new Date(),
+    }
 
     product.suppliers.push(supplier as Supplier)
     await product.save()
