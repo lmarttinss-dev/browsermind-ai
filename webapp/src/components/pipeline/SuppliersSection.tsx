@@ -374,9 +374,18 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 )}
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    {/* Linha 1: Nome + Rating + Trade Assurance */}
+                    {/* Linha 1: Nome + Tipo (Fábrica/Trading) + Rating + Trade Assurance */}
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-sm font-medium truncate ${isNotViable ? "text-red-300 line-through" : "text-gray-200"}`}>{supplier.name}</span>
+                      {supplier.supplierType && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide flex-shrink-0 border ${
+                          supplier.supplierType === "FACTORY"
+                            ? "bg-blue-900/40 text-blue-300 border-blue-700/60"
+                            : "bg-amber-900/30 text-amber-300 border-amber-700/60"
+                        }`}>
+                          {supplier.supplierType === "FACTORY" ? "Fábrica" : "Trading"}
+                        </span>
+                      )}
                       {supplier.tradeAssurance && (
                         <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isNotViable ? "text-red-600" : "text-emerald-400"}`} />
                       )}

@@ -117,6 +117,9 @@ export function parseIndividualSupplierReport(report: string, supplierUrl: strin
   const responseMatch = report.match(/Taxa de resposta[:\s]*\*?\*?\s*(.+)/im)
   const certMatch = report.match(/Certificações[^:]*[:\s]*\*?\*?\s*(.+)/im)
 
+  // Classificação fábrica/trading
+  const typeMatch = report.match(/Classificação\s*[:\s]*\*?\*?\s*(FACTORY|TRADING)/i)
+
   // Busca preço e MOQ na seção de produtos
   const priceMatch = report.match(/(?:Preço|Faixa de preço)[^:]*[:\s]*\*?\*?\s*(.+)/im)
   const moqMatch = report.match(/(?:MOQ|Pedido mínimo)[^:]*[:\s]*\*?\*?\s*(.+)/im)
@@ -139,6 +142,7 @@ export function parseIndividualSupplierReport(report: string, supplierUrl: strin
     responseRate: responseMatch?.[1]?.replace(/\*+/g, "").trim() || "",
     capabilities: capabilities.join(" / ") || "",
     certifications: certMatch?.[1]?.replace(/\*+/g, "").trim() || "",
+    supplierType: typeMatch?.[1]?.trim().toUpperCase() || "",
   }
 }
 
