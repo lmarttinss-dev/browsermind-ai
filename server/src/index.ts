@@ -902,6 +902,7 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       product.suppliers[index].responseRate = parsed.responseRate || product.suppliers[index].responseRate
       product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
       product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
+      if (parsed.supplierType) product.suppliers[index].supplierType = parsed.supplierType
       // Preço unitário e MOQ extraídos EXCLUSIVAMENTE do elemento range-price (nunca do parse da IA)
       const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
       const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")

@@ -189,6 +189,7 @@ export type Supplier = {
   responseRate: string;
   capabilities: string;
   certifications: string;
+  supplierType?: string;
   report: string;
   capturedAt: string;
   viable: boolean;
