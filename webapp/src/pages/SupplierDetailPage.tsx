@@ -484,15 +484,15 @@ export const SupplierDetailPage = () => {
                   </div>
                 )}
                 {supplier.capabilities && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">Capacidades</span>
-                    <span className="text-xs text-gray-300 text-right max-w-[60%]">{supplier.capabilities}</span>
+                  <div>
+                    <span className="block text-xs text-gray-500 mb-0.5">Capacidades</span>
+                    <p className="text-sm text-gray-300 break-words whitespace-pre-wrap">{supplier.capabilities}</p>
                   </div>
                 )}
                 {supplier.certifications && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">Certificações</span>
-                    <span className="text-xs text-gray-300 text-right max-w-[60%]">{supplier.certifications}</span>
+                  <div>
+                    <span className="block text-xs text-gray-500 mb-0.5">Certificações</span>
+                    <p className="text-sm text-gray-300 break-words whitespace-pre-wrap">{supplier.certifications}</p>
                   </div>
                 )}
                 {supplier.url && (
