@@ -1346,6 +1346,10 @@ Gere um relatório completo em Markdown com as seguintes seções:
 
 ## 📦 Produtos e Preços
 
+⚠️ IMPORTANTE sobre preço e MOQ: escreva APENAS o valor, sem notas, sem parênteses e sem texto adicional.
+- **Preço indicado:** somente o valor/faixa. Ex: "US$ 3.50 - 5.00" (nunca "por peça", "varia com a quantidade", etc.).
+- **MOQ (pedido mínimo):** somente o número e a unidade. Ex: "100 unidades" ou "10 peças" (nunca "implícito nas faixas de preço" ou observações).
+
 Para cada produto listado (até 10 principais):
 - Nome do produto
 - Preço indicado (ou faixa de preço)
