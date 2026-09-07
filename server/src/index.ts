@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Agent as HttpsAgent } from "node:https";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
@@ -57,6 +58,61 @@ const AVANTPRO_CONFIG = {
   apiBase: "https://prod-ml.avantprocloud.com.br",
   productCode: "avantpro-ml",
 };
+
+// ==========================================
+// DeepSeek — chamada com retry e timeout para tolerar falhas transitórias de DNS/rede
+// (ex.: EAI_AGAIN ao resolver api.deepseek.com, comum em WSL)
+// ==========================================
+const TRANSIENT_ERROR_CODES = new Set(["EAI_AGAIN", "ECONNRESET", "ETIMEDOUT", "ECONNREFUSED", "ENOTFOUND", "EPIPE"])
+const TRANSIENT_HTTP_STATUS = new Set([429, 500, 502, 503, 504])
+const DEEPSEEK_MAX_ATTEMPTS = 4
+
+function extractErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined
+  const obj = error as { code?: unknown; cause?: { code?: unknown } }
+  if (typeof obj.code === "string") return obj.code
+  if (obj.cause && typeof obj.cause.code === "string") return obj.cause.code
+  return undefined
+}
+
+function isTransientError(error: unknown): boolean {
+  if (axios.isAxiosError(error) && error.response) {
+    if (TRANSIENT_HTTP_STATUS.has(error.response.status)) return true
+  }
+  const code = extractErrorCode(error)
+  return code ? TRANSIENT_ERROR_CODES.has(code) : false
+}
+
+// Chama a API da DeepSeek com retry exponencial em erros transitórios e força
+// IPv4 para evitar falhas de resolução IPv6 no WSL.
+async function callDeepSeek(model: "deepseek-flash" | "deepseek-pro", systemPrompt: string, userMessage: string, maxTokens: number): Promise<string> {
+  const key = apiKeys.deepseek
+  if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
+  const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
+  const httpsAgent = new HttpsAgent({ family: 4 })
+
+  let lastError: unknown = null
+  for (let attempt = 0; attempt < DEEPSEEK_MAX_ATTEMPTS; attempt++) {
+    try {
+      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+        model: deepseekModel,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.7,
+      }, { headers: { Authorization: `Bearer ${key}` }, timeout: 60000, httpsAgent })
+      return r.data.choices?.[0]?.message?.content || ""
+    } catch (error) {
+      lastError = error
+      if (attempt >= DEEPSEEK_MAX_ATTEMPTS - 1 || !isTransientError(error)) break
+      const delay = 500 * Math.pow(2, attempt)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+  throw lastError
+}
 
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "10mb" }));
@@ -496,20 +552,7 @@ app.post("/api/analyze", async (req, res) => {
       aiResponse = r.data.content?.[0]?.text || "";
 
     } else if (model === "deepseek-flash" || model === "deepseek-pro") {
-      const key = apiKeys.deepseek;
-      if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.");
-      const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash";
-
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: deepseekModel,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 16384,
-        temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } });
-      aiResponse = r.data.choices?.[0]?.message?.content || "";
+      aiResponse = await callDeepSeek(model, SYSTEM_PROMPT, userMessage, 16384)
 
     } else {
       throw new Error(`Modelo não suportado: ${model}`);
@@ -1314,20 +1357,7 @@ ${supplierInfo}
       aiResponse = r.data.content?.[0]?.text || ""
 
     } else if (model === "deepseek-flash" || model === "deepseek-pro") {
-      const key = apiKeys.deepseek
-      if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
-      const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
-
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: deepseekModel,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 8192,
-        temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } })
-      aiResponse = r.data.choices?.[0]?.message?.content || ""
+      aiResponse = await callDeepSeek(model, systemPrompt, userMessage, 8192)
 
     } else {
       throw new Error(`Modelo não suportado: ${model}`)
@@ -1542,20 +1572,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       aiResponse = r.data.content?.[0]?.text || ""
 
     } else if (model === "deepseek-flash" || model === "deepseek-pro") {
-      const key = apiKeys.deepseek
-      if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
-      const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
-
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: deepseekModel,
-        messages: [
-          { role: "system", content: SUPPLIER_ANALYSIS_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 16384,
-        temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } })
-      aiResponse = r.data.choices?.[0]?.message?.content || ""
+      aiResponse = await callDeepSeek(model, SUPPLIER_ANALYSIS_PROMPT, userMessage, 16384)
 
     } else {
       throw new Error(`Modelo não suportado: ${model}`)
