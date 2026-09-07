@@ -2,16 +2,37 @@ import type { Supplier } from "./models/product.js"
 import type { KitItem } from "./models/product.js"
 
 /**
- * Limpa o valor de MOQ mantendo apenas o número e a unidade,
- * removendo notas entre parênteses.
- * Ex: "10 peças (implícito nas faixas de preço)" → "10 peças"
+ * Limpa o preço mantendo apenas a moeda e o valor/faixa.
+ * Ex: "US$ 0.50 - 0.80 / peça" → "US$ 0.50 - 0.80"
  */
-function sanitizeMoq(value: string): string {
-  return value
+export function sanitizePrice(value: string): string {
+  if (!value) return ""
+  const cleaned = value
     .replace(/\*+/g, "")
     .replace(/\s*\([^)]*\)/g, " ")
     .replace(/\s+/g, " ")
     .trim()
+  const match = cleaned.match(/((?:US\$|USD|R\$|€|£)\s*)?(\d[\d.,]*)(\s*[-–—~]\s*(\d[\d.,]*))?/)
+  if (!match?.[2]) return cleaned
+  const currency = match[1] || ""
+  const range = match[4] ? ` - ${match[4]}` : ""
+  return `${currency}${match[2]}${range}`.trim()
+}
+
+/**
+ * Limpa o valor de MOQ mantendo apenas o número e a unidade.
+ * Ex: "10 peças (implícito nas faixas de preço)" → "10 peças"
+ */
+export function sanitizeMoq(value: string): string {
+  if (!value) return ""
+  const cleaned = value
+    .replace(/\*+/g, "")
+    .replace(/\s*\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  const match = cleaned.match(/(\d[\d.,]*(?:\s*[-–—~]\s*\d[\d.,]*)?)\s*(pe[çc]as?|unidades?|un\.?|pcs?\.?|pieces?|itens?|conjuntos?)?/i)
+  if (!match?.[1]) return cleaned
+  return (match[1] + (match[2] ? ` ${match[2]}` : "")).trim()
 }
 
 export function parseSuppliersFromReport(report: string): Omit<Supplier, "capturedAt">[] {
@@ -56,7 +77,7 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
       suppliers.push({
         name: cleanName,
         url: rawUrl,
-        unitPrice: priceMatch?.[1]?.trim() || "",
+        unitPrice: sanitizePrice(priceMatch?.[1] || ""),
         moq: sanitizeMoq(moqMatch?.[1] || ""),
         rating: parseFloat(ratingMatch?.[1]?.replace(",", ".") || "0") || 0,
         tradeAssurance: !!tradeMatch,
@@ -97,7 +118,7 @@ export function parseIndividualSupplierReport(report: string, supplierUrl: strin
   return {
     name: nameMatch?.[1]?.replace(/\*+/g, "").trim() || "Fornecedor analisado",
     url: supplierUrl,
-    unitPrice: priceMatch?.[1]?.replace(/\*+/g, "").trim() || "",
+    unitPrice: sanitizePrice(priceMatch?.[1] || ""),
     moq: sanitizeMoq(moqMatch?.[1] || ""),
     rating: parseFloat(ratingMatch?.[1]?.replace(",", ".") || "0") || 0,
     tradeAssurance: !!tradeMatch,

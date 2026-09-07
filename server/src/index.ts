@@ -13,7 +13,7 @@ import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
 import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } from "./models/product.js";
 import { Comparison } from "./models/comparison.js";
-import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport } from "./parse-suppliers.js";
+import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport, sanitizePrice, sanitizeMoq } from "./parse-suppliers.js";
 
 /** Converte string de preço brasileiro (ex: "66,79" ou "1.234,56" ou "66.79") para number */
 function parseBrPrice(raw: string): number {
@@ -827,13 +827,16 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
       product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
       // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
-      if (typeof unitPrice === "string" && unitPrice.trim()) {
-        product.suppliers[index].unitPrice = unitPrice.trim()
+      // Ambos são sanitizados para manter apenas o essencial (moeda/valor e número/unidade)
+      const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
+      const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")
+      if (cleanUnitPrice) {
+        product.suppliers[index].unitPrice = cleanUnitPrice
       } else if (parsed.unitPrice) {
         product.suppliers[index].unitPrice = parsed.unitPrice
       }
-      if (typeof moq === "string" && moq.trim()) {
-        product.suppliers[index].moq = moq.trim()
+      if (cleanMoq) {
+        product.suppliers[index].moq = cleanMoq
       } else if (parsed.moq) {
         product.suppliers[index].moq = parsed.moq
       }
@@ -1538,10 +1541,13 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
 
     const parsed = parseIndividualSupplierReport(report, supplierUrl)
     // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
+    // Ambos são sanitizados para manter apenas o essencial (moeda/valor e número/unidade)
+    const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
+    const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")
     const supplier = {
       ...parsed,
-      unitPrice: typeof unitPrice === "string" && unitPrice.trim() ? unitPrice.trim() : parsed.unitPrice,
-      moq: typeof moq === "string" && moq.trim() ? moq.trim() : parsed.moq,
+      unitPrice: cleanUnitPrice || parsed.unitPrice,
+      moq: cleanMoq || parsed.moq,
       report,
       capturedAt: new Date(),
     }

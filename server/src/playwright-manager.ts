@@ -429,14 +429,14 @@ export class PlaywrightManager {
           if (key && val) metaTags[key] = val;
         });
 
-        // Preço unitário e MOQ extraídos do elemento range-price (Alibaba)
+        // Preço unitário extraído do elemento range-price (Alibaba)
         const rangePrice = (() => {
-          const els = Array.from(document.querySelectorAll(".range-price"));
-          return els.map((el) => (el.textContent || "").trim()).filter(Boolean).join(" ");
+          const el = document.querySelector(".range-price");
+          return el ? (el.textContent || "").trim() : "";
         })();
 
         const moq = (() => {
-          const selectors = [".product-moq", ".minimum-order-quantity", ".moq", "[class*='moq']"];
+          const selectors = [".product-moq", ".minimum-order-quantity", ".moq"];
           for (const sel of selectors) {
             const el = document.querySelector(sel);
             const t = el && (el.textContent || "").trim();
