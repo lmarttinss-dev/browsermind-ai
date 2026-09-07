@@ -826,19 +826,14 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       product.suppliers[index].responseRate = parsed.responseRate || product.suppliers[index].responseRate
       product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
       product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
-      // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
-      // Ambos são sanitizados para manter apenas o essencial (moeda/valor e número/unidade)
+      // Preço unitário e MOQ extraídos EXCLUSIVAMENTE do elemento range-price (nunca do parse da IA)
       const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
       const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")
       if (cleanUnitPrice) {
         product.suppliers[index].unitPrice = cleanUnitPrice
-      } else if (parsed.unitPrice) {
-        product.suppliers[index].unitPrice = parsed.unitPrice
       }
       if (cleanMoq) {
         product.suppliers[index].moq = cleanMoq
-      } else if (parsed.moq) {
-        product.suppliers[index].moq = parsed.moq
       }
     }
 
@@ -1346,9 +1341,10 @@ Gere um relatório completo em Markdown com as seguintes seções:
 
 ## 📦 Produtos e Preços
 
-⚠️ IMPORTANTE sobre preço e MOQ: escreva APENAS o valor, sem notas, sem parênteses e sem texto adicional.
-- **Preço indicado:** somente o valor/faixa. Ex: "US$ 3.50 - 5.00" (nunca "por peça", "varia com a quantidade", etc.).
-- **MOQ (pedido mínimo):** somente o número e a unidade. Ex: "100 unidades" ou "10 peças" (nunca "implícito nas faixas de preço" ou observações).
+⚠️ IMPORTANTE sobre preço e MOQ (template fixo, sem variação entre análises):
+- O preço e o MOQ JÁ foram extraídos do elemento da página e são fornecidos no conteúdo como "Preço unitário (range-price)" e "MOQ". Use EXATAMENTE esses valores, sem alterar, sem arredondar e sem gerar valores próprios.
+- **Preço indicado:** copie exatamente o valor extraído do elemento (ex: "$0.20-1.20" ou "US$ 3.50 - 5.00").
+- **MOQ (pedido mínimo):** copie exatamente o valor extraído do elemento (ex: "2 pieces", "10-99 pieces" ou "100 unidades"). Nunca escreva observações como "implícito nas faixas de preço".
 
 Para cada produto listado (até 10 principais):
 - Nome do produto
@@ -1544,14 +1540,13 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
     }
 
     const parsed = parseIndividualSupplierReport(report, supplierUrl)
-    // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
-    // Ambos são sanitizados para manter apenas o essencial (moeda/valor e número/unidade)
+    // Preço unitário e MOQ extraídos EXCLUSIVAMENTE do elemento range-price (nunca do parse da IA)
     const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
     const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")
     const supplier = {
       ...parsed,
-      unitPrice: cleanUnitPrice || parsed.unitPrice,
-      moq: cleanMoq || parsed.moq,
+      unitPrice: cleanUnitPrice,
+      moq: cleanMoq,
       report,
       capturedAt: new Date(),
     }
