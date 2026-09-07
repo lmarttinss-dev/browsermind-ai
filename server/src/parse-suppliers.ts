@@ -20,8 +20,9 @@ export function sanitizePrice(value: string): string {
 }
 
 /**
- * Limpa o valor de MOQ mantendo apenas o número e a unidade.
- * Ex: "10 peças (implícito nas faixas de preço)" → "10 peças"
+ * Limpa o valor de MOQ mantendo apenas o número e a unidade,
+ * com a unidade traduzida para pt-BR.
+ * Ex: "50 pieces" → "50 peças"
  */
 export function sanitizeMoq(value: string): string {
   if (!value) return ""
@@ -30,9 +31,21 @@ export function sanitizeMoq(value: string): string {
     .replace(/\s*\([^)]*\)/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-  const match = cleaned.match(/(\d[\d.,]*(?:\s*[-–—~]\s*\d[\d.,]*)?)\s*(pe[çc]as?|unidades?|un\.?|pcs?\.?|pieces?|itens?|conjuntos?)?/i)
+  const match = cleaned.match(/(\d[\d.,]*(?:\s*[-–—~]\s*\d[\d.,]*)?)\s*(pe[çc]as?|pieces?|pcs?\.?|unidades?|units?|un\.?|itens?|items?|conjuntos?)?/i)
   if (!match?.[1]) return cleaned
-  return (match[1] + (match[2] ? ` ${match[2]}` : "")).trim()
+  const unit = translateMoqUnit(match[2])
+  return (match[1] + (unit ? ` ${unit}` : "")).trim()
+}
+
+/** Traduz a unidade do MOQ para pt-BR (ex: "pieces" → "peças"). */
+function translateMoqUnit(unit: string | undefined): string {
+  if (!unit) return ""
+  const u = unit.trim().toLowerCase().replace(/\.$/, "")
+  if (u === "piece" || u === "pieces" || u === "pc" || u === "pcs" || u === "peça" || u === "peças" || u === "peca" || u === "pecas") return "peças"
+  if (u === "unit" || u === "units" || u === "un" || u === "unidade" || u === "unidades") return "unidades"
+  if (u === "item" || u === "items" || u === "iten" || u === "itens") return "itens"
+  if (u === "conjunto" || u === "conjuntos") return "conjuntos"
+  return unit
 }
 
 export function parseSuppliersFromReport(report: string): Omit<Supplier, "capturedAt">[] {
