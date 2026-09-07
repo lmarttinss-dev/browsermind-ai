@@ -1392,6 +1392,18 @@ ${supplierInfo}
 const SUPPLIER_ANALYSIS_PROMPT = `Você é um analista especializado em importação da China via Alibaba.
 Sua tarefa é analisar em detalhe um fornecedor específico com base no conteúdo da página dele no Alibaba.
 
+Classifique o fornecedor exclusivamente em UMA das duas categorias:
+- FACTORY = fabricante/fábrica que produz diretamente os produtos comercializados.
+- TRADING = empresa comercial/intermediária que NÃO fabrica diretamente os produtos, mesmo que trabalhe com fábricas parceiras.
+
+Regras de classificação:
+1. Não confie apenas no campo "Business Type" declarado pelo fornecedor.
+2. Considere o conjunto das evidências: Business Type, Company Type, informações de fabricação, produtos oferecidos, variedade de categorias, fotos/vídeos da fábrica, endereço e instalações, número de funcionários, capacidade produtiva, OEM/ODM, licença comercial e descrição da empresa.
+3. Se houver evidências conflitantes, determine a classificação mais provável.
+4. Se a empresa fabrica diretamente os principais produtos que vende → FACTORY.
+5. Se a empresa apenas comercializa produtos fabricados por terceiros ou trabalha principalmente com fábricas parceiras → TRADING.
+6. NÃO crie uma terceira categoria.
+
 Gere um relatório completo em Markdown com as seguintes seções:
 
 ## 📋 Dados Básicos
@@ -1404,6 +1416,11 @@ Gere um relatório completo em Markdown com as seguintes seções:
 - Funcionários: (número, se disponível)
 - Área da fábrica: (se disponível)
 - Principais mercados de exportação:
+
+## 🏷️ Tipo de Fornecedor (Fábrica ou Trading)
+
+- Classificação: (EXATAMENTE "FACTORY" ou "TRADING" — apenas uma destas duas palavras, sem explicações)
+- Evidências principais: (resumo curto das evidências usadas na classificação)
 
 ## ⭐ Reputação e Confiabilidade
 
