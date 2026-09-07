@@ -11,6 +11,7 @@ type AnalysisResult = {
   supplierUrl: string
   unitPrice?: string
   moq?: string
+  tradeAssurance?: boolean
   analyzedAt: string
 }
 
@@ -71,6 +72,7 @@ export const SupplierAnalysisPage = () => {
         supplierUrl: res.supplierUrl,
         unitPrice: res.unitPrice,
         moq: res.moq,
+        tradeAssurance: res.tradeAssurance,
         analyzedAt: res.analyzedAt,
       }
       setResult(analysis)
@@ -235,7 +237,7 @@ export const SupplierAnalysisPage = () => {
                       setIsLinking(true)
                       setLinkSuccess(null)
                       try {
-                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl.replace(/`/g, ""), result.unitPrice, result.moq)
+                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl.replace(/`/g, ""), result.unitPrice, result.moq, result.tradeAssurance)
                         const product = products.find(p => p._id === selectedProductId)
                         setLinkSuccess(`Vinculado a "${product?.title}"`);
                       } catch (err) {

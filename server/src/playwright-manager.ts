@@ -385,6 +385,7 @@ export class PlaywrightManager {
     links: { text: string; href: string }[];
     rangePrice: string;
     moq: string;
+    tradeAssurance: boolean;
   }> {
     const page = await this.getPage();
 
@@ -429,22 +430,46 @@ export class PlaywrightManager {
           if (key && val) metaTags[key] = val;
         });
 
-        // Preço unitário e MOQ extraídos do elemento range-price (Alibaba)
-        const rangePrice = (() => {
-          const els = Array.from(document.querySelectorAll(".range-price"));
-          return els.map((el) => (el.textContent || "").trim()).filter(Boolean).join(" ");
+        // Preço e MOQ extraídos dos elementos de referência do Alibaba:
+        // 1) [data-testid="range-price"] → <span> (preço) + <div> (Minimum order quantity)
+        // 2) [data-testid="ladder-price"] → .price-item (preço e faixa de MOQ)
+        const priceInfo = (() => {
+          let price = "";
+          let moq = "";
+
+          const rangeEl = document.querySelector('[data-testid="range-price"]');
+          if (rangeEl) {
+            const span = rangeEl.querySelector("span");
+            if (span) price = (span.textContent || "").trim();
+            const moqEl = span ? span.nextElementSibling : null;
+            if (moqEl) {
+              const t = (moqEl.textContent || "").trim();
+              const m = t.match(/(?:Minimum order quantity|Min\.?\s*Order|MOQ)\s*[:：]?\s*([\d.,]+\s*(?:pieces?|pcs?\.?|peças?|unidades?|itens?)?)/i);
+              moq = m ? m[1].trim() : t;
+            }
+          }
+
+          const ladderEl = document.querySelector('[data-testid="ladder-price"]');
+          if (ladderEl) {
+            const item = ladderEl.querySelector(".price-item");
+            if (item) {
+              const span = item.querySelector("span");
+              if (span) {
+                if (!price) price = (span.textContent || "").trim();
+                const moqEl = span.parentElement ? span.parentElement.nextElementSibling : null;
+                if (moqEl && !moq) moq = (moqEl.textContent || "").trim();
+              }
+            }
+          }
+
+          return { price, moq };
         })();
 
-        const moq = (() => {
-          const selectors = [".product-moq", ".minimum-order-quantity", ".moq", "[class*='moq']"];
-          for (const sel of selectors) {
-            const el = document.querySelector(sel);
-            const t = el && (el.textContent || "").trim();
-            if (t) return t;
-          }
-          const m = (document.body?.innerText || "").match(/(?:MOQ|Min\.?\s*Order|Pedido\s*M[íi]nimo)\s*[:：]?\s*([\d.,]+)/i);
-          return m ? m[1] : "";
-        })();
+        const rangePrice = priceInfo.price;
+        const moq = priceInfo.moq;
+
+        // Trade Assurance: presença do módulo module_ta_plus_footer na página
+        const tradeAssurance = !!document.querySelector('[data-module-name="module_ta_plus_footer"], .module_ta_plus_footer');
 
         return {
           url: window.location.href,
@@ -454,6 +479,7 @@ export class PlaywrightManager {
           metaTags,
           rangePrice,
           moq,
+          tradeAssurance,
           links: (() => {
             const seen = new Set();
             const result = [];
@@ -494,6 +520,7 @@ export class PlaywrightManager {
       links: { text: string; href: string }[];
       rangePrice: string;
       moq: string;
+      tradeAssurance: boolean;
     }>;
   }
 

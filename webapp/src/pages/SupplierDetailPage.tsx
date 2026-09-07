@@ -223,7 +223,7 @@ export const SupplierDetailPage = () => {
     try {
       const res = await api.analyzeSupplier(cleanUrl, selectedModel)
       // Salva o relatório no fornecedor — a seção "Relatório de Análise" no final da página exibe automaticamente
-      const updated = await api.updateSupplierReport(product._id, index, res.report, cleanUrl, res.unitPrice, res.moq)
+      const updated = await api.updateSupplierReport(product._id, index, res.report, cleanUrl, res.unitPrice, res.moq, res.tradeAssurance)
       setProduct({ ...product, suppliers: updated.suppliers })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))

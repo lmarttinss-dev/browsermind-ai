@@ -1,6 +1,53 @@
 import type { Supplier } from "./models/product.js"
 import type { KitItem } from "./models/product.js"
 
+/**
+ * Limpa o preço mantendo apenas a moeda e o valor/faixa.
+ * Ex: "US$ 0.50 - 0.80 / peça" → "US$ 0.50 - 0.80"
+ */
+export function sanitizePrice(value: string): string {
+  if (!value) return ""
+  const cleaned = value
+    .replace(/\*+/g, "")
+    .replace(/\s*\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  const match = cleaned.match(/((?:US\$|USD|R\$|€|£|\$)\s*)?(\d[\d.,]*)(\s*[-–—~]\s*(\d[\d.,]*))?/)
+  if (!match?.[2]) return cleaned
+  const currency = match[1] || ""
+  const range = match[4] ? ` - ${match[4]}` : ""
+  return `${currency}${match[2]}${range}`.trim()
+}
+
+/**
+ * Limpa o valor de MOQ mantendo apenas o número e a unidade,
+ * com a unidade traduzida para pt-BR.
+ * Ex: "50 pieces" → "50 peças"
+ */
+export function sanitizeMoq(value: string): string {
+  if (!value) return ""
+  const cleaned = value
+    .replace(/\*+/g, "")
+    .replace(/\s*\([^)]*\)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  const match = cleaned.match(/(\d[\d.,]*(?:\s*[-–—~]\s*\d[\d.,]*)?)\s*(pe[çc]as?|pieces?|pcs?\.?|unidades?|units?|un\.?|itens?|items?|conjuntos?)?/i)
+  if (!match?.[1]) return cleaned
+  const unit = translateMoqUnit(match[2])
+  return (match[1] + (unit ? ` ${unit}` : "")).trim()
+}
+
+/** Traduz a unidade do MOQ para pt-BR (ex: "pieces" → "peças"). */
+function translateMoqUnit(unit: string | undefined): string {
+  if (!unit) return ""
+  const u = unit.trim().toLowerCase().replace(/\.$/, "")
+  if (u === "piece" || u === "pieces" || u === "pc" || u === "pcs" || u === "peça" || u === "peças" || u === "peca" || u === "pecas") return "peças"
+  if (u === "unit" || u === "units" || u === "un" || u === "unidade" || u === "unidades") return "unidades"
+  if (u === "item" || u === "items" || u === "iten" || u === "itens") return "itens"
+  if (u === "conjunto" || u === "conjuntos") return "conjuntos"
+  return unit
+}
+
 export function parseSuppliersFromReport(report: string): Omit<Supplier, "capturedAt">[] {
   const suppliers: Omit<Supplier, "capturedAt">[] = []
   // Dividir por seções de fornecedor (### 🥇 1º —, ### 🥈 2º —, ### 1º —, etc.)
@@ -43,8 +90,8 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
       suppliers.push({
         name: cleanName,
         url: rawUrl,
-        unitPrice: priceMatch?.[1]?.trim() || "",
-        moq: moqMatch?.[1]?.trim() || "",
+        unitPrice: sanitizePrice(priceMatch?.[1] || ""),
+        moq: sanitizeMoq(moqMatch?.[1] || ""),
         rating: parseFloat(ratingMatch?.[1]?.replace(",", ".") || "0") || 0,
         tradeAssurance: !!tradeMatch,
         yearsInBusiness: parseInt(yearsMatch?.[1] || "0") || 0,
@@ -84,8 +131,8 @@ export function parseIndividualSupplierReport(report: string, supplierUrl: strin
   return {
     name: nameMatch?.[1]?.replace(/\*+/g, "").trim() || "Fornecedor analisado",
     url: supplierUrl,
-    unitPrice: priceMatch?.[1]?.replace(/\*+/g, "").trim() || "",
-    moq: moqMatch?.[1]?.replace(/\*+/g, "").trim() || "",
+    unitPrice: sanitizePrice(priceMatch?.[1] || ""),
+    moq: sanitizeMoq(moqMatch?.[1] || ""),
     rating: parseFloat(ratingMatch?.[1]?.replace(",", ".") || "0") || 0,
     tradeAssurance: !!tradeMatch,
     yearsInBusiness: parseInt(yearsMatch?.[1] || "0") || 0,

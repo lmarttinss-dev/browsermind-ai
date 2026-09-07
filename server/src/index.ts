@@ -13,7 +13,7 @@ import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
 import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } from "./models/product.js";
 import { Comparison } from "./models/comparison.js";
-import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport } from "./parse-suppliers.js";
+import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport, sanitizePrice, sanitizeMoq } from "./parse-suppliers.js";
 
 /** Converte string de preço brasileiro (ex: "66,79" ou "1.234,56" ou "66.79") para number */
 function parseBrPrice(raw: string): number {
@@ -877,7 +877,7 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       return
     }
 
-    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq, tradeAssurance } = req.body || {}
     const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (typeof report !== "string" || !report.trim()) {
@@ -898,20 +898,18 @@ const handleUpdateSupplierReport: import("express").RequestHandler = async (req,
       if (parsed.name) product.suppliers[index].name = parsed.name
       if (parsed.rating > 0) product.suppliers[index].rating = parsed.rating
       if (parsed.yearsInBusiness > 0) product.suppliers[index].yearsInBusiness = parsed.yearsInBusiness
-      product.suppliers[index].tradeAssurance = parsed.tradeAssurance
+      product.suppliers[index].tradeAssurance = typeof tradeAssurance === "boolean" ? tradeAssurance : parsed.tradeAssurance
       product.suppliers[index].responseRate = parsed.responseRate || product.suppliers[index].responseRate
       product.suppliers[index].capabilities = parsed.capabilities || product.suppliers[index].capabilities
       product.suppliers[index].certifications = parsed.certifications || product.suppliers[index].certifications
-      // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
-      if (typeof unitPrice === "string" && unitPrice.trim()) {
-        product.suppliers[index].unitPrice = unitPrice.trim()
-      } else if (parsed.unitPrice) {
-        product.suppliers[index].unitPrice = parsed.unitPrice
+      // Preço unitário e MOQ extraídos EXCLUSIVAMENTE do elemento range-price (nunca do parse da IA)
+      const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
+      const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")
+      if (cleanUnitPrice) {
+        product.suppliers[index].unitPrice = cleanUnitPrice
       }
-      if (typeof moq === "string" && moq.trim()) {
-        product.suppliers[index].moq = moq.trim()
-      } else if (parsed.moq) {
-        product.suppliers[index].moq = parsed.moq
+      if (cleanMoq) {
+        product.suppliers[index].moq = cleanMoq
       }
     }
 
@@ -1419,6 +1417,11 @@ Gere um relatório completo em Markdown com as seguintes seções:
 
 ## 📦 Produtos e Preços
 
+⚠️ IMPORTANTE sobre preço e MOQ (template fixo, sem variação entre análises):
+- O preço e o MOQ JÁ foram extraídos do elemento da página e são fornecidos no conteúdo como "Preço unitário (range-price)" e "MOQ". Use EXATAMENTE esses valores, sem alterar, sem arredondar e sem gerar valores próprios.
+- **Preço indicado:** copie exatamente o valor extraído do elemento (ex: "$0.20-1.20" ou "US$ 3.50 - 5.00").
+- **MOQ (pedido mínimo):** copie exatamente o valor extraído do elemento (ex: "2 pieces", "10-99 pieces" ou "100 unidades"). Nunca escreva observações como "implícito nas faixas de preço".
+
 Para cada produto listado (até 10 principais):
 - Nome do produto
 - Preço indicado (ou faixa de preço)
@@ -1490,6 +1493,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       `Title: ${extracted.title}`,
       `\nPreço unitário (range-price): ${extracted.rangePrice || "Não encontrado"}`,
       `MOQ: ${extracted.moq || "Não encontrado"}`,
+      `Trade Assurance: ${extracted.tradeAssurance ? "Sim" : "Não"}`,
       `\nHeadings:\n${extracted.headings.join("\n")}`,
       Object.keys(extracted.metaTags).length > 0
         ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
@@ -1580,6 +1584,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       supplierUrl: url,
       unitPrice: extracted.rangePrice || "",
       moq: extracted.moq || "",
+      tradeAssurance: extracted.tradeAssurance,
       analyzedAt: new Date().toISOString(),
     })
   } catch (error) {
@@ -1599,7 +1604,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       return
     }
 
-    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq } = req.body || {}
+    const { report, supplierUrl: rawSupplierUrl, unitPrice, moq, tradeAssurance } = req.body || {}
     const supplierUrl = (rawSupplierUrl || "").replace(/`/g, "").trim()
 
     if (!report || typeof report !== "string") {
@@ -1613,9 +1618,9 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
     }
 
     const parsed = parseIndividualSupplierReport(report, supplierUrl)
-    // Preço unitário e MOQ vêm do elemento range-price (prioridade sobre o parse da IA)
-    const cleanUnitPrice = typeof unitPrice === "string" && unitPrice.trim() ? unitPrice.trim() : parsed.unitPrice
-    const cleanMoq = typeof moq === "string" && moq.trim() ? moq.trim() : parsed.moq
+    // Preço unitário e MOQ extraídos EXCLUSIVAMENTE do elemento range-price (nunca do parse da IA)
+    const cleanUnitPrice = sanitizePrice(typeof unitPrice === "string" ? unitPrice : "")
+    const cleanMoq = sanitizeMoq(typeof moq === "string" ? moq : "")
 
     // Dedup: se o fornecedor já existe (por URL ou nome), atualiza em vez de duplicar
     const existingIndex = findExistingSupplierIndex(product.suppliers, supplierUrl, parsed.name)
@@ -1627,7 +1632,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       if (parsed.name && parsed.name !== "Fornecedor analisado") existing.name = parsed.name
       if (parsed.rating > 0) existing.rating = parsed.rating
       if (parsed.yearsInBusiness > 0) existing.yearsInBusiness = parsed.yearsInBusiness
-      existing.tradeAssurance = parsed.tradeAssurance
+      existing.tradeAssurance = typeof tradeAssurance === "boolean" ? tradeAssurance : parsed.tradeAssurance
       if (parsed.responseRate) existing.responseRate = parsed.responseRate
       if (parsed.capabilities) existing.capabilities = parsed.capabilities
       if (parsed.certifications) existing.certifications = parsed.certifications
@@ -1643,6 +1648,7 @@ const handleLinkSupplier: import("express").RequestHandler = async (req, res) =>
       ...parsed,
       unitPrice: cleanUnitPrice,
       moq: cleanMoq,
+      tradeAssurance: typeof tradeAssurance === "boolean" ? tradeAssurance : parsed.tradeAssurance,
       report,
       capturedAt: new Date(),
     }
