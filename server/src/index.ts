@@ -1330,11 +1330,6 @@ Regras de classificação:
 
 Gere um relatório completo em Markdown com as seguintes seções:
 
-## 🏷️ Tipo de Fornecedor (Fábrica ou Trading)
-
-- Classificação: (EXATAMENTE "FACTORY" ou "TRADING" — apenas uma destas duas palavras, sem explicações)
-- Evidências principais: (resumo curto das evidências usadas na classificação)
-
 ## 📋 Dados Básicos
 
 - Nome da empresa:
@@ -1345,6 +1340,11 @@ Gere um relatório completo em Markdown com as seguintes seções:
 - Funcionários: (número, se disponível)
 - Área da fábrica: (se disponível)
 - Principais mercados de exportação:
+
+## 🏷️ Tipo de Fornecedor (Fábrica ou Trading)
+
+- Classificação: (EXATAMENTE "FACTORY" ou "TRADING" — apenas uma destas duas palavras, sem explicações)
+- Evidências principais: (resumo curto das evidências usadas na classificação)
 
 ## ⭐ Reputação e Confiabilidade
 
