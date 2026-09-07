@@ -1345,10 +1345,9 @@ Gere um relatório completo em Markdown com as seguintes seções:
 
 Para cada produto listado (até 10 principais):
 - Nome do produto
-- Preço indicado (ou faixa de preço)
-- MOQ (pedido mínimo)
+- Preço indicado (ou faixa de preço): (utilize o valor do elemento range-price)
+- MOQ (pedido mínimo): (utilize o valor do elemento range-price)
 - Capacidade de produção
-- Certificações do produto (CE, ROHS, FCC, ISO, etc.)
 
 ## 🏭 Capacidades de Produção
 
