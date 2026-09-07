@@ -43,6 +43,7 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const [selectedModel, setSelectedModel] = useState(MODELS[0].id)
   type SortOption = "default" | "total-asc" | "total-desc"
   const [statusFilter, setStatusFilter] = useState<NegotiationStatus | "todos" | "inviavel">("todos")
+  const [typeFilter, setTypeFilter] = useState<"todos" | "FACTORY" | "TRADING">("todos")
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<SortOption>("default")
 
@@ -87,8 +88,9 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
   const filteredSuppliers = suppliers.filter(s => {
     const matchesStatus = statusFilter === "todos"
       || (statusFilter === "inviavel" ? s.viable === false : (s.negotiationStatus || "aguardando_resposta") === statusFilter)
+    const matchesType = typeFilter === "todos" || (s.supplierType || "") === typeFilter
     const matchesSearch = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
+    return matchesStatus && matchesType && matchesSearch
   })
 
   const sortedSuppliers = [...filteredSuppliers].sort((a, b) => {
@@ -345,6 +347,40 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
                 </button>
               )
             })}
+          </div>
+
+          {/* Filtro por tipo de fornecedor */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            <button
+              onClick={() => setTypeFilter("todos")}
+              className={`text-[11px] px-2 py-1 rounded-lg border transition-colors ${
+                typeFilter === "todos"
+                  ? "border-blue-500 bg-blue-900/40 text-blue-300"
+                  : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-500"
+              }`}
+            >
+              Todos os tipos
+            </button>
+            <button
+              onClick={() => setTypeFilter("FACTORY")}
+              className={`text-[11px] px-2 py-1 rounded-lg border transition-colors ${
+                typeFilter === "FACTORY"
+                  ? "border-blue-700 bg-blue-900/40 text-blue-300"
+                  : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-blue-800 hover:text-blue-300"
+              }`}
+            >
+              Fábrica
+            </button>
+            <button
+              onClick={() => setTypeFilter("TRADING")}
+              className={`text-[11px] px-2 py-1 rounded-lg border transition-colors ${
+                typeFilter === "TRADING"
+                  ? "border-amber-700 bg-amber-900/30 text-amber-300"
+                  : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-amber-800 hover:text-amber-300"
+              }`}
+            >
+              Trading
+            </button>
           </div>
 
           <div className="grid gap-2">
