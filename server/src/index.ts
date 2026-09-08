@@ -431,7 +431,7 @@ app.post("/api/analyze", async (req, res) => {
       : ""
 
     const userMessage = content
-      ? `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}${dateHint}`
+      ? `Conteúdo da página:\n${content.slice(0, 120000)}\n\nPrompt: ${prompt}${dateHint}`
       : prompt + dateHint
 
     let aiResponse: string;
