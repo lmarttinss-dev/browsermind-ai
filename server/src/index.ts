@@ -335,6 +335,10 @@ app.post("/api/analyze", async (req, res) => {
       return;
     }
 
+    // Relatórios de análise de mercado são longos e estruturados — usa um limite
+    // de tokens de saída maior para evitar que o relatório seja cortado no meio
+    const marketAnalysis = templateId === "analise-oferta-demanda-concorrencia"
+
     // Auto-extract from Playwright if no content provided
     let content = pageContent || "";
     if (!content) {
@@ -427,7 +431,7 @@ app.post("/api/analyze", async (req, res) => {
       : ""
 
     const userMessage = content
-      ? `Conteúdo da página:\n${content.slice(0, 45000)}\n\nPrompt: ${prompt}${dateHint}`
+      ? `Conteúdo da página:\n${content.slice(0, 120000)}\n\nPrompt: ${prompt}${dateHint}`
       : prompt + dateHint
 
     let aiResponse: string;
@@ -453,9 +457,12 @@ app.post("/api/analyze", async (req, res) => {
 
       const r = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${key}`,
-        { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: 16384 } }
+        { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: marketAnalysis ? 65536 : 16384 } }
       );
       aiResponse = r.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (marketAnalysis && r.data.candidates?.[0]?.finishReason === "MAX_TOKENS") {
+        console.log("⚠️ Gemini: relatório pode ter sido truncado (finishReason=MAX_TOKENS)")
+      }
 
     } else if (model === "gpt-4.1") {
       const key = apiKeys.openai;
@@ -472,10 +479,13 @@ app.post("/api/analyze", async (req, res) => {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: msgContent },
         ],
-        max_tokens: 16384,
+        max_tokens: marketAnalysis ? 32768 : 16384,
         temperature: 0.7,
       }, { headers: { Authorization: `Bearer ${key}` } });
       aiResponse = r.data.choices?.[0]?.message?.content || "";
+      if (marketAnalysis && r.data.choices?.[0]?.finish_reason === "length") {
+        console.log("⚠️ OpenAI: relatório pode ter sido truncado (finish_reason=length)")
+      }
 
     } else if (model === "claude-sonnet") {
       const key = apiKeys.anthropic;
@@ -489,27 +499,46 @@ app.post("/api/analyze", async (req, res) => {
 
       const r = await axios.post("https://api.anthropic.com/v1/messages", {
         model: "claude-sonnet-4-20250514",
-        max_tokens: 16384,
+        max_tokens: marketAnalysis ? 64000 : 16384,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: msgContent }],
       }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } });
       aiResponse = r.data.content?.[0]?.text || "";
+      if (marketAnalysis && r.data.stop_reason === "max_tokens") {
+        console.log("⚠️ Claude: relatório pode ter sido truncado (stop_reason=max_tokens)")
+      }
 
     } else if (model === "deepseek-flash" || model === "deepseek-pro") {
       const key = apiKeys.deepseek;
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.");
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash";
 
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: deepseekModel,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 16384,
-        temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } });
-      aiResponse = r.data.choices?.[0]?.message?.content || "";
+      // DeepSeek tem teto de saída menor que os demais modelos. Quando a resposta
+      // atinge o limite (finish_reason=length), faz chamadas de continuação para
+      // que o relatório não seja cortado no meio.
+      const messages: Array<{ role: string; content: string }> = [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ];
+      aiResponse = "";
+      let lastFinishReason = "";
+      for (let round = 0; round < 4; round++) {
+        const r = await axios.post("https://api.deepseek.com/chat/completions", {
+          model: deepseekModel,
+          messages,
+          max_tokens: 16384,
+          temperature: 0.7,
+        }, { headers: { Authorization: `Bearer ${key}` } });
+        const chunk = r.data.choices?.[0]?.message?.content || "";
+        lastFinishReason = r.data.choices?.[0]?.finish_reason || "";
+        aiResponse += chunk;
+        if (lastFinishReason !== "length") break;
+        messages.push({ role: "assistant", content: chunk });
+        messages.push({ role: "user", content: "Continue exatamente de onde você parou. Não repita o conteúdo já gerado." });
+      }
+      if (lastFinishReason === "length") {
+        console.log("⚠️ DeepSeek: relatório ainda truncado após 4 chamadas (finish_reason=length)")
+      }
 
     } else {
       throw new Error(`Modelo não suportado: ${model}`);

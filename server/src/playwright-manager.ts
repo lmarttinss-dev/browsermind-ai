@@ -474,7 +474,7 @@ export class PlaywrightManager {
         return {
           url: window.location.href,
           title: document.title,
-          visibleText: visibleText.slice(0, 50000),
+          visibleText: visibleText.slice(0, 120000),
           headings: headings.slice(0, 50),
           metaTags,
           rangePrice,
