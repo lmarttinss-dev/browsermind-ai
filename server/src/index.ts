@@ -513,18 +513,31 @@ app.post("/api/analyze", async (req, res) => {
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.");
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash";
 
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
-        model: deepseekModel,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 16384,
-        temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } });
-      aiResponse = r.data.choices?.[0]?.message?.content || "";
-      if (marketAnalysis && r.data.choices?.[0]?.finish_reason === "length") {
-        console.log("⚠️ DeepSeek: relatório pode ter sido truncado (finish_reason=length)")
+      // DeepSeek tem teto de saída menor que os demais modelos. Quando a resposta
+      // atinge o limite (finish_reason=length), faz chamadas de continuação para
+      // que o relatório não seja cortado no meio.
+      const messages: Array<{ role: string; content: string }> = [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ];
+      aiResponse = "";
+      let lastFinishReason = "";
+      for (let round = 0; round < 4; round++) {
+        const r = await axios.post("https://api.deepseek.com/chat/completions", {
+          model: deepseekModel,
+          messages,
+          max_tokens: 16384,
+          temperature: 0.7,
+        }, { headers: { Authorization: `Bearer ${key}` } });
+        const chunk = r.data.choices?.[0]?.message?.content || "";
+        lastFinishReason = r.data.choices?.[0]?.finish_reason || "";
+        aiResponse += chunk;
+        if (lastFinishReason !== "length") break;
+        messages.push({ role: "assistant", content: chunk });
+        messages.push({ role: "user", content: "Continue exatamente de onde você parou. Não repita o conteúdo já gerado." });
+      }
+      if (lastFinishReason === "length") {
+        console.log("⚠️ DeepSeek: relatório ainda truncado após 4 chamadas (finish_reason=length)")
       }
 
     } else {
