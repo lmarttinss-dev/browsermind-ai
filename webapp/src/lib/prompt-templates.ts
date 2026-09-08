@@ -1263,11 +1263,51 @@ Defina:
 
 Com base na análise da concorrência, determine o preço ideal de venda:
 
-## Análise das Faixas de Preço da Concorrência
+## 📊 Análise de Precificação da Concorrência
 
-- Faixa de entrada (menores preços praticados): R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
-- Faixa intermediária: R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
-- Faixa premium: R$ X,XX a R$ X,XX — (quantos concorrentes nesta faixa)
+> Colete o preço de TODOS os anúncios/concorrentes visíveis na categoria (AvantPro + página) e calcule as estatísticas abaixo. NÃO invente valores — use apenas os preços reais extraídos.
+
+### Estatísticas de Preço da Concorrência
+
+| Indicador | Valor |
+|-----------|-------|
+| Total de concorrentes analisados | X anúncios |
+| Preço mínimo | R$ X,XX |
+| Preço máximo | R$ X,XX |
+| **Preço médio (média aritmética)** | **R$ X,XX** |
+| Preço mediano | R$ X,XX |
+| Preço modal (mais frequente) | R$ X,XX (aparece em X anúncios) |
+| Amplitude (máximo − mínimo) | R$ X,XX |
+| Desvio padrão | R$ X,XX |
+| Coeficiente de variação (CV) | X% |
+
+### Distribuição de Preços por Faixa
+
+| Faixa | Intervalo de Preço | Concorrentes | % do Total | Leitura |
+|-------|--------------------|--------------|------------|---------|
+| Entrada | R$ X,XX – R$ X,XX | X | X% | |
+| Intermediária | R$ X,XX – R$ X,XX | X | X% | |
+| Premium | R$ X,XX – R$ X,XX | X | X% | |
+
+### Gráfico de Distribuição de Preços (Mermaid)
+
+> Gere um gráfico de barras (xychart) com as faixas de preço no eixo X e a quantidade de concorrentes no eixo Y.
+
+\`\`\`mermaid
+xychart
+    title "Distribuição de Preços da Concorrência"
+    x-axis [Entrada, Intermediária, Premium]
+    y-axis "Concorrentes" 0 --> 30
+    bar [8, 14, 5]
+\`\`\`
+
+### Leitura da Precificação da Concorrência
+
+- **Preço médio vs. mediano:** se a média for muito maior que a mediana, há poucos anúncios caros puxando a média para cima — a maioria do mercado está na faixa baixa. Se forem próximos, a distribuição é simétrica.
+- **Dispersão (coeficiente de variação):** CV < 15% = mercado com precificação homogênea (competir por diferenciação, não por preço); CV entre 15% e 40% = dispersão normal; CV > 40% = precificação caótica, espaço para posicionamento claro.
+- **Concentração (moda/faixa mais densa):** identifique onde a MAIORIA dos concorrentes precifica — é onde o consumidor tem mais opções e a guerra de preço é mais intensa.
+- **Gaps de preço:** intervalos vazios entre clusters de preço indicam oportunidades de posicionamento sem concorrência direta.
+- **Outliers:** anúncios muito abaixo (liquidação/queima de estoque) ou muito acima (marca/importado premium) distorcem a média — avalie-os separadamente.
 
 ## Posicionamento Recomendado
 
@@ -1595,8 +1635,15 @@ Bullet points.
 
 ### 💲 Sugestão de Precificação para Venda
 
-#### 📊 Análise das Faixas de Preço da Concorrência
-Tabela Markdown: Faixa | Intervalo de Preço | Concorrentes | % do Mercado.
+#### 📊 Análise de Precificação da Concorrência
+
+**Estatísticas de Preço** — tabela Markdown de 2 colunas (Indicador | Valor) com: total de concorrentes analisados, preço mínimo, preço máximo, preço médio, preço mediano, preço modal, amplitude, desvio padrão e coeficiente de variação.
+
+**Distribuição de Preços por Faixa** — tabela Markdown: Faixa | Intervalo de Preço | Concorrentes | % do Total.
+
+**Gráfico de Distribuição de Preços** — bloco \`\`\`mermaid xychart com faixas de preço no eixo X e quantidade de concorrentes no eixo Y.
+
+**Leitura da Precificação** — bullet points com **negrito** nos indicadores: preço médio vs. mediano, coeficiente de variação, concentração (moda/faixa mais densa), gaps de preço e outliers.
 
 #### 🎯 Posicionamento Recomendado
 **ESTRATÉGIA EM NEGRITO** com parágrafo justificando a escolha com base nos dados da concorrência.
