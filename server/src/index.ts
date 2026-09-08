@@ -335,6 +335,10 @@ app.post("/api/analyze", async (req, res) => {
       return;
     }
 
+    // Relatórios de análise de mercado são longos e estruturados — usa um limite
+    // de tokens de saída maior para evitar que o relatório seja cortado no meio
+    const marketAnalysis = templateId === "analise-oferta-demanda-concorrencia"
+
     // Auto-extract from Playwright if no content provided
     let content = pageContent || "";
     if (!content) {
@@ -453,9 +457,12 @@ app.post("/api/analyze", async (req, res) => {
 
       const r = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${key}`,
-        { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: 16384 } }
+        { contents: [{ parts }], generationConfig: { temperature: 0.7, maxOutputTokens: marketAnalysis ? 65536 : 16384 } }
       );
       aiResponse = r.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (marketAnalysis && r.data.candidates?.[0]?.finishReason === "MAX_TOKENS") {
+        console.log("⚠️ Gemini: relatório pode ter sido truncado (finishReason=MAX_TOKENS)")
+      }
 
     } else if (model === "gpt-4.1") {
       const key = apiKeys.openai;
@@ -472,10 +479,13 @@ app.post("/api/analyze", async (req, res) => {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: msgContent },
         ],
-        max_tokens: 16384,
+        max_tokens: marketAnalysis ? 32768 : 16384,
         temperature: 0.7,
       }, { headers: { Authorization: `Bearer ${key}` } });
       aiResponse = r.data.choices?.[0]?.message?.content || "";
+      if (marketAnalysis && r.data.choices?.[0]?.finish_reason === "length") {
+        console.log("⚠️ OpenAI: relatório pode ter sido truncado (finish_reason=length)")
+      }
 
     } else if (model === "claude-sonnet") {
       const key = apiKeys.anthropic;
@@ -489,11 +499,14 @@ app.post("/api/analyze", async (req, res) => {
 
       const r = await axios.post("https://api.anthropic.com/v1/messages", {
         model: "claude-sonnet-4-20250514",
-        max_tokens: 16384,
+        max_tokens: marketAnalysis ? 64000 : 16384,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: msgContent }],
       }, { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } });
       aiResponse = r.data.content?.[0]?.text || "";
+      if (marketAnalysis && r.data.stop_reason === "max_tokens") {
+        console.log("⚠️ Claude: relatório pode ter sido truncado (stop_reason=max_tokens)")
+      }
 
     } else if (model === "deepseek-flash" || model === "deepseek-pro") {
       const key = apiKeys.deepseek;
@@ -510,6 +523,9 @@ app.post("/api/analyze", async (req, res) => {
         temperature: 0.7,
       }, { headers: { Authorization: `Bearer ${key}` } });
       aiResponse = r.data.choices?.[0]?.message?.content || "";
+      if (marketAnalysis && r.data.choices?.[0]?.finish_reason === "length") {
+        console.log("⚠️ DeepSeek: relatório pode ter sido truncado (finish_reason=length)")
+      }
 
     } else {
       throw new Error(`Modelo não suportado: ${model}`);
