@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { parseSuppliersFromReport } from "../parse-suppliers.js"
+import { parseSuppliersFromReport, sanitizePrice } from "../parse-suppliers.js"
 
 describe("parseSuppliersFromReport", () => {
   it("deve parsear relatório com formato emoji + ordinal", () => {
@@ -183,5 +183,29 @@ describe("parseSuppliersFromReport", () => {
     expect(result).toHaveLength(1)
     expect(result[0].name).toBe("Shenzhen Chengdaxin Technology Co., Ltd.")
     expect(result[0].url).toBe("https://www.alibaba.com/product-detail/Item_123.html")
+  })
+})
+
+describe("sanitizePrice", () => {
+  it("deve manter moeda + valor simples", () => {
+    expect(sanitizePrice("US$ 3.50")).toBe("US$ 3.50")
+    expect(sanitizePrice("$1.50")).toBe("$1.50")
+  })
+
+  it("deve manter faixa de preço", () => {
+    expect(sanitizePrice("US$ 3.50 - 5.00")).toBe("US$ 3.50 - 5.00")
+  })
+
+  it("deve lidar com símbolo de moeda repetido na faixa", () => {
+    expect(sanitizePrice("$1.50 - $3.00")).toBe("$1.50 - 3.00")
+  })
+
+  it("deve retornar vazio quando só há símbolo de moeda", () => {
+    expect(sanitizePrice("$")).toBe("")
+    expect(sanitizePrice("US$")).toBe("")
+  })
+
+  it("deve retornar vazio para texto sem número", () => {
+    expect(sanitizePrice("sob consulta")).toBe("")
   })
 })

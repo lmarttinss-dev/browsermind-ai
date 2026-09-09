@@ -431,7 +431,7 @@ export class PlaywrightManager {
         });
 
         // Preço e MOQ extraídos dos elementos de referência do Alibaba:
-        // 1) [data-testid="range-price"] → <span> (preço) + <div> (Minimum order quantity)
+        // 1) [data-testid="range-price"] → texto completo (preço) + bloco de MOQ
         // 2) [data-testid="ladder-price"] → .price-item (preço e faixa de MOQ)
         const priceInfo = (() => {
           let price = "";
@@ -439,13 +439,14 @@ export class PlaywrightManager {
 
           const rangeEl = document.querySelector('[data-testid="range-price"]');
           if (rangeEl) {
-            const span = rangeEl.querySelector("span");
-            if (span) price = (span.textContent || "").trim();
-            const moqEl = span ? span.nextElementSibling : null;
-            if (moqEl) {
-              const t = (moqEl.textContent || "").trim();
-              const m = t.match(/(?:Minimum order quantity|Min\.?\s*Order|MOQ)\s*[:：]?\s*([\d.,]+\s*(?:pieces?|pcs?\.?|peças?|unidades?|itens?)?)/i);
-              moq = m ? m[1].trim() : t;
+            // Usa o texto completo do bloco para não perder o símbolo da moeda
+            // quando ele fica em um <span> separado do valor (ex: <span>$</span><span>1.50</span>)
+            const fullText = (rangeEl.textContent || "").replace(/\s+/g, " ").trim();
+            const parts = fullText.split(/(?:Minimum\s*order\s*quantity|Min\.?\s*Order|MOQ)\s*[:：]?\s*/i);
+            price = (parts[0] || "").replace(/\s+/g, " ").trim();
+            if (parts[1]) {
+              const m = parts[1].match(/([\d.,]+\s*(?:pieces?|pcs?\.?|peças?|unidades?|itens?)?)/i);
+              moq = m ? m[1].trim() : parts[1].trim();
             }
           }
 

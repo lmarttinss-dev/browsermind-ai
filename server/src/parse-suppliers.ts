@@ -12,8 +12,8 @@ export function sanitizePrice(value: string): string {
     .replace(/\s*\([^)]*\)/g, " ")
     .replace(/\s+/g, " ")
     .trim()
-  const match = cleaned.match(/((?:US\$|USD|R\$|€|£|\$)\s*)?(\d[\d.,]*)(\s*[-–—~]\s*(\d[\d.,]*))?/)
-  if (!match?.[2]) return cleaned
+  const match = cleaned.match(/((?:US\$|USD|R\$|€|£|\$)\s*)?(\d[\d.,]*)(\s*[-–—~]\s*(?:(?:US\$|USD|R\$|€|£|\$)\s*)?(\d[\d.,]*))?/)
+  if (!match?.[2]) return ""
   const currency = match[1] || ""
   const range = match[4] ? ` - ${match[4]}` : ""
   return `${currency}${match[2]}${range}`.trim()
