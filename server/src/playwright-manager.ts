@@ -430,18 +430,18 @@ export class PlaywrightManager {
           if (key && val) metaTags[key] = val;
         });
 
-        // Preço e MOQ extraídos dos elementos de referência do Alibaba:
-        // 1) [data-testid="range-price"] → texto completo (preço) + bloco de MOQ
+        // Preço e MOQ extraídos do módulo de preço do Alibaba:
+        // 1) .module_price → texto completo (preço) + bloco de MOQ
         // 2) [data-testid="ladder-price"] → .price-item (preço e faixa de MOQ)
         const priceInfo = (() => {
           let price = "";
           let moq = "";
 
-          const rangeEl = document.querySelector('[data-testid="range-price"]');
-          if (rangeEl) {
-            // Usa o texto completo do bloco para não perder o símbolo da moeda
+          const priceModuleEl = document.querySelector(".module_price");
+          if (priceModuleEl) {
+            // Usa o texto completo do módulo para não perder o símbolo da moeda
             // quando ele fica em um <span> separado do valor (ex: <span>$</span><span>1.50</span>)
-            const fullText = (rangeEl.textContent || "").replace(/\s+/g, " ").trim();
+            const fullText = (priceModuleEl.textContent || "").replace(/\s+/g, " ").trim();
             const parts = fullText.split(/(?:Minimum\s*order\s*quantity|Min\.?\s*Order|MOQ)\s*[:：]?\s*/i);
             price = (parts[0] || "").replace(/\s+/g, " ").trim();
             if (parts[1]) {
