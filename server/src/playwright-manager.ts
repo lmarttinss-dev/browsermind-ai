@@ -431,7 +431,7 @@ export class PlaywrightManager {
         });
 
         // Preço e MOQ extraídos dos elementos de referência do Alibaba:
-        // 1) [data-testid="range-price"] → texto completo (preço) + bloco de MOQ
+        // 1) [data-testid="range-price"] → <span>/texto (preço) + bloco de MOQ
         // 2) [data-testid="ladder-price"] → .price-item (preço e faixa de MOQ)
         const priceInfo = (() => {
           let price = "";
@@ -439,14 +439,36 @@ export class PlaywrightManager {
 
           const rangeEl = document.querySelector('[data-testid="range-price"]');
           if (rangeEl) {
-            // Usa o texto completo do bloco para não perder o símbolo da moeda
-            // quando ele fica em um <span> separado do valor (ex: <span>$</span><span>1.50</span>)
-            const fullText = (rangeEl.textContent || "").replace(/\s+/g, " ").trim();
-            const parts = fullText.split(/(?:Minimum\s*order\s*quantity|Min\.?\s*Order|MOQ)\s*[:：]?\s*/i);
-            price = (parts[0] || "").replace(/\s+/g, " ").trim();
-            if (parts[1]) {
-              const m = parts[1].match(/([\d.,]+\s*(?:pieces?|pcs?\.?|peças?|unidades?|itens?)?)/i);
-              moq = m ? m[1].trim() : parts[1].trim();
+            // Separa preço e MOQ no nível do DOM: <span> e nós de texto = preço,
+            // demais elementos = candidatos a MOQ. Evita misturar o MOQ no preço
+            // quando o símbolo da moeda fica em um <span> separado do valor.
+            const priceParts = [];
+            const nonSpanTexts = [];
+
+            rangeEl.childNodes.forEach((node) => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                const t = (node.textContent || "").trim();
+                if (t) priceParts.push(t);
+              } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const el = node;
+                const t = (el.textContent || "").trim();
+                if (!t) return;
+                if (el.tagName === "SPAN") {
+                  priceParts.push(t);
+                } else {
+                  nonSpanTexts.push(t);
+                }
+              }
+            });
+
+            price = priceParts.join(" ").replace(/\s+/g, " ").trim();
+
+            const moqCandidate = nonSpanTexts.find((t) => /moq|min\.?\s*order|minimum\s*order|qtd\.?\s*m[íi]nima|pedido\s*m[íi]nimo|quantity/i.test(t))
+              || nonSpanTexts[nonSpanTexts.length - 1]
+              || "";
+            if (moqCandidate) {
+              const m = moqCandidate.match(/([\d.,]+\s*(?:pieces?|pcs?\.?|peças?|unidades?|itens?)?)/i);
+              moq = m ? m[1].trim() : moqCandidate;
             }
           }
 
