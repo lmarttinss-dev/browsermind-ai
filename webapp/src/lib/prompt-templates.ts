@@ -661,7 +661,8 @@ Sua resposta DEVE começar exatamente assim:
 - A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
 - Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
-- Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
+- Em seguida, inclua a subseção \`### 🚚 Análise de Frete da Categoria\` usando a métrica **Frete Grátis** do AvantPro, mostrando a quantidade e o percentual de anúncios que oferecem frete grátis vs frete pago e o valor cobrado do frete, com tabela, gráfico Mermaid e análise
+- Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
 - Use > para alertas e insights
@@ -828,6 +829,55 @@ pie
   - Predomínio de "Em Catálogo" → categoria MADURA e organizada, vendedores usam catálogo estruturado. Entrar exige anúncio bem feito e variações.
 - **Oportunidade:** se Fora de Catálogo > 60%, estruturar anúncios em catálogo com variações é o caminho mais rápido para ganhar relevância
 - **Alerta:** se Em Catálogo > 70%, a categoria está consolidada e o SEO por catálogo é obrigatório — anúncios fora de catálogo terão baixa visibilidade
+
+### 🚚 Análise de Frete da Categoria
+
+> Calcule a proporção de anúncios que oferecem **frete grátis** usando a métrica **Frete Grátis** da tabela de Métricas da Categoria (AvantPro). Use como denominador o **total de anúncios** da categoria (Catálogos + Fora de Catálogo), que representa o total de anúncios analisados.
+
+> ⚠️ **FONTE DOS DADOS**: A quantidade de anúncios com frete grátis vem da métrica **Frete Grátis** na tabela de Métricas da Categoria (AvantPro). PRIORIZE esse número — NÃO confunda com a métrica **Full** (são métricas diferentes: Full é o tipo de envio, Frete Grátis é o custo zero para o comprador).
+
+| Condição de Frete | Quantidade | Percentual |
+|------------------|------------|------------|
+| **Frete Grátis** | (valor de Frete Grátis) | (Frete Grátis ÷ total × 100)% |
+| **Frete Pago** | (total − Frete Grátis) | (Frete Pago ÷ total × 100)% |
+| **Total de Anúncios** | (Catálogos + Fora de Catálogo) | **100%** |
+
+#### 💰 Valor Cobrado do Frete
+
+> Para os anúncios que **NÃO** oferecem frete grátis (Frete Pago), identifique nos Dados Coletados (listagem do AvantPro) os valores de frete cobrados. Apresente a faixa de valores e, se disponível, o valor médio e o valor mais frequente (moda). Se os valores de frete não estiverem visíveis nos Dados Coletados, informe "Não visível nos dados" e explique como o frete grátis afeta a decisão de compra.
+
+| Indicador | Valor |
+|-----------|-------|
+| **Menor frete cobrado** | R$ (ex: 7,90) |
+| **Maior frete cobrado** | R$ (ex: 35,00) |
+| **Frete médio estimado** | R$ (ex: 15,40) |
+| **Frete mais frequente** | R$ (ex: 12,90) |
+
+#### 📊 Gráfico do Perfil de Frete (Mermaid)
+
+Gere um gráfico de pizza com a distribuição entre frete grátis e frete pago:
+
+> 🚨 **ATENÇÃO**: Use apenas os rótulos: Frete Grátis e Frete Pago. Arredonde os percentuais para números inteiros que somem exatamente 100%.
+
+\`\`\`mermaid
+pie
+    title "Oferta de Frete Grátis"
+    "Frete Grátis" : 65
+    "Frete Pago" : 35
+\`\`\`
+
+#### 📝 Análise da Oferta de Frete
+
+- **Predominância:** identifique se a maioria dos anúncios oferece ou não frete grátis (ex: "**65%** dos anúncios oferecem frete grátis")
+- **Impacto competitivo:**
+  - Frete Grátis ≥ **70%** → frete grátis é a NORMA da categoria; entrar sem frete grátis reduz drasticamente a conversão
+  - Frete Grátis entre **30% e 70%** → frete grátis é um DIFERENCIAL competitivo relevante
+  - Frete Grátis < **30%** → frete grátis é raro, ótima oportunidade de diferenciação, mas avalie se o frete pago médio é alto (barreira para o consumidor)
+- **Valor do frete pago:**
+  - Frete médio alto (> R$ 20) → forte barreira de conversão; oferecer frete grátis ou Full é decisivo
+  - Frete médio baixo (< R$ 10) → frete não é fator decisivo; foque em preço e reputação
+- **Oportunidade:** se o frete pago médio é alto e poucos oferecem frete grátis, absorver o frete no preço (ou usar Full) é vantagem competitiva decisiva
+- **Alerta:** se Frete Grátis > **80%**, o frete grátis já está "precificado" na concorrência — não é diferencial, é requisito de entrada
 
 ### Anúncio 1
 
