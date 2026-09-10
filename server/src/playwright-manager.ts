@@ -431,33 +431,58 @@ export class PlaywrightManager {
         });
 
         // Preço e MOQ extraídos dos elementos de referência do Alibaba:
-        // 1) [data-testid="range-price"] → <span> (preço) + <div> (Minimum order quantity)
-        // 2) [data-testid="ladder-price"] → .price-item (preço e faixa de MOQ)
+        // 1) .price-item → <span> (preço) + <div> seguinte (faixa de MOQ)
+        // 2) [data-testid="range-price"] → <span>/texto (preço) + bloco de MOQ
         const priceInfo = (() => {
           let price = "";
           let moq = "";
 
-          const rangeEl = document.querySelector('[data-testid="range-price"]');
-          if (rangeEl) {
-            const span = rangeEl.querySelector("span");
+          // Referência principal: .price-item
+          // <div class="price-item">
+          //   <div>...<span>$1.99</span></div>   → preço
+          //   <div>10-490 pieces</div>            → MOQ
+          // </div>
+          const item = document.querySelector(".price-item");
+          if (item) {
+            const span = item.querySelector("span");
             if (span) price = (span.textContent || "").trim();
-            const moqEl = span ? span.nextElementSibling : null;
-            if (moqEl) {
-              const t = (moqEl.textContent || "").trim();
-              const m = t.match(/(?:Minimum order quantity|Min\.?\s*Order|MOQ)\s*[:：]?\s*([\d.,]+\s*(?:pieces?|pcs?\.?|peças?|unidades?|itens?)?)/i);
-              moq = m ? m[1].trim() : t;
-            }
+            const priceBlock = span ? span.parentElement : null;
+            const moqEl = priceBlock ? priceBlock.nextElementSibling : null;
+            if (moqEl) moq = (moqEl.textContent || "").trim();
           }
 
-          const ladderEl = document.querySelector('[data-testid="ladder-price"]');
-          if (ladderEl) {
-            const item = ladderEl.querySelector(".price-item");
-            if (item) {
-              const span = item.querySelector("span");
-              if (span) {
-                if (!price) price = (span.textContent || "").trim();
-                const moqEl = span.parentElement ? span.parentElement.nextElementSibling : null;
-                if (moqEl && !moq) moq = (moqEl.textContent || "").trim();
+          // Fallback: [data-testid="range-price"]
+          if (!price || !moq) {
+            const rangeEl = document.querySelector('[data-testid="range-price"]');
+            if (rangeEl) {
+              const priceParts = [];
+              const nonSpanTexts = [];
+
+              rangeEl.childNodes.forEach((node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                  const t = (node.textContent || "").trim();
+                  if (t) priceParts.push(t);
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                  const el = node;
+                  const t = (el.textContent || "").trim();
+                  if (!t) return;
+                  if (el.tagName === "SPAN") {
+                    priceParts.push(t);
+                  } else {
+                    nonSpanTexts.push(t);
+                  }
+                }
+              });
+
+              if (!price) {
+                price = priceParts.join(" ").replace(/\s+/g, " ").trim();
+              }
+
+              if (!moq) {
+                const moqCandidate = nonSpanTexts.find((t) => /moq|min\.?\s*order|minimum\s*order|qtd\.?\s*m[íi]nima|pedido\s*m[íi]nimo|quantity/i.test(t))
+                  || nonSpanTexts[nonSpanTexts.length - 1]
+                  || "";
+                if (moqCandidate) moq = moqCandidate;
               }
             }
           }

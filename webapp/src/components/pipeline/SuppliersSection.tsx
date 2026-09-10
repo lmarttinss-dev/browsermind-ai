@@ -73,15 +73,10 @@ export const SuppliersSection = ({ productId, suppliers, supplierReport, onUpdat
     return isNaN(num) ? null : num
   }
 
-  // Helper: valor de custo para ordenação — prioriza o custo total da última cotação
-  // e, na ausência dela, usa o preço unitário do fornecedor
+  // Helper: valor de custo para ordenação — usa o preço unitário (da última cotação
+  // ou o preço listado quando não há cotação), mantendo a mesma métrica para todos
   const getSortCost = (s: Supplier): number | null => {
     const q = s.quotes?.length > 0 ? s.quotes[s.quotes.length - 1] : null
-    if (q) {
-      const a = parseFirstNumber(q.totalProductCost)
-      const b = parseFirstNumber(q.totalShippingCost)
-      if (a !== null || b !== null) return (a || 0) + (b || 0)
-    }
     return parseFirstNumber(q?.unitPrice || s.unitPrice)
   }
 
