@@ -1813,6 +1813,7 @@ Preencha OBRIGATORIAMENTE:
 
 - **URL do anúncio:**
 - **Tipo identificado:** 📚 PRODUTO DE CATÁLOGO ou 📦 ANÚNCIO INDEPENDENTE
+- **Data da análise:** (use a data atual no formato "DD de Mês de AAAA")
 - **Evidências:** (como foi identificado — cite elementos visíveis na página)
 
 ---
