@@ -1813,6 +1813,7 @@ Preencha OBRIGATORIAMENTE:
 
 - **URL do anúncio:**
 - **Tipo identificado:** 📚 PRODUTO DE CATÁLOGO ou 📦 ANÚNCIO INDEPENDENTE
+- **Data da análise:** (use a data atual no formato "DD de Mês de AAAA")
 - **Evidências:** (como foi identificado — cite elementos visíveis na página)
 
 ---
@@ -1849,7 +1850,26 @@ Preencha OBRIGATORIAMENTE:
 - Tipo de catálogo: (ProdutoPro / Catálogo padrão / Catálogo com variações)
 - Este vendedor está no catálogo? (Sim — analisar posição / Não — analisar entrada)
 
-> 📝 DESCRIÇÃO DO CATÁLOGO: No Mercado Livre, a descrição do produto em catálogos costuma ser PADRONIZADA e compartilhada entre todos os vendedores. Avalie rapidamente se a descrição do catálogo está bem estruturada ou se há oportunidades de melhoria que todo o catálogo se beneficiaria (fotos genéricas, falta de especificações, etc.). Se a descrição for FRACA, isso afeta TODOS os vendedores igualmente — mas também representa uma oportunidade se você puder sugerir melhorias ou se destacar em outros fatores (preço, frete, reputação).
+## 📦 Características do Produto
+
+> Extraia da página do anúncio as características físicas e técnicas do produto. Estes dados são compartilhados por todos os vendedores do catálogo.
+
+- Categoria / subcategoria:
+- Material e composição:
+- Dimensões e peso:
+- Cores / tamanhos / modelos (variações disponíveis no catálogo):
+- Compatibilidade (quando aplicável):
+- Especificações relevantes (voltagem, conectividade, capacidade, etc.):
+- Itens inclusos na embalagem:
+
+## 📝 Descrição do Catálogo
+
+> No Mercado Livre, a descrição do produto em catálogos costuma ser PADRONIZADA e compartilhada entre todos os vendedores. Avalie a descrição do catálogo: se está bem estruturada ou se há oportunidades de melhoria que todo o catálogo se beneficiaria (fotos genéricas, falta de especificações, etc.).
+
+- Resumo da descrição do catálogo (3-5 tópicos objetivos):
+- Proposta de valor central:
+- Pontos fracos da descrição padronizada (o que falta ou está mal explicado):
+- Oportunidade: se a descrição for FRACA, isso afeta TODOS os vendedores igualmente — mas você pode se destacar em outros fatores (preço, frete, reputação)
 
 ### 📊 Métricas do Catálogo (AvantPro — agregadas de TODOS os vendedores)
 
@@ -1983,11 +2003,9 @@ Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
 
 ---
 
-## 💬 Análise de Perguntas, Respostas e Opiniões dos Clientes (Catálogo)
+## 💬 Perguntas e Respostas (Catálogo)
 
-> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. No catálogo, as opiniões e perguntas são COMPARTILHADAS entre todos os vendedores — problemas de um vendedor afetam a percepção de todos.
-
-### 📝 Perguntas e Respostas (Q&A)
+> 📌 Esta seção é preenchida com o conteúdo de perguntas e respostas copiado pelo usuário ("PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)"). Se estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. No catálogo, as perguntas e respostas são COMPARTILHADAS entre todos os vendedores.
 
 - Principais dúvidas dos compradores sobre o produto:
 - Qualidade das respostas dos vendedores no catálogo (ágeis, completas, evasivas):
@@ -1995,7 +2013,9 @@ Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
 - Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
 - Oportunidades: informações que NENHUM vendedor está fornecendo e que você pode incluir no seu anúncio
 
-### ⭐ Opiniões e Avaliações (Compartilhadas no Catálogo)
+## ⭐ Opiniões do Produto (Catálogo)
+
+> 📌 Esta seção é preenchida com as opiniões/avaliações dos clientes copiadas pelo usuário. Se estiverem presentes no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. No catálogo, as opiniões são COMPARTILHADAS entre todos os vendedores — avaliações negativas sobre OUTROS vendedores também afetam SEU anúncio.
 
 - Nota média do catálogo (se disponível):
 - Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
@@ -2004,9 +2024,8 @@ Liste os vendedores visíveis ordenados por relevância (buy box primeiro):
 - Problemas recorrentes (defeito, tamanho errado, atraso na entrega, produto diferente da foto):
 - Potencial de recompra (clientes comprariam novamente?):
 - Risco de devolução (qual % dos compradores relata problemas graves?):
-- ⚠️  Atenção: no catálogo, avaliações NEGATIVAS sobre OUTROS vendedores também afetam SEU anúncio
 
-### 🎯 Insights para Diferenciação no Catálogo
+## 🎯 Insights para Diferenciação no Catálogo
 
 - O que os clientes AMAM no produto (reforce no seu posicionamento):
 - O que os clientes ODEIAM no produto (corrija ou alerte na sua descrição):
@@ -2194,7 +2213,7 @@ Escolha UMA estratégia principal:
 
 ---
 
-## � Características do Produto
+## 📦 Características do Produto
 
 ### ⚙️ Especificações Técnicas
 
@@ -2237,7 +2256,7 @@ Escolha UMA estratégia principal:
 
 ---
 
-## �📊 Métricas do AvantPro
+## 📊 Métricas do AvantPro
 
 | Métrica | Valor |
 |---------|-------|
@@ -2268,7 +2287,7 @@ Escolha UMA estratégia principal:
 
 ---
 
-## 📝 Análise da Descrição do Anúncio
+## 📝 Descrição do Anúncio
 
 > A descrição é um dos fatores mais importantes para conversão. Analise o conteúdo da página do produto e extraia insights acionáveis.
 
@@ -2368,11 +2387,9 @@ Cruze a idade do anúncio com as Vendas mensais para avaliar maturidade:
 
 ---
 
-## 💬 Análise de Perguntas, Respostas e Opiniões dos Clientes
+## 💬 Perguntas e Respostas
 
-> 📌 Se a seção "PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)" estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nela. Caso contrário, analise o que for possível extrair das avaliações visíveis na página. As opiniões dos clientes são a FONTE MAIS RICA de pontos negativos e oportunidades de melhoria.
-
-### 📝 Perguntas e Respostas (Q&A)
+> 📌 Esta seção é preenchida com o conteúdo de perguntas e respostas copiado pelo usuário ("PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO)"). Se estiver presente no conteúdo da página, preencha esta seção OBRIGATORIAMENTE com base nele. Caso contrário, analise o que for possível extrair das perguntas visíveis na página.
 
 - Principais dúvidas dos compradores:
 - Qualidade das respostas do vendedor (ágeis, completas, evasivas):
@@ -2381,7 +2398,9 @@ Cruze a idade do anúncio com as Vendas mensais para avaliar maturidade:
 - Temas recorrentes nas perguntas (tamanho, material, compatibilidade, etc.):
 - Oportunidades: informações que o vendedor NÃO está fornecendo e que você pode incluir no seu anúncio
 
-### ⭐ Opiniões e Avaliações
+## ⭐ Opiniões do Produto
+
+> 📌 Esta seção é preenchida com as opiniões/avaliações dos clientes copiadas pelo usuário. Se estiverem presentes no conteúdo da página, preencha esta seção OBRIGATORIAMENTE. Caso contrário, analise o que for possível extrair das avaliações visíveis na página. As opiniões dos clientes são a FONTE MAIS RICA de pontos negativos e oportunidades de melhoria.
 
 - Nota média (se disponível):
 - Distribuição das avaliações (5⭐ / 4⭐ / 3⭐ / 2⭐ / 1⭐):
@@ -2391,7 +2410,7 @@ Cruze a idade do anúncio com as Vendas mensais para avaliar maturidade:
 - Potencial de recompra (clientes comprariam novamente?):
 - Risco de devolução (qual % dos compradores relata problemas graves?):
 
-### 🎯 Insights para Diferenciação
+## 🎯 Insights para Diferenciação
 
 - O que os clientes AMAM no produto (reforce no seu anúncio):
 - O que os clientes ODEIAM no produto (corrija ou alerte no seu anúncio):
