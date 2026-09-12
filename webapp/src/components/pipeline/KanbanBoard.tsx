@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { useNavigate } from "react-router-dom"
-import { Filter } from "lucide-react"
+import { ChevronDown, Check, Filter, X } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
 import { ProductCard } from "./ProductCard"
 import { usePipelineStore } from "@/store/usePipelineStore"
@@ -26,10 +26,25 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
   const { categories, selectedCategoryId, setFilter, fetchCategories } = useCategoryStore()
   const navigate = useNavigate()
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const filterRef = useRef<HTMLDivElement | null>(null)
+
+  const selectedCategory = categories.find(c => c._id === selectedCategoryId)
 
   useEffect(() => {
     fetchCategories()
   }, [fetchCategories])
+
+  // Fecha o dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setFilterOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -105,18 +120,67 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
     >
       <div className="h-full flex flex-col">
         {/* Filtro por categoria */}
-        <div className="flex items-center gap-2 px-4 pt-3">
-          <Filter className="w-3.5 h-3.5 text-gray-500" />
-          <select
-            value={selectedCategoryId || ""}
-            onChange={(e) => setFilter(e.target.value || null)}
-            className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
-          >
-            <option value="">Todas as categorias</option>
-            {categories.map(c => (
-              <option key={c._id} value={c._id}>{c.name}</option>
-            ))}
-          </select>
+        <div className="flex items-center gap-2 px-4 pt-3" ref={filterRef}>
+          <Filter className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+          <div className="relative">
+            <button
+              onClick={() => setFilterOpen(!filterOpen)}
+              className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg border text-xs transition-colors ${
+                selectedCategoryId
+                  ? "bg-blue-600/20 border-blue-600/50 text-blue-300"
+                  : "bg-gray-800 border-gray-700 text-gray-200 hover:border-gray-600"
+              }`}
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: selectedCategory?.color || "#6b7280" }}
+              />
+              <span className="truncate max-w-[220px]">
+                {selectedCategory ? selectedCategory.name : "Todas as categorias"}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-gray-500 transition-transform ${filterOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {filterOpen && (
+              <div className="absolute left-0 top-full mt-1 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
+                <div className="max-h-72 overflow-y-auto py-1">
+                  <button
+                    onClick={() => { setFilter(null); setFilterOpen(false) }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${!selectedCategoryId ? "bg-blue-600/10 text-blue-300" : "text-gray-300 hover:bg-gray-700"}`}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0 bg-gray-500" />
+                    <span className="flex-1">Todas as categorias</span>
+                    {!selectedCategoryId && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                  </button>
+
+                  {categories.map(c => {
+                    const isActive = c._id === selectedCategoryId
+                    return (
+                      <button
+                        key={c._id}
+                        onClick={() => { setFilter(c._id); setFilterOpen(false) }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${isActive ? "bg-blue-600/10 text-blue-300" : "text-gray-300 hover:bg-gray-700"}`}
+                      >
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                        <span className="flex-1 truncate">{c.name}</span>
+                        {isActive && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {selectedCategoryId && (
+            <button
+              onClick={() => setFilter(null)}
+              title="Limpar filtro"
+              className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex gap-4 overflow-x-auto p-4 h-full">
