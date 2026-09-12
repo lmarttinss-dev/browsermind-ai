@@ -11,7 +11,9 @@ import axios from "axios";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
+import { router as categoriesRouter } from "./routes/categories.js";
 import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } from "./models/product.js";
+import { Category, normalizeCategorySlug } from "./models/category.js";
 import { Comparison } from "./models/comparison.js";
 import { parseSuppliersFromReport, parseIndividualSupplierReport, parseKitItemsFromReport, sanitizePrice, sanitizeMoq } from "./parse-suppliers.js";
 
@@ -39,6 +41,23 @@ function parseBrInt(raw: string): number {
   return parseInt(cleaned.replace(/[.,]/g, ""), 10)
 }
 
+/** Escapa caracteres especiais de regex */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+/** Resolve o id de uma categoria existente a partir do nome bruto extraído do relatório */
+async function resolveCategoryId(categoryRaw: string) {
+  const slug = normalizeCategorySlug(categoryRaw)
+  const existing = await Category.findOne({
+    $or: [
+      { slug },
+      { name: { $regex: `^${escapeRegex(categoryRaw.trim())}$`, $options: "i" } },
+    ],
+  })
+  return existing ? existing._id : null
+}
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3210;
 
@@ -63,6 +82,9 @@ app.use(express.json({ limit: "10mb" }));
 
 // Pipeline routes
 app.use("/api/pipeline", pipelineRouter);
+
+// Category routes
+app.use("/api/categories", categoriesRouter);
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -580,6 +602,7 @@ app.post("/api/analyze", async (req, res) => {
         const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
         const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
         const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
+        const categoryRaw = categoryMatch?.[1]?.trim().slice(0, 100) || ""
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
         const urlMatch = content.match(/^URL:\s*(.+)/m)
@@ -592,6 +615,9 @@ app.post("/api/analyze", async (req, res) => {
           const lastProduct = await Product.findOne({ stage: "triagem" }).sort({ order: -1 })
           const order = lastProduct ? lastProduct.order + 1 : 0
 
+          // Vincula categoria existente pelo nome normalizado (se houver)
+          const categoryId = categoryRaw ? await resolveCategoryId(categoryRaw) : null
+
           // Detecta se é um kit pelo título ou relatório
           const isKit = /\bkit\b/i.test(productTitle) || /\bkit\b/i.test(aiResponse)
           const kitItems = isKit ? parseKitItemsFromReport(aiResponse) : []
@@ -601,7 +627,8 @@ app.post("/api/analyze", async (req, res) => {
             url: productUrl,
             imageUrl: imageMatch?.[1] || "",
             price: parseBrPrice(priceMatch?.[1] || "0"),
-            category: categoryMatch?.[1]?.trim().slice(0, 100) || "",
+            category: categoryRaw,
+            categoryId,
             stage: "triagem",
             score: parseFloat(scoreMatch?.[1]?.replace(",", ".") || "0"),
             monthlySales: parseBrInt(salesMatch?.[1] || "0"),

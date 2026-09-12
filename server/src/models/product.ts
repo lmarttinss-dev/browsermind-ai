@@ -52,6 +52,7 @@ export type PipelineProduct = Document & {
   imageUrl: string
   price: number
   category: string
+  categoryId: mongoose.Types.ObjectId | null
   stage: PipelineStage
   score: number
   monthlySales: number
@@ -113,6 +114,7 @@ const productSchema = new Schema<PipelineProduct>(
     imageUrl: { type: String, default: "" },
     price: { type: Number, default: 0 },
     category: { type: String, default: "" },
+    categoryId: { type: Schema.Types.ObjectId, ref: "Category", default: null },
     stage: { type: String, enum: PIPELINE_STAGES, default: "triagem" },
     score: { type: Number, default: 0, min: 0, max: 10 },
     monthlySales: { type: Number, default: 0 },

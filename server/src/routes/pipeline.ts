@@ -80,6 +80,24 @@ router.patch("/:id/move", async (req, res) => {
   }
 })
 
+// Vincular/desvincular categoria ao produto
+router.patch("/:id/category", async (req, res) => {
+  try {
+    const { categoryId } = req.body
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: { categoryId: categoryId || null } },
+      { new: true }
+    )
+
+    if (!product) return res.status(404).json({ error: "Produto não encontrado" })
+    res.json({ success: true, product })
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao vincular categoria" })
+  }
+})
+
 // Remover produto
 router.delete("/:id", async (req, res) => {
   try {

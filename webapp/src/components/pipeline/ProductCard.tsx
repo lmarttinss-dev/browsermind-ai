@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Package, TrendingUp, Star, ExternalLink, Boxes } from "lucide-react"
+import { useCategoryStore } from "@/store/useCategoryStore"
 import type { PipelineProduct } from "@/lib/api"
 
 export const ProductCard = ({ product, onClick }: { product: PipelineProduct; onClick: () => void }) => {
@@ -8,6 +9,9 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
     id: product._id,
     data: { product },
   })
+
+  const categories = useCategoryStore(s => s.categories)
+  const category = categories.find(c => c._id === product.categoryId)
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -81,7 +85,13 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
 
       {/* Categoria + Link */}
       <div className="flex items-center justify-between text-[10px] text-gray-500">
-        <span className="truncate">{product.category || "Sem categoria"}</span>
+        <span className="truncate flex items-center gap-1 min-w-0">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: category?.color || "#6b7280" }}
+          />
+          <span className="truncate">{category?.name || product.category || "Sem categoria"}</span>
+        </span>
         {product.url && (
           <a
             href={product.url}

@@ -7,6 +7,7 @@ import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
 import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
+import { useCategoryStore } from "@/store/useCategoryStore"
 
 const STAGE_LABELS: Record<PipelineStage, { label: string; color: string }> = {
   triagem: { label: "Triagem", color: "bg-gray-600 text-gray-200" },
@@ -39,6 +40,12 @@ export const ProductDetailPage = () => {
   const [copySuccess, setCopySuccess] = useState(false)
   const [copySearch, setCopySearch] = useState("")
   const [urlCopied, setUrlCopied] = useState(false)
+
+  const { categories, fetchCategories } = useCategoryStore()
+
+  useEffect(() => {
+    fetchCategories()
+  }, [fetchCategories])
 
   useEffect(() => {
     if (!id) return
@@ -85,6 +92,16 @@ export const ProductDetailPage = () => {
   const handleSuppliersUpdate = (suppliers: Supplier[], supplierReport: string) => {
     if (!product) return
     setProduct({ ...product, suppliers, supplierReport })
+  }
+
+  const handleAssignCategory = async (categoryId: string) => {
+    if (!product) return
+    try {
+      const res = await api.assignCategoryToProduct(product._id, categoryId || null)
+      setProduct(res.product)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao vincular categoria")
+    }
   }
 
   const handleOpenCopyModal = async () => {
@@ -258,12 +275,22 @@ export const ProductDetailPage = () => {
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
           <div className="flex items-center gap-4 text-sm text-gray-400">
-            {product.category && (
-              <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5" />
-                {product.category.replace(/\*+/g, "")}
-              </span>
-            )}
+            <span className="flex items-center gap-1">
+              <Tag className="w-3.5 h-3.5" />
+              <select
+                value={product.categoryId || ""}
+                onChange={(e) => handleAssignCategory(e.target.value)}
+                className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500 max-w-[220px]"
+              >
+                <option value="">Sem categoria</option>
+                {categories.map(c => (
+                  <option key={c._id} value={c._id}>{c.name}</option>
+                ))}
+              </select>
+              {!product.categoryId && product.category && (
+                <span className="text-xs text-gray-600 truncate">({product.category.replace(/\*+/g, "")})</span>
+              )}
+            </span>
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               {new Date(product.analyzedAt).toLocaleDateString("pt-BR")}

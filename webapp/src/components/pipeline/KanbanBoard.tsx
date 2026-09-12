@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -12,17 +12,24 @@ import {
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { useNavigate } from "react-router-dom"
+import { Filter } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
 import { ProductCard } from "./ProductCard"
 import { usePipelineStore } from "@/store/usePipelineStore"
+import { useCategoryStore } from "@/store/useCategoryStore"
 import type { PipelineProduct, PipelineStage } from "@/lib/api"
 
 const STAGES: PipelineStage[] = ["triagem", "analise", "aprovado", "importando", "concluido"]
 
 export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: PipelineStage) => void }) => {
   const { products, moveProduct } = usePipelineStore()
+  const { categories, selectedCategoryId, setFilter, fetchCategories } = useCategoryStore()
   const navigate = useNavigate()
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
+
+  useEffect(() => {
+    fetchCategories()
+  }, [fetchCategories])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -96,16 +103,38 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto p-4 h-full">
-        {STAGES.map(stage => (
-          <KanbanColumn
-            key={stage}
-            stage={stage}
-            products={products[stage]}
-            onCardClick={(product) => navigate(`/pipeline/${product._id}`)}
-            onCompareClick={(stage === "triagem" || stage === "analise") ? () => onCompareClick?.(stage) : undefined}
-          />
-        ))}
+      <div className="h-full flex flex-col">
+        {/* Filtro por categoria */}
+        <div className="flex items-center gap-2 px-4 pt-3">
+          <Filter className="w-3.5 h-3.5 text-gray-500" />
+          <select
+            value={selectedCategoryId || ""}
+            onChange={(e) => setFilter(e.target.value || null)}
+            className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
+          >
+            <option value="">Todas as categorias</option>
+            {categories.map(c => (
+              <option key={c._id} value={c._id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex gap-4 overflow-x-auto p-4 h-full">
+          {STAGES.map(stage => {
+            const stageProducts = selectedCategoryId
+              ? products[stage].filter(p => p.categoryId === selectedCategoryId)
+              : products[stage]
+            return (
+              <KanbanColumn
+                key={stage}
+                stage={stage}
+                products={stageProducts}
+                onCardClick={(product) => navigate(`/pipeline/${product._id}`)}
+                onCompareClick={(stage === "triagem" || stage === "analise") ? () => onCompareClick?.(stage) : undefined}
+              />
+            )
+          })}
+        </div>
       </div>
 
       <DragOverlay>

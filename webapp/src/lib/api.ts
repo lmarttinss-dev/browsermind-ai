@@ -57,6 +57,20 @@ export const api = {
     request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}/move`, { method: "PATCH", body: JSON.stringify({ stage, order }) }),
   deletePipelineProduct: (id: string) =>
     request<{ success: boolean }>(`/api/pipeline/${id}`, { method: "DELETE" }),
+  assignCategoryToProduct: (productId: string, categoryId: string | null) =>
+    request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${productId}/category`, { method: "PATCH", body: JSON.stringify({ categoryId }) }),
+
+  // Categories
+  getCategories: () =>
+    request<{ success: boolean; categories: Category[] }>("/api/categories"),
+  createCategory: (data: Partial<Category>) =>
+    request<{ success: boolean; category: Category }>("/api/categories", { method: "POST", body: JSON.stringify(data) }),
+  updateCategory: (id: string, data: Partial<Category>) =>
+    request<{ success: boolean; category: Category }>(`/api/categories/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteCategory: (id: string) =>
+    request<{ success: boolean }>(`/api/categories/${id}`, { method: "DELETE" }),
+  getCategory: (id: string) =>
+    request<{ success: boolean; category: Category; products: PipelineProduct[]; metrics: CategoryDashboard }>(`/api/categories/${id}`),
 
   // Suppliers
   captureSuppliers: (productId: string, report: string) =>
@@ -211,6 +225,7 @@ export type PipelineProduct = {
   imageUrl: string;
   price: number;
   category: string;
+  categoryId: string | null;
   stage: PipelineStage;
   score: number;
   monthlySales: number;
@@ -227,6 +242,28 @@ export type PipelineProduct = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type Category = {
+  _id: string
+  name: string
+  slug: string
+  description: string
+  color: string
+  mlCategoryUrl: string
+  productCount?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type CategoryDashboard = {
+  totalProducts: number
+  byStage: Record<PipelineStage, number>
+  avgScore: number
+  totalMonthlySales: number
+  potentialRevenue: number
+  competition: Record<CompetitionLevel, number>
+  suppliersWithQuotes: number
+}
 
 export type ComparisonRanking = {
   productId: string;
