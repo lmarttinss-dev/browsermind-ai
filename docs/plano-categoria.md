@@ -127,12 +127,14 @@ Métodos: `fetchCategories()`, `createCategory()`, `updateCategory()`, `deleteCa
 
 ### 5.4 Componentes alterados
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `KanbanBoard.tsx` | Barra de filtro por categoria (dropdown + "Todas") acima das colunas |
-| `ProductCard.tsx` | Badge da categoria com cor (fallback para `category`), tooltip |
-| `KanbanColumn.tsx` | (opcional) agrupar por categoria dentro da coluna quando filtro ativo |
-| `ProductDetailPage.tsx` | Seletor de categoria (assign/editar) no header ou tab "produto" |
+> **Decisão de UX:** no Kanban, a categoria entra como **atributo visual + filtro**, não como segundo eixo de agrupamento. O eixo principal permanece o estágio (funil de decisão). O agrupamento por categoria dentro da coluna é um toggle **desligado por padrão**.
+
+| Arquivo | Alteração | Prioridade |
+|---------|-----------|------------|
+| `KanbanBoard.tsx` | Barra de filtro por categoria (dropdown "Todas as categorias") acima das colunas | Obrigatório |
+| `ProductCard.tsx` | Badge colorido da categoria (fallback para `category`), tooltip | Obrigatório |
+| `KanbanColumn.tsx` | Agrupar por categoria dentro da coluna — toggle desligado por padrão | Opcional |
+| `ProductDetailPage.tsx` | Seletor de categoria (assign/editar) no header ou tab "produto" | Obrigatório |
 
 ### 5.5 Navegação e rotas
 
@@ -162,7 +164,7 @@ Script one-time (`server/src/scripts/migrate-categories.ts` ou endpoint dev):
 - [ ] **Fase 2 — Auto-vínculo:** normalização e match por nome no fluxo de análise.
 - [ ] **Fase 3 — API client + store:** tipos e métodos em `api.ts`, novo `useCategoryStore.ts`.
 - [ ] **Fase 4 — Gestão de categorias:** `CategoriesPage.tsx` + modal de criar/editar.
-- [ ] **Fase 5 — Filtro no Kanban:** dropdown de categoria + badge no `ProductCard`.
+- [ ] **Fase 5 — Filtro no Kanban:** dropdown de filtro por categoria (obrigatório) + badge colorido no `ProductCard` (obrigatório). Agrupamento por categoria na coluna: opcional, toggle desligado por padrão.
 - [ ] **Fase 6 — Dashboard:** `CategoryDashboardPage.tsx` + `GET /api/categories/:id` com aggregation.
 - [ ] **Fase 7 — Navegação:** rotas no `App.tsx` + botão "Categorias" no `NavigationBar`.
 - [ ] **Fase 8 — Testes + migração:** testes unitários/integração + script de migração de `category` existentes.
