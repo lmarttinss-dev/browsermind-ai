@@ -24,10 +24,14 @@ async function migrate() {
   let linked = 0
 
   for (const categoryRaw of rawCategories) {
-    const slug = normalizeCategorySlug(categoryRaw)
+    // Remove markdown (asteriscos) e espaços extras do nome exibido
+    const name = categoryRaw.replace(/\*+/g, "").trim()
+    if (!name) continue
+
+    const slug = normalizeCategorySlug(name)
     let category = await Category.findOne({ slug })
     if (!category) {
-      category = await Category.create({ name: categoryRaw })
+      category = await Category.create({ name })
       created++
     }
 
