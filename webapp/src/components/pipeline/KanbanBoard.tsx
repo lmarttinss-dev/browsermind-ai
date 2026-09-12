@@ -135,14 +135,14 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{ backgroundColor: selectedCategory?.color || "#6b7280" }}
               />
-              <span className="truncate max-w-[220px]">
+              <span className="truncate max-w-[320px]">
                 {selectedCategory ? selectedCategory.name : "Todas as categorias"}
               </span>
               <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-gray-500 transition-transform ${filterOpen ? "rotate-180" : ""}`} />
             </button>
 
             {filterOpen && (
-              <div className="absolute left-0 top-full mt-1 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
+              <div className="absolute left-0 top-full mt-1 w-[440px] max-w-[90vw] bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
                 <div className="max-h-72 overflow-y-auto py-1">
                   <button
                     onClick={() => { setFilter(null); setFilterOpen(false) }}
@@ -162,7 +162,7 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
                         className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${isActive ? "bg-blue-600/10 text-blue-300" : "text-gray-300 hover:bg-gray-700"}`}
                       >
                         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                        <span className="flex-1 truncate">{c.name}</span>
+                        <span className="flex-1 whitespace-normal break-words leading-snug">{c.name}</span>
                         {isActive && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                       </button>
                     )
