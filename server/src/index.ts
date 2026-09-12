@@ -41,21 +41,17 @@ function parseBrInt(raw: string): number {
   return parseInt(cleaned.replace(/[.,]/g, ""), 10)
 }
 
-/** Escapa caracteres especiais de regex */
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
+/** Resolve o id de uma categoria a partir do nome bruto — cria se não existir */
+async function resolveOrCreateCategoryId(categoryRaw: string) {
+  const name = categoryRaw.replace(/\*+/g, "").trim()
+  if (!name) return null
 
-/** Resolve o id de uma categoria existente a partir do nome bruto extraído do relatório */
-async function resolveCategoryId(categoryRaw: string) {
-  const slug = normalizeCategorySlug(categoryRaw)
-  const existing = await Category.findOne({
-    $or: [
-      { slug },
-      { name: { $regex: `^${escapeRegex(categoryRaw.trim())}$`, $options: "i" } },
-    ],
-  })
-  return existing ? existing._id : null
+  const slug = normalizeCategorySlug(name)
+  let category = await Category.findOne({ slug })
+  if (!category) {
+    category = await Category.create({ name })
+  }
+  return category._id
 }
 
 const app = express();
@@ -602,7 +598,7 @@ app.post("/api/analyze", async (req, res) => {
         const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
         const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
         const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
-        const categoryRaw = categoryMatch?.[1]?.trim().slice(0, 100) || ""
+        const categoryRaw = categoryMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 100) || ""
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
         const urlMatch = content.match(/^URL:\s*(.+)/m)
@@ -615,8 +611,8 @@ app.post("/api/analyze", async (req, res) => {
           const lastProduct = await Product.findOne({ stage: "triagem" }).sort({ order: -1 })
           const order = lastProduct ? lastProduct.order + 1 : 0
 
-          // Vincula categoria existente pelo nome normalizado (se houver)
-          const categoryId = categoryRaw ? await resolveCategoryId(categoryRaw) : null
+          // Vincula categoria pelo nome normalizado (cria se não existir)
+          const categoryId = categoryRaw ? await resolveOrCreateCategoryId(categoryRaw) : null
 
           // Detecta se é um kit pelo título ou relatório
           const isKit = /\bkit\b/i.test(productTitle) || /\bkit\b/i.test(aiResponse)

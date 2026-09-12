@@ -103,8 +103,8 @@ Via aggregation pipeline sobre `Product` filtrado por `categoryId`:
 No bloco de auto-inserção (linhas ~582–604), após extrair `categoryMatch`:
 
 1. Normalizar o valor de `category` (trim, minúsculas, remover acentos/asteriscos).
-2. Buscar `Category` por `slug` ou `name` (case-insensitive).
-3. Se existir → vincular `categoryId`; senão → manter `categoryId: null` (criação manual pelo usuário via UI) ou criar automaticamente (toggle de configuração futuro).
+2. Buscar `Category` por `slug`.
+3. Se existir → vincular `categoryId`; senão → **criar a categoria automaticamente** (nome sanitizado) e vincular.
 
 ## 5. Webapp
 
