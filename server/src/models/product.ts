@@ -58,6 +58,7 @@ export type PipelineProduct = Document & {
   monthlySales: number
   competitionLevel: CompetitionLevel
   potentialMargin: string
+  recentDemand: string
   analysisReport: string
   analyzedAt: Date
   order: number
@@ -120,6 +121,7 @@ const productSchema = new Schema<PipelineProduct>(
     monthlySales: { type: Number, default: 0 },
     competitionLevel: { type: String, enum: COMPETITION_LEVELS, default: "Média" },
     potentialMargin: { type: String, default: "" },
+    recentDemand: { type: String, default: "" },
     analysisReport: { type: String, default: "" },
     analyzedAt: { type: Date, default: Date.now },
     order: { type: Number, default: 0 },

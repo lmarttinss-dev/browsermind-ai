@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Package, TrendingUp, Star, ExternalLink, Boxes } from "lucide-react"
+import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame } from "lucide-react"
 import { useCategoryStore } from "@/store/useCategoryStore"
 import type { PipelineProduct } from "@/lib/api"
 
@@ -25,6 +25,14 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
     Alta: "text-orange-400 bg-orange-900/30",
     Saturado: "text-red-400 bg-red-900/30",
   }[product.competitionLevel] || "text-gray-400 bg-gray-900/30"
+
+  const demandClass = (() => {
+    const d = product.recentDemand || ""
+    if (d.includes("Forte")) return "text-emerald-400 bg-emerald-900/30"
+    if (d.includes("Ativa")) return "text-blue-400 bg-blue-900/30"
+    if (d.includes("Fraca")) return "text-yellow-400 bg-yellow-900/30"
+    return "text-gray-400 bg-gray-900/30"
+  })()
 
   return (
     <div
@@ -76,6 +84,12 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
           <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-400">
             <TrendingUp className="w-3 h-3" />
             {product.monthlySales}/mês
+          </span>
+        )}
+        {product.recentDemand && (
+          <span className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded ${demandClass}`}>
+            <Flame className="w-3 h-3" />
+            {product.recentDemand}
           </span>
         )}
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${competitionColor}`}>

@@ -599,6 +599,8 @@ app.post("/api/analyze", async (req, res) => {
         const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
         const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
         const categoryRaw = categoryMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 100) || ""
+        const recentDemandMatch = aiResponse.match(/Demanda\s*recente\s*:\s*(.+)/im)
+        const recentDemand = recentDemandMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 60) || ""
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
         const urlMatch = content.match(/^URL:\s*(.+)/m)
@@ -630,6 +632,7 @@ app.post("/api/analyze", async (req, res) => {
             monthlySales: parseBrInt(salesMatch?.[1] || "0"),
             competitionLevel: competitionMatch?.[1] || "Média",
             potentialMargin: marginMatch?.[1]?.trim().slice(0, 100) || "",
+            recentDemand,
             analysisReport: aiResponse,
             analyzedAt: new Date(),
             order,

@@ -231,6 +231,7 @@ export type PipelineProduct = {
   monthlySales: number;
   competitionLevel: CompetitionLevel;
   potentialMargin: string;
+  recentDemand?: string;
   analysisReport: string;
   analyzedAt: string;
   order: number;
