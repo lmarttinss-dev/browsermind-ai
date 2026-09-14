@@ -7,6 +7,7 @@ import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Ch
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
+import { rehypeSectionIds, scrollToAnchor } from "@/lib/markdown";
 
 const MARKET_TEMPLATE_ID = "analise-oferta-demanda-concorrencia"
 
@@ -134,9 +135,22 @@ export function ChatPanel() {
   };
 
   const markdownComponents = useMemo(() => ({
-    a: ({ href, children }: any) => (
-      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-    ),
+    a: ({ href, children }: any) => {
+      if (typeof href === "string" && href.startsWith("#")) {
+        return (
+          <a
+            href={href}
+            onClick={(e) => {
+              e.preventDefault()
+              scrollToAnchor(href)
+            }}
+          >
+            {children}
+          </a>
+        )
+      }
+      return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    },
     code({ className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || "")
       if (match && match[1] === "mermaid") {
@@ -422,6 +436,7 @@ export function ChatPanel() {
             <div className="text-sm text-gray-700 leading-relaxed [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-gray-800 [&_h1]:mt-3 [&_h1]:mb-1 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-gray-800 [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:mb-2 [&_li]:mb-0.5 [&_a]:text-primary-600 [&_a]:underline [&_code]:bg-gray-100 [&_code]:text-primary-700 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-gray-900 [&_pre]:text-gray-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:my-2 [&_pre_code]:bg-transparent [&_pre_code]:text-gray-100 [&_pre_code]:p-0 [&_blockquote]:border-l-4 [&_blockquote]:border-primary-300 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-gray-500 [&_strong]:font-semibold [&_strong]:text-gray-800">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSectionIds]}
                 components={markdownComponents}
               >
                 {response}

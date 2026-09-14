@@ -658,7 +658,7 @@ Sua resposta DEVE começar exatamente assim:
 
 ## Estrutura geral
 
-- Logo após o cabeçalho, inclua a seção \`## 📑 Sumário\` com uma lista numerada de 1 a 17 com TODAS as seções obrigatórias do relatório, na ordem exata
+- Logo após o cabeçalho, inclua a seção \`## 📑 Sumário\` com uma lista numerada de 1 a 17 em que cada item é um link de âncora \`[Título](#secao-N)\` apontando para a seção correspondente, na ordem exata
 - Em seguida, a seção \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
 - Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
@@ -1489,7 +1489,10 @@ O relatório DEVE começar exatamente com este formato:
 ---
 
 ## 📑 Sumário
-[Lista numerada de 1 a 17 com TODAS as seções obrigatórias, na ordem exata]
+1. [📊 Métricas da Categoria (AvantPro)](#secao-1)
+2. [📦 Perfil Logístico da Categoria](#secao-2)
+...
+17. [📋 Conclusão Executiva](#secao-17)
 
 ---
 
@@ -1511,27 +1514,27 @@ O relatório DEVE começar exatamente com este formato:
 
 > ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser a primeira logo após o cabeçalho, ANTES de qualquer outra seção.
 
-Lista numerada de 1 a 17 com TODAS as seções obrigatórias do relatório, na ordem exata:
+Lista numerada de 1 a 17 em que CADA item é um link de âncora \`[Título](#secao-N)\` (N = posição da seção), na ordem exata:
 
-1. 📊 Métricas da Categoria (AvantPro)
-2. 📦 Perfil Logístico da Categoria
-3. 📊 Perfil de Conta e Catálogo
-4. 🚚 Análise de Frete da Categoria
-5. 🧭 Tarefa 1 — Análise da Demanda
-6. 🛡️ Tarefa 2 — Análise da Concorrência
-7. 📊 Tarefa 3 — Análise de Concentração de Mercado
-8. 🚪 Tarefa 4 — Oportunidade de Entrada
-9. 💰 Tarefa 5 — Potencial de Lucro
-10. 🎯 Tarefa 6 — Score de Oportunidade
-11. 🧭 Tarefa 7 — Estratégia Recomendada
-12. 📅 Tarefa 8 — Plano de Ataque de 30 Dias
-13. 🔍 Estratégia de SEO
-14. 🎨 Estratégia de Imagens
-15. 💲 Estratégia de Precificação
-16. 💲 Sugestão de Precificação para Venda
-17. 📋 Conclusão Executiva
+1. [📊 Métricas da Categoria (AvantPro)](#secao-1)
+2. [📦 Perfil Logístico da Categoria](#secao-2)
+3. [📊 Perfil de Conta e Catálogo](#secao-3)
+4. [🚚 Análise de Frete da Categoria](#secao-4)
+5. [🧭 Tarefa 1 — Análise da Demanda](#secao-5)
+6. [🛡️ Tarefa 2 — Análise da Concorrência](#secao-6)
+7. [📊 Tarefa 3 — Análise de Concentração de Mercado](#secao-7)
+8. [🚪 Tarefa 4 — Oportunidade de Entrada](#secao-8)
+9. [💰 Tarefa 5 — Potencial de Lucro](#secao-9)
+10. [🎯 Tarefa 6 — Score de Oportunidade](#secao-10)
+11. [🧭 Tarefa 7 — Estratégia Recomendada](#secao-11)
+12. [📅 Tarefa 8 — Plano de Ataque de 30 Dias](#secao-12)
+13. [🔍 Estratégia de SEO](#secao-13)
+14. [🎨 Estratégia de Imagens](#secao-14)
+15. [💲 Estratégia de Precificação](#secao-15)
+16. [💲 Sugestão de Precificação para Venda](#secao-16)
+17. [📋 Conclusão Executiva](#secao-17)
 
-> Use EXATAMENTE esses títulos e emojis, na mesma ordem. O Sumário deve refletir fielmente as seções que serão entregues.
+> Use EXATAMENTE esses títulos, emojis e âncoras \`#secao-N\`, na mesma ordem. O Sumário em si NÃO é numerado. As âncoras devem corresponder aos IDs gerados automaticamente em cada seção.
 
 ### 📊 Métricas da Categoria (AvantPro)
 
