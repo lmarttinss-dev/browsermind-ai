@@ -658,11 +658,12 @@ Sua resposta DEVE começar exatamente assim:
 
 ## Estrutura geral
 
-- A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
+- Logo após o cabeçalho, inclua a seção \`## 📑 Sumário\` com uma lista numerada de 1 a 17 com TODAS as seções obrigatórias do relatório, na ordem exata
+- Em seguida, a seção \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
 - Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 🚚 Análise de Frete da Categoria\` usando os dados extraídos do DOM na seção "Frete dos anúncios" (contagem de cards com frete grátis vs frete pago), mostrando a quantidade e o percentual de anúncios que oferecem frete grátis vs frete pago e o valor cobrado do frete, com tabela, gráfico Mermaid e análise — incluindo o diagnóstico do elemento de frete \`poly-component__shipping-v2\` (pill "Frete grátis", selo "Enviado pelo FULL" e prazo "rápido amanhã")
-- Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
+- Use emojis nos cabeçalhos: 📑 Sumário, 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
 - Use > para alertas e insights
@@ -1487,6 +1488,11 @@ O relatório DEVE começar exatamente com este formato:
 
 ---
 
+## 📑 Sumário
+[Lista numerada de 1 a 17 com TODAS as seções obrigatórias, na ordem exata]
+
+---
+
 ## 📊 Métricas da Categoria (AvantPro)
 [Aqui vai a tabela de métricas — SEMPRE em formato de tabela Markdown de 2 colunas: Métrica | Valor]
 \`\`\`
@@ -1501,9 +1507,35 @@ O relatório DEVE começar exatamente com este formato:
 
 ## Seções Obrigatórias (na ordem)
 
+### 📑 Sumário
+
+> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser a primeira logo após o cabeçalho, ANTES de qualquer outra seção.
+
+Lista numerada de 1 a 17 com TODAS as seções obrigatórias do relatório, na ordem exata:
+
+1. 📊 Métricas da Categoria (AvantPro)
+2. 📦 Perfil Logístico da Categoria
+3. 📊 Perfil de Conta e Catálogo
+4. 🚚 Análise de Frete da Categoria
+5. 🧭 Tarefa 1 — Análise da Demanda
+6. 🛡️ Tarefa 2 — Análise da Concorrência
+7. 📊 Tarefa 3 — Análise de Concentração de Mercado
+8. 🚪 Tarefa 4 — Oportunidade de Entrada
+9. 💰 Tarefa 5 — Potencial de Lucro
+10. 🎯 Tarefa 6 — Score de Oportunidade
+11. 🧭 Tarefa 7 — Estratégia Recomendada
+12. 📅 Tarefa 8 — Plano de Ataque de 30 Dias
+13. 🔍 Estratégia de SEO
+14. 🎨 Estratégia de Imagens
+15. 💲 Estratégia de Precificação
+16. 💲 Sugestão de Precificação para Venda
+17. 📋 Conclusão Executiva
+
+> Use EXATAMENTE esses títulos e emojis, na mesma ordem. O Sumário deve refletir fielmente as seções que serão entregues.
+
 ### 📊 Métricas da Categoria (AvantPro)
 
-> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o cabeçalho, ANTES da Tarefa 1.
+> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o Sumário, ANTES da Tarefa 1.
 
 Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coletados". Formato: tabela Markdown de 2 colunas (Métrica | Valor), com **negrito** nos valores numéricos. NÃO omita esta seção — ela é a base de toda a análise.
 
