@@ -418,6 +418,22 @@ app.post("/api/analyze", async (req, res) => {
           }
 
           const extracted = await playwrightManager.extractPageContent();
+          const shipping = extracted.shippingSummary;
+          const shippingSection = shipping && shipping.totalCards > 0
+            ? [
+                `\nFrete dos anúncios (elemento poly-component__shipping-v2):`,
+                `- Total de cards analisados: ${shipping.totalCards}`,
+                `- Com pill "Frete grátis": ${shipping.freeShippingCount}`,
+                `- Com selo "Enviado pelo FULL": ${shipping.fullCount}`,
+                `- Com "Frete grátis" + FULL: ${shipping.freeShippingAndFullCount}`,
+                `- Com prazo rápido (amanhã/hoje): ${shipping.fastDeliveryCount}`,
+                shipping.deliveryPromises.length > 0
+                  ? `- Prazos de entrega encontrados: ${shipping.deliveryPromises.join(" | ")}`
+                  : "",
+                `\nDetalhe por card (amostra):`,
+                ...shipping.samples.map((s, i) => `  ${i + 1}. Frete grátis: ${s.freeShipping ? "Sim" : "Não"} | FULL: ${s.isFull ? "Sim" : "Não"} | Prazo: ${s.promise || "(não informado)"}`),
+              ].filter(Boolean).join("\n")
+            : "";
           content = [
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
@@ -429,6 +445,7 @@ app.post("/api/analyze", async (req, res) => {
               ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
               : "",
             `\nContent:\n${extracted.visibleText}`,
+            shippingSection,
           ].filter(Boolean).join("\n");
         }
       } catch { /* ignore */ }
