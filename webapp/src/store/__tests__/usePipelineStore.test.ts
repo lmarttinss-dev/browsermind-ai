@@ -20,6 +20,7 @@ const mockProduct = (overrides: Partial<PipelineProduct> = {}): PipelineProduct 
   imageUrl: "https://http2.mlstatic.com/D_NQ_NP_123.jpg",
   price: 29.9,
   category: "Celulares > Películas",
+  categoryId: null,
   stage: "triagem",
   score: 8,
   monthlySales: 1200,

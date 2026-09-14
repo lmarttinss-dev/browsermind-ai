@@ -10,6 +10,8 @@ import { PipelinePage } from "@/pages/PipelinePage";
 import { ProductDetailPage } from "@/pages/ProductDetailPage";
 import { SupplierAnalysisPage } from "@/pages/SupplierAnalysisPage";
 import { SupplierDetailPage } from "@/pages/SupplierDetailPage";
+import { CategoriesPage } from "@/pages/CategoriesPage";
+import { CategoryDashboardPage } from "@/pages/CategoryDashboardPage";
 import ImportCalculatorPage from "@/pages/ImportCalculatorPage";
 
 function MainView() {
@@ -56,6 +58,8 @@ export default function App() {
         <Route path="/pipeline/:id" element={<ProductDetailPage />} />
         <Route path="/pipeline/:id/supplier/:supplierIndex" element={<SupplierDetailPage />} />
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/categories/:id" element={<CategoryDashboardPage />} />
         <Route path="/calculator" element={<ImportCalculatorPage />} />
       </Routes>
 

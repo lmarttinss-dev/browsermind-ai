@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Package, TrendingUp, Star, ExternalLink, Boxes } from "lucide-react"
+import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame } from "lucide-react"
+import { useCategoryStore } from "@/store/useCategoryStore"
 import type { PipelineProduct } from "@/lib/api"
 
 export const ProductCard = ({ product, onClick }: { product: PipelineProduct; onClick: () => void }) => {
@@ -8,6 +9,9 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
     id: product._id,
     data: { product },
   })
+
+  const categories = useCategoryStore(s => s.categories)
+  const category = categories.find(c => c._id === product.categoryId)
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -21,6 +25,14 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
     Alta: "text-orange-400 bg-orange-900/30",
     Saturado: "text-red-400 bg-red-900/30",
   }[product.competitionLevel] || "text-gray-400 bg-gray-900/30"
+
+  const demandClass = (() => {
+    const d = product.recentDemand || ""
+    if (d.includes("Forte")) return "text-emerald-400 bg-emerald-900/30"
+    if (d.includes("Ativa")) return "text-blue-400 bg-blue-900/30"
+    if (d.includes("Fraca")) return "text-yellow-400 bg-yellow-900/30"
+    return "text-gray-400 bg-gray-900/30"
+  })()
 
   return (
     <div
@@ -74,6 +86,12 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
             {product.monthlySales}/mês
           </span>
         )}
+        {product.recentDemand && (
+          <span className={`flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded ${demandClass}`}>
+            <Flame className="w-3 h-3" />
+            {product.recentDemand}
+          </span>
+        )}
         <span className={`text-[10px] px-1.5 py-0.5 rounded ${competitionColor}`}>
           {product.competitionLevel}
         </span>
@@ -81,7 +99,13 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
 
       {/* Categoria + Link */}
       <div className="flex items-center justify-between text-[10px] text-gray-500">
-        <span className="truncate">{product.category || "Sem categoria"}</span>
+        <span className="truncate flex items-center gap-1 min-w-0">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: category?.color || "#6b7280" }}
+          />
+          <span className="truncate">{category?.name || product.category || "Sem categoria"}</span>
+        </span>
         {product.url && (
           <a
             href={product.url}

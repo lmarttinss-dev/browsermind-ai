@@ -255,6 +255,16 @@ export const ProductDetailPage = () => {
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${stageInfo.color}`}>
               {stageInfo.label}
             </span>
+            {product.recentDemand && (
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
+                product.recentDemand.includes("Forte") ? "text-emerald-400 bg-emerald-900/30 border-emerald-800"
+                : product.recentDemand.includes("Ativa") ? "text-blue-400 bg-blue-900/30 border-blue-800"
+                : product.recentDemand.includes("Fraca") ? "text-yellow-400 bg-yellow-900/30 border-yellow-800"
+                : "text-gray-400 bg-gray-900/30 border-gray-700"
+              }`}>
+                {product.recentDemand}
+              </span>
+            )}
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
           <div className="flex items-center gap-4 text-sm text-gray-400">

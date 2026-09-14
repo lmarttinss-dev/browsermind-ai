@@ -1827,11 +1827,38 @@ Preencha OBRIGATORIAMENTE:
 - Preço atual: R$ (valor no formato brasileiro, ex: 66,79)
 - Tipo: (exatamente uma das opções: 📚 Catálogo | 📦 Independente)
 - Vendas mensais: (número inteiro — métrica Vendas mensais do AvantPro)
+- Demanda recente: (exatamente uma das opções: 🔥 Forte | ✅ Ativa | ⚠️ Fraca | ❌ Estagnada)
 - Nível de competição: (exatamente uma das opções: Baixa | Média | Alta | Saturado)
   - Para catálogo: baseado na quantidade de vendedores e competitividade da buy box
   - Para independente: baseado na concorrência da categoria
 - Potencial de melhoria: (APENAS o percentual ou faixa, sem texto. Ex: 25-40%)
 - Score Final: (nota de 0 a 10 representando saúde/viabilidade geral)
+
+---
+
+## 📈 Demanda Recente (Velocidade de Vendas)
+
+> Avalie se a demanda é RECENTE e ATIVA, não apenas histórica. Use as métricas do AvantPro para distinguir "vendeu no passado" de "está vendendo agora".
+
+- Vendas por dia (atual): X — métrica "Vendas por dia" do AvantPro
+- Vendas mensais (atual): X — métrica "Vendas mensais" do AvantPro
+- Total vendido (histórico acumulado): X — métrica "Vendidos" do AvantPro
+- Data de criação do anúncio/catálogo: dd/mm/aaaa
+- Idade do anúncio: X dias/meses (calcule da data de criação até hoje)
+- Média histórica por dia: Total vendido ÷ idade em dias = X/dia
+- Comparação: vendas por dia ATUAL vs média histórica (acelerando? estável? desacelerando?)
+- Estoque atual: X unidades
+
+Classificação da demanda recente (exatamente uma das opções):
+- 🔥 Forte: vendas/dia atuais ≥ 2x a média histórica OU estoque baixo + vendas/dia altas
+- ✅ Ativa: vendas/dia atuais > 0 e próximas da média histórica
+- ⚠️ Fraca: vendas/dia atuais baixas e em queda vs média histórica
+- ❌ Estagnada: vendas/dia = 0 e/ou sem vendas recentes
+
+- Avaliações recentes: datas das últimas avaliações visíveis na página (semanas/meses) — indicam compras recentes
+- Veredito: a demanda é recente e sustentável ou é demanda passada? Justifique em 1-2 frases.
+
+> ⚠️ A classificação "Demanda recente" deve ser IGUAL à informada no bloco "Resumo para Esteira".
 
 ---
 
