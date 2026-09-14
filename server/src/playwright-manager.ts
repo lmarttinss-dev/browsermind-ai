@@ -386,6 +386,15 @@ export class PlaywrightManager {
     rangePrice: string;
     moq: string;
     tradeAssurance: boolean;
+    shippingSummary: {
+      totalCards: number;
+      freeShippingCount: number;
+      fullCount: number;
+      freeShippingAndFullCount: number;
+      fastDeliveryCount: number;
+      deliveryPromises: string[];
+      samples: { freeShipping: boolean; isFull: boolean; promise: string }[];
+    };
   }> {
     const page = await this.getPage();
 
@@ -496,6 +505,42 @@ export class PlaywrightManager {
         // Trade Assurance: presença do módulo module_ta_plus_footer na página
         const tradeAssurance = !!document.querySelector('[data-module-name="module_ta_plus_footer"], .module_ta_plus_footer');
 
+        // Frete dos anúncios: extrai os sinais do elemento poly-component__shipping-v2 de cada card da listagem (Mercado Livre)
+        const shippingSummary = (() => {
+          const cards = Array.from(document.querySelectorAll(".poly-component__shipping-v2"));
+          let freeShippingCount = 0;
+          let fullCount = 0;
+          let freeShippingAndFullCount = 0;
+          let fastDeliveryCount = 0;
+          const promises = new Set();
+          const samples = [];
+
+          cards.forEach((card) => {
+            const pill = card.querySelector(".polylabel-pill");
+            const hasFreeShipping = pill ? /frete\\s*gr[áa]tis/i.test(pill.textContent || "") : false;
+            const isFull = !!card.querySelector('svg[aria-label*="FULL"], use[href*="full"], use[href*="FULL"]');
+            const promiseEl = card.querySelector(".polylabel-fw-regular");
+            const promise = (promiseEl ? (promiseEl.textContent || "").trim() : "").replace(/\\s+/g, " ");
+
+            if (hasFreeShipping) freeShippingCount++;
+            if (isFull) fullCount++;
+            if (hasFreeShipping && isFull) freeShippingAndFullCount++;
+            if (/amanh[ãa]|hoje|r[áa]pido/i.test(promise + " " + (card.textContent || ""))) fastDeliveryCount++;
+            if (promise) promises.add(promise);
+            if (samples.length < 10) samples.push({ freeShipping: hasFreeShipping, isFull, promise });
+          });
+
+          return {
+            totalCards: cards.length,
+            freeShippingCount,
+            fullCount,
+            freeShippingAndFullCount,
+            fastDeliveryCount,
+            deliveryPromises: Array.from(promises).slice(0, 20),
+            samples,
+          };
+        })();
+
         return {
           url: window.location.href,
           title: document.title,
@@ -505,6 +550,7 @@ export class PlaywrightManager {
           rangePrice,
           moq,
           tradeAssurance,
+          shippingSummary,
           links: (() => {
             const seen = new Set();
             const result = [];
@@ -546,6 +592,15 @@ export class PlaywrightManager {
       rangePrice: string;
       moq: string;
       tradeAssurance: boolean;
+      shippingSummary: {
+        totalCards: number;
+        freeShippingCount: number;
+        fullCount: number;
+        freeShippingAndFullCount: number;
+        fastDeliveryCount: number;
+        deliveryPromises: string[];
+        samples: { freeShipping: boolean; isFull: boolean; promise: string }[];
+      };
     }>;
   }
 

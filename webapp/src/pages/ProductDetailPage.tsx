@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarCh
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
+import { rehypeSectionIds, scrollToAnchor } from "@/lib/markdown"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
 import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
@@ -141,9 +142,22 @@ export const ProductDetailPage = () => {
   }
 
   const markdownComponents = useMemo(() => ({
-    a: ({ href, children }: any) => (
-      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
-    ),
+    a: ({ href, children }: any) => {
+      if (typeof href === "string" && href.startsWith("#")) {
+        return (
+          <a
+            href={href}
+            onClick={(e) => {
+              e.preventDefault()
+              scrollToAnchor(href)
+            }}
+          >
+            {children}
+          </a>
+        )
+      }
+      return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+    },
     code({ className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || "")
       if (match && match[1] === "mermaid") {
@@ -389,6 +403,7 @@ export const ProductDetailPage = () => {
                   <div className="prose prose-invert max-w-none">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSectionIds]}
                       components={markdownComponents}
                     >
                       {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
@@ -426,6 +441,7 @@ export const ProductDetailPage = () => {
                 <div className="prose prose-invert max-w-none">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeSectionIds]}
                     components={markdownComponents}
                   >
                     {product.marketReport}
