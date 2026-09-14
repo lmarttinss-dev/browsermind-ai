@@ -661,7 +661,7 @@ Sua resposta DEVE começar exatamente assim:
 - A primeira seção após o cabeçalho DEVE ser \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
 - Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
-- Em seguida, inclua a subseção \`### 🚚 Análise de Frete da Categoria\` usando a métrica **Frete Grátis** do AvantPro, mostrando a quantidade e o percentual de anúncios que oferecem frete grátis vs frete pago e o valor cobrado do frete, com tabela, gráfico Mermaid e análise — incluindo o diagnóstico do elemento de frete \`poly-component__shipping-v2\` (pill "Frete grátis", selo "Enviado pelo FULL" e prazo "rápido amanhã"), usando a seção "Frete dos anúncios" extraída automaticamente da página nos Dados Coletados
+- Em seguida, inclua a subseção \`### 🚚 Análise de Frete da Categoria\` usando os dados extraídos do DOM na seção "Frete dos anúncios" (contagem de cards com frete grátis vs frete pago), mostrando a quantidade e o percentual de anúncios que oferecem frete grátis vs frete pago e o valor cobrado do frete, com tabela, gráfico Mermaid e análise — incluindo o diagnóstico do elemento de frete \`poly-component__shipping-v2\` (pill "Frete grátis", selo "Enviado pelo FULL" e prazo "rápido amanhã")
 - Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
@@ -832,9 +832,9 @@ pie
 
 ### 🚚 Análise de Frete da Categoria
 
-> Calcule a proporção de anúncios que oferecem **frete grátis** usando a métrica **Frete Grátis** da tabela de Métricas da Categoria (AvantPro). Use como denominador o **total de anúncios** da categoria (Catálogos + Fora de Catálogo), que representa o total de anúncios analisados.
+> Calcule a proporção de anúncios que oferecem **frete grátis** usando os dados EXTRAÍDOS DO DOM na seção "Frete dos anúncios (elemento poly-component__shipping-v2)" dos Dados Coletados. Use como denominador o **total de cards analisados** (totalCards).
 
-> ⚠️ **FONTE DOS DADOS**: A quantidade de anúncios com frete grátis vem da métrica **Frete Grátis** na tabela de Métricas da Categoria (AvantPro). PRIORIZE esse número — NÃO confunda com a métrica **Full** (são métricas diferentes: Full é o tipo de envio, Frete Grátis é o custo zero para o comprador).
+> ⚠️ **FONTE DOS DADOS**: A quantidade de anúncios com frete grátis vem da contagem do DOM (**freeShippingCount**) extraída automaticamente da página — NÃO use mais a métrica **Frete Grátis** da tabela de Métricas da Categoria (AvantPro) para esta tabela. A métrica **Full** do AvantPro é o tipo de envio; **frete grátis** é o custo zero para o comprador.
 
 #### 🔎 Diagnóstico do Elemento de Frete nos Anúncios (poly-component__shipping-v2)
 
@@ -860,9 +860,9 @@ Preencha a tabela abaixo com os valores já extraídos:
 
 | Condição de Frete | Quantidade | Percentual |
 |------------------|------------|------------|
-| **Frete Grátis** | (valor de Frete Grátis) | (Frete Grátis ÷ total × 100)% |
-| **Frete Pago** | (total − Frete Grátis) | (Frete Pago ÷ total × 100)% |
-| **Total de Anúncios** | (Catálogos + Fora de Catálogo) | **100%** |
+| **Frete Grátis** | (freeShippingCount) | (freeShippingCount ÷ totalCards × 100)% |
+| **Frete Pago** | (totalCards − freeShippingCount) | (Frete Pago ÷ totalCards × 100)% |
+| **Total de Anúncios** | (totalCards) | **100%** |
 
 #### 💰 Valor Cobrado do Frete
 
@@ -1535,7 +1535,7 @@ Deve conter as subseções abaixo, nesta ordem:
 Tabela de 2 colunas (Indicador do Elemento de Frete | Quantidade de Anúncios) usando os valores já extraídos da seção "Frete dos anúncios (elemento poly-component__shipping-v2)": pill "Frete grátis" (freeShippingCount), selo "Enviado pelo FULL" (fullCount), combinação "Frete grátis + FULL" (freeShippingAndFullCount), prazo "rápido amanhã" (fastDeliveryCount) e apenas prazo (totalCards − freeShippingCount). Inclua citação (>) interpretando os resultados e comparando com a métrica **Frete Grátis** do AvantPro.
 
 #### Tabela de Condição de Frete
-Tabela de 3 colunas (Condição de Frete | Quantidade | Percentual) com linhas: Frete Grátis, Frete Pago, Total de Anúncios.
+Tabela de 3 colunas (Condição de Frete | Quantidade | Percentual) com linhas: Frete Grátis (freeShippingCount), Frete Pago (totalCards − freeShippingCount), Total de Anúncios (totalCards). Use os valores extraídos do DOM da seção "Frete dos anúncios" — NÃO use a métrica **Frete Grátis** do AvantPro.
 
 #### 💰 Valor Cobrado do Frete
 Tabela de 2 colunas (Indicador | Valor) com: menor frete cobrado, maior frete cobrado, frete médio estimado e frete mais frequente.
