@@ -11,9 +11,9 @@ function normalizeHeading(text: string): string {
     .trim()
 }
 
-// Mapeia as 17 seções obrigatórias do relatório para âncoras estáveis #secao-N.
+// Mapeia as 17 seções obrigatórias do relatório de mercado para âncoras estáveis #secao-N.
 // A ordem reflete a sequência exata definida no template analise-oferta-demanda-concorrencia.
-const SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
+const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
   { id: "secao-1", match: /metricas da categoria/ },
   { id: "secao-2", match: /perfil logistico/ },
   { id: "secao-3", match: /perfil de conta e catalogo/ },
@@ -33,6 +33,37 @@ const SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
   { id: "secao-17", match: /conclusao executiva/ },
 ]
 
+// Mapeia as seções do relatório de análise de anúncio (catálogo ou independente)
+// para âncoras estáveis #ad-*. Títulos comuns aos dois ramos usam a mesma âncora.
+const AD_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
+  { id: "ad-resumo-esteira", match: /resumo para esteira/ },
+  { id: "ad-demanda-recente", match: /demanda recente/ },
+  { id: "ad-resumo-diagnostico", match: /resumo do diagnostico/ },
+  { id: "ad-dados-anuncio", match: /dados do anuncio/ },
+  { id: "ad-caracteristicas", match: /caracteristicas do produto/ },
+  { id: "ad-metricas-avantpro", match: /metricas do avantpro/ },
+  { id: "ad-descricao-anuncio", match: /descricao do anuncio/ },
+  { id: "ad-financeira", match: /analise financeira/ },
+  { id: "ad-saude", match: /saude do anuncio/ },
+  { id: "ad-visao-geral", match: /visao geral do catalogo/ },
+  { id: "ad-descricao-catalogo", match: /descricao do catalogo/ },
+  { id: "ad-metricas-catalogo", match: /metricas do catalogo/ },
+  { id: "ad-diagnostico", match: /diagnostico rapido/ },
+  { id: "ad-posicionamento", match: /posicionamento no catalogo/ },
+  { id: "ad-precificacao", match: /precificacao no catalogo/ },
+  { id: "ad-logistica", match: /logistica no catalogo/ },
+  { id: "ad-reputacao", match: /comparativo de reputacao/ },
+  { id: "ad-perguntas", match: /perguntas e respostas/ },
+  { id: "ad-opinioes", match: /opinioes do produto/ },
+  { id: "ad-insights", match: /insights para diferenciacao/ },
+  { id: "ad-market-share", match: /market share/ },
+  { id: "ad-buybox", match: /vencer a buy box/ },
+  { id: "ad-pontos-negativos", match: /pontos negativos e riscos/ },
+  { id: "ad-oportunidades", match: /oportunidades de melhoria/ },
+  { id: "ad-score", match: /score final do (catalogo|anuncio)/ },
+  { id: "ad-conclusao", match: /conclusao (e recomendacoes|produto de catalogo)/ },
+]
+
 function collectText(node: any): string {
   if (!node) return ""
   if (node.type === "text") return node.value || ""
@@ -41,15 +72,16 @@ function collectText(node: any): string {
 }
 
 /**
- * Plugin rehype que adiciona id="secao-N" aos títulos das 17 seções do relatório.
- * Permite que o Sumário use links de âncora (#secao-N) que rolam até a seção.
+ * Plugin rehype que adiciona ids de âncora (secao-N / ad-*) aos títulos
+ * das seções dos relatórios de mercado e de análise de anúncio.
+ * Permite que o Sumário use links de âncora que rolam até a seção.
  */
 export function rehypeSectionIds() {
   return (tree: any) => {
     const walk = (node: any) => {
       if (node && node.type === "element" && /^h[1-6]$/.test(node.tagName || "")) {
         const normalized = normalizeHeading(collectText(node))
-        for (const anchor of SECTION_ANCHORS) {
+        for (const anchor of [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]) {
           if (anchor.match.test(normalized)) {
             node.properties = node.properties || {}
             node.properties.id = anchor.id

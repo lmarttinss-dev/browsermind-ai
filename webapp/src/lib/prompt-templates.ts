@@ -1896,6 +1896,56 @@ Preencha OBRIGATORIAMENTE:
 
 ---
 
+## 📑 Sumário
+
+> Inclua OBRIGATORIAMENTE este Sumário logo após a Identificação, ANTES do "Resumo para Esteira". Cada item DEVE ser um link de âncora \`[Título](#ad-...)\`. Use APENAS a lista correspondente ao tipo identificado.
+
+**Se for 📚 PRODUTO DE CATÁLOGO:**
+
+1. [📋 Resumo para Esteira](#ad-resumo-esteira)
+2. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)
+3. [📚 Visão Geral do Catálogo](#ad-visao-geral)
+4. [📦 Características do Produto](#ad-caracteristicas)
+5. [📝 Descrição do Catálogo](#ad-descricao-catalogo)
+6. [📊 Métricas do Catálogo](#ad-metricas-catalogo)
+7. [🔎 Diagnóstico Rápido](#ad-diagnostico)
+8. [🏆 Posicionamento no Catálogo](#ad-posicionamento)
+9. [💰 Análise de Precificação](#ad-precificacao)
+10. [🚚 Comparativo de Logística](#ad-logistica)
+11. [⭐ Comparativo de Reputação](#ad-reputacao)
+12. [💬 Perguntas e Respostas](#ad-perguntas)
+13. [⭐ Opiniões do Produto](#ad-opinioes)
+14. [🎯 Insights para Diferenciação](#ad-insights)
+15. [📊 Market Share Estimado](#ad-market-share)
+16. [🎯 Estratégia para Vencer a Buy Box](#ad-buybox)
+17. [🚨 Pontos Negativos e Riscos](#ad-pontos-negativos)
+18. [💡 Oportunidades de Melhoria](#ad-oportunidades)
+19. [📈 Score Final](#ad-score)
+20. [✅ Conclusão](#ad-conclusao)
+
+**Se for 📦 ANÚNCIO INDEPENDENTE:**
+
+1. [📋 Resumo para Esteira](#ad-resumo-esteira)
+2. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)
+3. [📋 Resumo do Diagnóstico](#ad-resumo-diagnostico)
+4. [📦 Dados do Anúncio](#ad-dados-anuncio)
+5. [📦 Características do Produto](#ad-caracteristicas)
+6. [📊 Métricas do AvantPro](#ad-metricas-avantpro)
+7. [📝 Descrição do Anúncio](#ad-descricao-anuncio)
+8. [💰 Análise Financeira](#ad-financeira)
+9. [🏥 Saúde do Anúncio](#ad-saude)
+10. [💬 Perguntas e Respostas](#ad-perguntas)
+11. [⭐ Opiniões do Produto](#ad-opinioes)
+12. [🎯 Insights para Diferenciação](#ad-insights)
+13. [🚨 Pontos Negativos e Riscos](#ad-pontos-negativos)
+14. [💡 Oportunidades de Melhoria](#ad-oportunidades)
+15. [📈 Score Final](#ad-score)
+16. [✅ Conclusão](#ad-conclusao)
+
+> As âncoras correspondem aos IDs gerados automaticamente em cada seção. Não altere as âncoras.
+
+---
+
 ## 📋 Resumo para Esteira
 
 > 🚨 Este bloco é OBRIGATÓRIO e usado para alimentar o Kanban automaticamente. Preencha TODOS os campos sem exceção. O Score Final da conclusão DEVE ser IGUAL ao informado aqui.
