@@ -4,7 +4,7 @@ import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarCh
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
-import { rehypeSectionIds, scrollToAnchor } from "@/lib/markdown"
+import { rehypeSectionIds, scrollToAnchor, injectReportSummary } from "@/lib/markdown"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
 import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
@@ -406,7 +406,7 @@ export const ProductDetailPage = () => {
                       rehypePlugins={[rehypeSectionIds]}
                       components={markdownComponents}
                     >
-                      {product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, "")}
+                      {injectReportSummary(product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, ""))}
                     </ReactMarkdown>
                   </div>
                 </>
@@ -444,7 +444,7 @@ export const ProductDetailPage = () => {
                     rehypePlugins={[rehypeSectionIds]}
                     components={markdownComponents}
                   >
-                    {product.marketReport}
+                    {injectReportSummary(product.marketReport)}
                   </ReactMarkdown>
                 </div>
               </>

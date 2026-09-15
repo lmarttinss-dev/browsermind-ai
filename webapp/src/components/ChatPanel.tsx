@@ -7,7 +7,7 @@ import { Send, Play, Loader2, ChevronDown, Settings, Trash2, Download, Link2, Ch
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
-import { rehypeSectionIds, scrollToAnchor } from "@/lib/markdown";
+import { rehypeSectionIds, scrollToAnchor, injectReportSummary } from "@/lib/markdown";
 
 const MARKET_TEMPLATE_ID = "analise-oferta-demanda-concorrencia"
 
@@ -439,7 +439,7 @@ export function ChatPanel() {
                 rehypePlugins={[rehypeSectionIds]}
                 components={markdownComponents}
               >
-                {response}
+                {injectReportSummary(response)}
               </ReactMarkdown>
             </div>
           </div>

@@ -72,6 +72,63 @@ function collectText(node: any): string {
 }
 
 /**
+ * Reconstrói o Sumário do relatório a partir dos títulos de seção realmente
+ * presentes no markdown, substituindo qualquer Sumário gerado pela IA (que pode
+ * vir truncado ou malformado). Retorna o markdown original se nenhuma seção
+ * conhecida for encontrada.
+ */
+export function injectReportSummary(markdown: string): string {
+  if (!markdown) return markdown
+
+  const lines = markdown.split("\n")
+  const cleaned: string[] = []
+  let i = 0
+
+  // 1) Remove o Sumário existente (gerado pela IA)
+  while (i < lines.length) {
+    if (/^#{2}\s*📑?\s*Sum[áa]rio\b/i.test(lines[i])) {
+      i++ // pula o título "## 📑 Sumário"
+      // pula os itens de lista e linhas em branco que fazem parte do Sumário
+      while (i < lines.length && (/^\s*(\d+\.|-|\*)\s+/.test(lines[i]) || lines[i].trim() === "")) {
+        i++
+      }
+      // pula um separador "---" logo após a lista, se houver
+      if (i < lines.length && /^-{3,}\s*$/.test(lines[i])) i++
+      while (i < lines.length && lines[i].trim() === "") i++
+      continue
+    }
+    cleaned.push(lines[i])
+    i++
+  }
+
+  // 2) Identifica as seções (h2/h3) que casam com as âncoras conhecidas
+  const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
+  const sections: Array<{ index: number; id: string; title: string }> = []
+  cleaned.forEach((line, idx) => {
+    const m = /^(#{2,3})\s+(.+)$/.exec(line)
+    if (!m) return
+    const title = m[2].trim()
+    const normalized = normalizeHeading(title)
+    for (const anchor of anchors) {
+      if (anchor.match.test(normalized)) {
+        sections.push({ index: idx, id: anchor.id, title })
+        break
+      }
+    }
+  })
+
+  if (sections.length === 0) return markdown
+
+  // 3) Constrói o novo Sumário com links de âncora
+  const items = sections.map((s, n) => `${n + 1}. [${s.title}](#${s.id})`)
+  const summary = ["## 📑 Sumário", "", ...items, "", "---", ""]
+
+  // 4) Insere o Sumário antes da primeira seção
+  const insertAt = sections[0].index
+  return [...cleaned.slice(0, insertAt), ...summary, ...cleaned.slice(insertAt)].join("\n")
+}
+
+/**
  * Plugin rehype que adiciona ids de âncora (secao-N / ad-*) aos títulos
  * das seções dos relatórios de mercado e de análise de anúncio.
  * Permite que o Sumário use links de âncora que rolam até a seção.

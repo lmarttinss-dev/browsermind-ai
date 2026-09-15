@@ -658,12 +658,12 @@ Sua resposta DEVE começar exatamente assim:
 
 ## Estrutura geral
 
-- Logo após o cabeçalho, inclua a seção \`## 📑 Sumário\` com uma lista numerada de 1 a 17 em que cada item é um link de âncora \`[Título](#secao-N)\` apontando para a seção correspondente, na ordem exata
+- NÃO inclua Sumário/índice no relatório — o sistema adiciona automaticamente um Sumário com links de âncora antes da primeira seção
 - Em seguida, a seção \`## 📊 Métricas da Categoria (AvantPro)\` com a tabela completa de métricas — NUNCA pule esta seção
 - Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 🚚 Análise de Frete da Categoria\` usando os dados extraídos do DOM na seção "Frete dos anúncios" (contagem de cards com frete grátis vs frete pago), mostrando a quantidade e o percentual de anúncios que oferecem frete grátis vs frete pago e o valor cobrado do frete, com tabela, gráfico Mermaid e análise — incluindo o diagnóstico do elemento de frete \`poly-component__shipping-v2\` (pill "Frete grátis", selo "Enviado pelo FULL" e prazo "rápido amanhã")
-- Use emojis nos cabeçalhos: 📑 Sumário, 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
+- Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
 - Use > para alertas e insights
@@ -1488,14 +1488,6 @@ O relatório DEVE começar exatamente com este formato:
 
 ---
 
-## 📑 Sumário
-1. [📊 Métricas da Categoria (AvantPro)](#secao-1)
-2. [📦 Perfil Logístico da Categoria](#secao-2)
-...
-17. [📋 Conclusão Executiva](#secao-17)
-
----
-
 ## 📊 Métricas da Categoria (AvantPro)
 [Aqui vai a tabela de métricas — SEMPRE em formato de tabela Markdown de 2 colunas: Métrica | Valor]
 \`\`\`
@@ -1510,35 +1502,9 @@ O relatório DEVE começar exatamente com este formato:
 
 ## Seções Obrigatórias (na ordem)
 
-### 📑 Sumário
-
-> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser a primeira logo após o cabeçalho, ANTES de qualquer outra seção.
-
-Lista numerada de 1 a 17 em que CADA item é um link de âncora \`[Título](#secao-N)\` (N = posição da seção), na ordem exata:
-
-1. [📊 Métricas da Categoria (AvantPro)](#secao-1)
-2. [📦 Perfil Logístico da Categoria](#secao-2)
-3. [📊 Perfil de Conta e Catálogo](#secao-3)
-4. [🚚 Análise de Frete da Categoria](#secao-4)
-5. [🧭 Tarefa 1 — Análise da Demanda](#secao-5)
-6. [🛡️ Tarefa 2 — Análise da Concorrência](#secao-6)
-7. [📊 Tarefa 3 — Análise de Concentração de Mercado](#secao-7)
-8. [🚪 Tarefa 4 — Oportunidade de Entrada](#secao-8)
-9. [💰 Tarefa 5 — Potencial de Lucro](#secao-9)
-10. [🎯 Tarefa 6 — Score de Oportunidade](#secao-10)
-11. [🧭 Tarefa 7 — Estratégia Recomendada](#secao-11)
-12. [📅 Tarefa 8 — Plano de Ataque de 30 Dias](#secao-12)
-13. [🔍 Estratégia de SEO](#secao-13)
-14. [🎨 Estratégia de Imagens](#secao-14)
-15. [💲 Estratégia de Precificação](#secao-15)
-16. [💲 Sugestão de Precificação para Venda](#secao-16)
-17. [📋 Conclusão Executiva](#secao-17)
-
-> Use EXATAMENTE esses títulos, emojis e âncoras \`#secao-N\`, na mesma ordem. O Sumário em si NÃO é numerado. As âncoras devem corresponder aos IDs gerados automaticamente em cada seção.
-
 ### 📊 Métricas da Categoria (AvantPro)
 
-> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o Sumário, ANTES da Tarefa 1.
+> ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o cabeçalho, ANTES da Tarefa 1.
 
 Reproduza a tabela completa de métricas do AvantPro fornecida nos "Dados Coletados". Formato: tabela Markdown de 2 colunas (Métrica | Valor), com **negrito** nos valores numéricos. NÃO omita esta seção — ela é a base de toda a análise.
 
@@ -1893,56 +1859,6 @@ Preencha OBRIGATORIAMENTE:
 - **Tipo identificado:** 📚 PRODUTO DE CATÁLOGO ou 📦 ANÚNCIO INDEPENDENTE
 - **Data da análise:** (use a data atual no formato "DD de Mês de AAAA")
 - **Evidências:** (como foi identificado — cite elementos visíveis na página)
-
----
-
-## 📑 Sumário
-
-> Inclua OBRIGATORIAMENTE este Sumário logo após a Identificação, ANTES do "Resumo para Esteira". Cada item DEVE ser um link de âncora \`[Título](#ad-...)\`. Use APENAS a lista correspondente ao tipo identificado.
-
-**Se for 📚 PRODUTO DE CATÁLOGO:**
-
-1. [📋 Resumo para Esteira](#ad-resumo-esteira)
-2. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)
-3. [📚 Visão Geral do Catálogo](#ad-visao-geral)
-4. [📦 Características do Produto](#ad-caracteristicas)
-5. [📝 Descrição do Catálogo](#ad-descricao-catalogo)
-6. [📊 Métricas do Catálogo](#ad-metricas-catalogo)
-7. [🔎 Diagnóstico Rápido](#ad-diagnostico)
-8. [🏆 Posicionamento no Catálogo](#ad-posicionamento)
-9. [💰 Análise de Precificação](#ad-precificacao)
-10. [🚚 Comparativo de Logística](#ad-logistica)
-11. [⭐ Comparativo de Reputação](#ad-reputacao)
-12. [💬 Perguntas e Respostas](#ad-perguntas)
-13. [⭐ Opiniões do Produto](#ad-opinioes)
-14. [🎯 Insights para Diferenciação](#ad-insights)
-15. [📊 Market Share Estimado](#ad-market-share)
-16. [🎯 Estratégia para Vencer a Buy Box](#ad-buybox)
-17. [🚨 Pontos Negativos e Riscos](#ad-pontos-negativos)
-18. [💡 Oportunidades de Melhoria](#ad-oportunidades)
-19. [📈 Score Final](#ad-score)
-20. [✅ Conclusão](#ad-conclusao)
-
-**Se for 📦 ANÚNCIO INDEPENDENTE:**
-
-1. [📋 Resumo para Esteira](#ad-resumo-esteira)
-2. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)
-3. [📋 Resumo do Diagnóstico](#ad-resumo-diagnostico)
-4. [📦 Dados do Anúncio](#ad-dados-anuncio)
-5. [📦 Características do Produto](#ad-caracteristicas)
-6. [📊 Métricas do AvantPro](#ad-metricas-avantpro)
-7. [📝 Descrição do Anúncio](#ad-descricao-anuncio)
-8. [💰 Análise Financeira](#ad-financeira)
-9. [🏥 Saúde do Anúncio](#ad-saude)
-10. [💬 Perguntas e Respostas](#ad-perguntas)
-11. [⭐ Opiniões do Produto](#ad-opinioes)
-12. [🎯 Insights para Diferenciação](#ad-insights)
-13. [🚨 Pontos Negativos e Riscos](#ad-pontos-negativos)
-14. [💡 Oportunidades de Melhoria](#ad-oportunidades)
-15. [📈 Score Final](#ad-score)
-16. [✅ Conclusão](#ad-conclusao)
-
-> As âncoras correspondem aos IDs gerados automaticamente em cada seção. Não altere as âncoras.
 
 ---
 
