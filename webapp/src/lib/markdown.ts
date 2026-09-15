@@ -15,9 +15,9 @@ function normalizeHeading(text: string): string {
 // A ordem reflete a sequência exata definida no template analise-oferta-demanda-concorrencia.
 const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
   { id: "secao-1", match: /metricas da categoria/ },
-  { id: "secao-2", match: /perfil logistico/ },
+  { id: "secao-2", match: /perfil logistico da categoria/ },
   { id: "secao-3", match: /perfil de conta e catalogo/ },
-  { id: "secao-4", match: /analise de frete/ },
+  { id: "secao-4", match: /analise de frete da categoria/ },
   { id: "secao-5", match: /\btarefa 1\b/ },
   { id: "secao-6", match: /\btarefa 2\b/ },
   { id: "secao-7", match: /\btarefa 3\b/ },
