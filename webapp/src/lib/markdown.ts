@@ -78,6 +78,9 @@ function collectText(node: any): string {
  */
 export function rehypeSectionIds() {
   return (tree: any) => {
+    let hasMetricasHeading = false
+    let isMarketReport = false
+
     const walk = (node: any) => {
       if (node && node.type === "element" && /^h[1-6]$/.test(node.tagName || "")) {
         const normalized = normalizeHeading(collectText(node))
@@ -85,6 +88,8 @@ export function rehypeSectionIds() {
           if (anchor.match.test(normalized)) {
             node.properties = node.properties || {}
             node.properties.id = anchor.id
+            if (anchor.id === "secao-1") hasMetricasHeading = true
+            if (anchor.id.startsWith("secao-")) isMarketReport = true
             break
           }
         }
@@ -94,6 +99,31 @@ export function rehypeSectionIds() {
       }
     }
     walk(tree)
+
+    // Fallback: relatório de mercado gerado sem o título "Métricas da Categoria"
+    // (a IA às vezes coloca a tabela de métricas direto após o Sumário).
+    // Nesse caso, ancora o #secao-1 na primeira tabela logo após o Sumário.
+    if (isMarketReport && !hasMetricasHeading) {
+      let passedSumario = false
+      let assigned = false
+      const walkTables = (node: any) => {
+        if (assigned) return
+        if (node && node.type === "element") {
+          if (node.tagName === "h2" && /sumario/.test(normalizeHeading(collectText(node)))) {
+            passedSumario = true
+          } else if (passedSumario && node.tagName === "table") {
+            node.properties = node.properties || {}
+            node.properties.id = "secao-1"
+            assigned = true
+            return
+          }
+        }
+        if (node && Array.isArray(node.children)) {
+          for (const child of node.children) walkTables(child)
+        }
+      }
+      walkTables(tree)
+    }
   }
 }
 
