@@ -509,7 +509,29 @@ export class PlaywrightManager {
             return "";
           })();
 
-          if (mlPrice) blocks.add("Preço do anúncio: " + mlPrice);
+          // Fallback: usa o preço vindo dos dados do AvantPro (blocos já coletados)
+          // quando o elemento de preço do Mercado Livre não estiver disponível.
+          // Usa apenas regex sem escapes para evitar problemas de escaping no script.
+          const avantproPrice = (() => {
+            const labels = ["preço de venda", "preço atual", "preço"]
+            for (const block of blocks) {
+              const lower = block.toLowerCase()
+              for (const label of labels) {
+                const idx = lower.indexOf(label)
+                if (idx === -1) continue
+                const rest = block.slice(idx + label.length)
+                const colonIdx = rest.indexOf(":")
+                if (colonIdx === -1 || colonIdx > 8) continue
+                const value = rest.slice(colonIdx + 1).trim()
+                const num = value.match(/[0-9][0-9.,]*/)
+                if (num) return num[0]
+              }
+            }
+            return ""
+          })()
+
+          const finalPrice = mlPrice || avantproPrice
+          if (finalPrice) blocks.add("Preço do anúncio: " + finalPrice)
 
           return Array.from(blocks).join("\\n").slice(0, 8000);
         })();

@@ -100,3 +100,57 @@ describe("extractPageContent - extração de métricas AvantPro", () => {
     expect(content.visibleText).toContain("Ritmo atual: 223/mês")
   })
 })
+
+describe("extractPageContent - fallback de preço do AvantPro", () => {
+  let server: http.Server
+  let port: number
+  let manager: PlaywrightManager
+
+  // Página de produto ML SEM o elemento de preço padrão (meta itemprop=price),
+  // mas COM o preço exposto nos dados do AvantPro.
+  function createServerWithoutMlPrice(): http.Server {
+    return http.createServer((_req, res) => {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
+      res.end(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Produto Teste - Mercado Livre</title></head>
+        <body>
+          <h1>Produto Teste MLB888888</h1>
+          <p>Descrição do produto</p>
+
+          <div class="avantpro-panel">
+            <span>Preço: R$ 59,20</span>
+            <span>Score: 8.3/10</span>
+          </div>
+        </body>
+        </html>
+      `)
+    })
+  }
+
+  beforeAll(async () => {
+    server = createServerWithoutMlPrice()
+    await new Promise<void>((resolve) => {
+      server.listen(0, () => {
+        const addr = server.address()
+        port = typeof addr === "object" && addr ? addr.port : 0
+        resolve()
+      })
+    })
+
+    manager = new PlaywrightManager()
+    await manager.launch(true)
+    await manager.navigate(`http://localhost:${port}/produto-teste/p/MLB888888`)
+  })
+
+  afterAll(async () => {
+    await manager.close()
+    await new Promise<void>((resolve) => server.close(() => resolve()))
+  })
+
+  it("deve usar o preço do AvantPro como fallback quando não há preço do ML", async () => {
+    const content = await manager.extractPageContent()
+    expect(content.avantproMetrics).toContain("Preço do anúncio: 59,20")
+  })
+})
