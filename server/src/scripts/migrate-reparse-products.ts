@@ -1,5 +1,6 @@
-// Migração one-time: re-parseia os campos (price, monthlySales, score) de produtos
-// cujo analysisReport foi gerado antes da correção do parsing de "Preço de venda".
+// Migração one-time: re-parseia os campos (title, price, monthlySales, score) de
+// produtos cujo analysisReport foi gerado antes das correções de parsing
+// ("Preço de venda" e título do DOM).
 // Executar: cd server && npx tsx src/scripts/migrate-reparse-products.ts
 import dotenv from "dotenv"
 import path from "path"
@@ -43,6 +44,21 @@ function parseMetrics(analysisReport: string) {
   }
 }
 
+function parseTitle(analysisReport: string): string {
+  const report = analysisReport.replace(/\*\*/g, "")
+
+  // Campo em lista: "- Nome: X" / "- Produto: X" — ancorado no início da linha
+  // e sem atravessar quebras de linha (evita casar com "no produto: ...").
+  const listMatch = report.match(/^[ \t]*[-*]?[ \t]*(?:Nome|Produto\/Nicho|Título|Produto)[ \t]*:[ \t]*(.+?)[ \t]*$/im)
+  if (listMatch?.[1]?.trim()) return listMatch[1].trim().slice(0, 200)
+
+  // Campo em tabela: "| Nome | X |" (Resumo para Esteira do relatório de catálogo)
+  const tableMatch = report.match(/^[ \t]*\|[ \t]*(?:Nome|Produto|Título)[ \t]*\|[ \t]*([^|]+?)[ \t]*\|/im)
+  if (tableMatch?.[1]?.trim()) return tableMatch[1].trim().slice(0, 200)
+
+  return ""
+}
+
 async function migrate() {
   await mongoose.connect(MONGODB_URI)
   console.log("✅ Conectado:", MONGODB_URI)
@@ -52,7 +68,20 @@ async function migrate() {
 
   for (const product of products) {
     const parsed = parseMetrics(product.analysisReport || "")
-    const updates: Record<string, number> = {}
+    const parsedTitle = parseTitle(product.analysisReport || "")
+    const updates: Record<string, string | number> = {}
+
+    // 1) Corrige título que veio do document.title (ex: "(4) ... | MercadoLivre")
+    let newTitle = product.title
+    if (parsedTitle && /Mercado\s*Livre/i.test(product.title)) {
+      newTitle = parsedTitle
+    }
+    // 2) Remove markdown (asteriscos) residual do título
+    const cleanTitle = newTitle.replace(/\*+/g, "").trim()
+    if (cleanTitle && cleanTitle !== product.title) {
+      newTitle = cleanTitle
+    }
+    if (newTitle !== product.title) updates.title = newTitle
 
     // Só sobrescreve quando o parse encontra um valor diferente do atual
     if (parsed.price !== 0 && parsed.price !== product.price) updates.price = parsed.price

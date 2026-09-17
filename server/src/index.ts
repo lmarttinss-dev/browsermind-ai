@@ -635,7 +635,11 @@ app.post("/api/analyze", async (req, res) => {
         const urlMatch = content.match(/^URL:\s*(.+)/m)
         const pageTitleMatch = content.match(/^Title:\s*(.+)/m)
 
-        const productTitle = titleMatch?.[1]?.trim() || pageTitleMatch?.[1]?.trim() || "Produto analisado"
+        // Prioriza o título do DOM (h1.ui-pdp-title, já limpo na extração) sobre
+        // o campo extraído do relatório gerado pela IA. Remove markdown residual.
+        const productTitle = (pageTitleMatch?.[1]?.trim() || titleMatch?.[1]?.trim() || "Produto analisado")
+          .replace(/\*+/g, "")
+          .trim()
         const productUrl = urlMatch?.[1]?.trim().replace(/`/g, "").trim() || ""
 
         if (productUrl) {

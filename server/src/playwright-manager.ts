@@ -640,7 +640,14 @@ export class PlaywrightManager {
 
         return {
           url: window.location.href,
-          title: document.title,
+          // Título do anúncio: prioriza o h1.ui-pdp-title do DOM (título limpo)
+          // e usa document.title apenas como fallback (que traz ruído como "(4) ... | MercadoLivre").
+          title: (() => {
+            const h1 = document.querySelector(".ui-pdp-header__title-container h1.ui-pdp-title")
+              || document.querySelector("h1.ui-pdp-title")
+            const text = h1 ? (h1.textContent || "").trim() : ""
+            return text || document.title
+          })(),
           visibleText: visibleText.slice(0, 120000),
           avantproMetrics,
           headings: headings.slice(0, 50),
