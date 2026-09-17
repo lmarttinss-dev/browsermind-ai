@@ -17,7 +17,12 @@ function createTestServer(): http.Server {
         <h1>Produto Teste MLB123456</h1>
         <p>Descrição do produto</p>
 
-        <div class="andes-money-amount__fraction">1.299</div>
+        <span class="andes-money-amount ui-pdp-price__part andes-money-amount--cents-superscript" itemprop="offers" itemscope itemtype="http://schema.org/Offer" role="img" aria-label="59 reais com 20 centavos" aria-roledescription="Valor">
+          <meta itemprop="price" content="59.20">
+          <span class="andes-money-amount__fraction" aria-hidden="true">59</span>
+          <span class="andes-visually-hidden" aria-hidden="true">,</span>
+          <span class="andes-money-amount__cents" aria-hidden="true">20</span>
+        </span>
 
         <div class="avantpro-panel" id="avantpro-metrics">
           <div class="avantpro-data">
@@ -83,9 +88,11 @@ describe("extractPageContent - extração de métricas AvantPro", () => {
     expect(content.avantproMetrics).toContain("Estoque: 150")
   })
 
-  it("deve incluir o preço do ML como fallback em avantproMetrics", async () => {
+  it("deve extrair o preço do ML do meta itemprop=price com centavos", async () => {
     const content = await manager.extractPageContent()
-    expect(content.avantproMetrics).toContain("Preço do anúncio: 1.299")
+    expect(content.avantproMetrics).toContain("Preço do anúncio: 59.20")
+    // Não deve pegar apenas a fração (59), tem que incluir os centavos
+    expect(content.avantproMetrics).not.toContain("Preço do anúncio: 59\n")
   })
 
   it("deve incluir texto de shadow DOM no visibleText", async () => {

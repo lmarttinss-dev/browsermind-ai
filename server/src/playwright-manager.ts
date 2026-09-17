@@ -477,21 +477,39 @@ export class PlaywrightManager {
           };
           collect(document);
 
-          // Fallback: preço do anúncio do Mercado Livre (elementos padrão da página)
-          // caso a extensão não exponha a métrica de preço diretamente.
-          const mlPriceSelectors = [
-            ".andes-money-amount__fraction",
-            "[itemprop='price']",
-            ".ui-pdp-price__second-line .andes-money-amount__fraction",
-            ".ui-pdp-price",
-          ];
-          for (const sel of mlPriceSelectors) {
-            const el = document.querySelector(sel);
-            if (el) {
-              const priceText = (el.textContent || "").trim();
-              if (priceText) { blocks.add("Preço do anúncio: " + priceText); break; }
+          // Preço do anúncio no Mercado Livre: extrai SEMPRE do elemento de preço
+          // da página (itemprop="offers"), priorizando o meta itemprop="price"
+          // que contém o valor numérico exato (ex: content="59.20").
+          const mlPrice = (() => {
+            // 1) <meta itemprop="price" content="59.20"> — valor exato, com centavos
+            const meta = document.querySelector('meta[itemprop="price"]');
+            if (meta) {
+              const content = (meta.getAttribute("content") || "").trim();
+              if (content) return content;
             }
-          }
+
+            // 2) Elemento itemprop="offers": junta fração (59) + centavos (20)
+            const offer = document.querySelector('[itemprop="offers"]');
+            if (offer) {
+              const fraction = offer.querySelector(".andes-money-amount__fraction");
+              const cents = offer.querySelector(".andes-money-amount__cents");
+              const frac = fraction ? (fraction.textContent || "").trim() : "";
+              const centsText = cents ? (cents.textContent || "").trim() : "";
+              if (frac) return centsText ? frac + "." + centsText : frac;
+              const text = (offer.textContent || "").replace(/\\s+/g, " ").trim();
+              if (text) return text;
+            }
+
+            // 3) Fallback genérico (seletores padrão de preço do ML)
+            for (const sel of [".ui-pdp-price .andes-money-amount__fraction", ".andes-money-amount__fraction", ".ui-pdp-price"]) {
+              const el = document.querySelector(sel);
+              const t = el ? (el.textContent || "").trim() : "";
+              if (t) return t;
+            }
+            return "";
+          })();
+
+          if (mlPrice) blocks.add("Preço do anúncio: " + mlPrice);
 
           return Array.from(blocks).join("\\n").slice(0, 8000);
         })();
