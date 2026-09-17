@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { injectReportSummary } from "@/lib/markdown"
+import { injectReportSummary, normalizeReportHeadings } from "@/lib/markdown"
 
 const buildMarketReport = () => `# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
 **Categoria:** Teste
@@ -116,5 +116,52 @@ Conteúdo.
     expect(result).toContain("## 📑 Sumário")
     expect(result).toContain(`[📊 Métricas da Categoria (AvantPro)](#secao-1)`)
     expect(result).toContain(`#secao-5`)
+  })
+})
+
+describe("normalizeReportHeadings", () => {
+  it("deve normalizar seções principais para nível h2", () => {
+    const result = normalizeReportHeadings(`# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre
+
+# 🧭 Tarefa 1 — Análise da Demanda
+
+# 📋 Conclusão Executiva
+`)
+
+    expect(result).toContain("## 🧭 Tarefa 1 — Análise da Demanda")
+    expect(result).toContain("## 📋 Conclusão Executiva")
+    // Título do relatório permanece h1
+    expect(result).toContain("# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre")
+  })
+
+  it("deve manter subseções (Perfil Logístico/Conta/Frete) no nível h3", () => {
+    const result = normalizeReportHeadings(`## 📊 Métricas da Categoria (AvantPro)
+
+### 📦 Perfil Logístico da Categoria
+
+### 🚚 Análise de Frete da Categoria
+`)
+
+    expect(result).toContain("## 📊 Métricas da Categoria (AvantPro)")
+    expect(result).toContain("### 📦 Perfil Logístico da Categoria")
+    expect(result).toContain("### 🚚 Análise de Frete da Categoria")
+  })
+
+  it("deve normalizar headings de nível variado para o nível canônico", () => {
+    const result = normalizeReportHeadings(`# Tarefa 2 — Análise da Concorrência
+
+### Estratégia de SEO
+`)
+
+    expect(result).toContain("## Tarefa 2 — Análise da Concorrência")
+    expect(result).toContain("## Estratégia de SEO")
+  })
+
+  it("não deve alterar títulos que não são seções conhecidas", () => {
+    const markdown = `#### 📊 Gráfico do Perfil Logístico
+
+##### Crescimento Acelerado
+`
+    expect(normalizeReportHeadings(markdown)).toBe(markdown)
   })
 })

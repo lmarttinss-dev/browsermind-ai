@@ -72,6 +72,44 @@ function collectText(node: any): string {
 }
 
 /**
+ * Nível canônico (1-6) de cada seção conhecida.
+ * No relatório de mercado, Perfil Logístico, Perfil de Conta e Catálogo e
+ * Análise de Frete são subseções de "Métricas da Categoria" (nível 3).
+ * Todas as demais seções (Tarefas, SEO, Imagens, Precificação, Conclusão) são
+ * nível 2. Seções do relatório de anúncio também são nível 2.
+ */
+function canonicalHeadingLevel(anchorId: string): number {
+  if (anchorId.startsWith("ad-")) return 2
+  if (anchorId === "secao-2" || anchorId === "secao-3" || anchorId === "secao-4") return 3
+  return 2
+}
+
+/**
+ * Reescreve os níveis de título das seções conhecidas para a hierarquia
+ * canônica, eliminando a oscilação entre execuções (a IA varia entre #, ## e ###).
+ * Títulos que não casam com nenhuma seção conhecida permanecem inalterados.
+ */
+export function normalizeReportHeadings(markdown: string): string {
+  if (!markdown) return markdown
+  const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
+  return markdown
+    .split("\n")
+    .map((line) => {
+      const m = /^(#{1,6})\s+(.+)$/.exec(line)
+      if (!m) return line
+      const title = m[2].trim()
+      const normalized = normalizeHeading(title)
+      for (const anchor of anchors) {
+        if (anchor.match.test(normalized)) {
+          return `${"#".repeat(canonicalHeadingLevel(anchor.id))} ${title}`
+        }
+      }
+      return line
+    })
+    .join("\n")
+}
+
+/**
  * Reconstrói o Sumário do relatório a partir dos títulos de seção realmente
  * presentes no markdown, substituindo qualquer Sumário gerado pela IA (que pode
  * vir truncado ou malformado). Retorna o markdown original se nenhuma seção
@@ -80,7 +118,10 @@ function collectText(node: any): string {
 export function injectReportSummary(markdown: string): string {
   if (!markdown) return markdown
 
-  const lines = markdown.split("\n")
+  // Normaliza os níveis de título das seções conhecidas para a hierarquia canônica
+  const normalized = normalizeReportHeadings(markdown)
+
+  const lines = normalized.split("\n")
   const cleaned: string[] = []
   let i = 0
 
@@ -145,6 +186,8 @@ export function rehypeSectionIds() {
           if (anchor.match.test(normalized)) {
             node.properties = node.properties || {}
             node.properties.id = anchor.id
+            // Força o nível canônico do título, independentemente do que a IA gerou
+            node.tagName = `h${canonicalHeadingLevel(anchor.id)}`
             if (anchor.id === "secao-1") hasMetricasHeading = true
             if (anchor.id.startsWith("secao-")) isMarketReport = true
             break
