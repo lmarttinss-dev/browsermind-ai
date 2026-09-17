@@ -616,15 +616,19 @@ app.post("/api/analyze", async (req, res) => {
     let pipelineProductId = null;
     try {
       if ((templateId === "importacao-simplificada" || templateId === "analise-anuncio-independente") && content) {
-        const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
-        const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
-        const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
-        const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:]*:\s*([\d.,]+)/im)
-        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
-        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
-        const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
+        // Normaliza o relatório para parsing: remove marcadores de negrito Markdown (**)
+        // para que as regexes casem com os rótulos independentemente de formatação.
+        const reportText = aiResponse.replace(/\*\*/g, "")
+
+        const titleMatch = reportText.match(/(?:Nome|Produto\/Nicho|Título|Produto)\s*:\s*(.+)/im)
+        const priceMatch = reportText.match(/preço(?:\s+(?:atual|de\s+venda(?:\s+atual)?))?\s*:\s*R?\$?\s*([\d.,]+)/im)
+        const scoreMatch = reportText.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
+        const salesMatch = reportText.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:\n]*:\s*([\d.,]+)/im)
+        const competitionMatch = reportText.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+        const marginMatch = reportText.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
+        const categoryMatch = reportText.match(/Categoria\s*:\s*(.+)/im)
         const categoryRaw = categoryMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 100) || ""
-        const recentDemandMatch = aiResponse.match(/Demanda\s*recente\s*:\s*(.+)/im)
+        const recentDemandMatch = reportText.match(/Demanda\s*recente\s*:\s*(.+)/im)
         const recentDemand = recentDemandMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 60) || ""
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 

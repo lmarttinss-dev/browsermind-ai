@@ -29,13 +29,13 @@ export function extractProductSlugFromResponse(response: string): string | null 
 export function parseReportMetrics(analysisReport: string) {
   const report = analysisReport.replace(/\*\*/g, "")
   const price = parseFloat(
-    report.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)?.[1]?.replace(/\./g, "").replace(",", ".") || "0"
+    report.match(/preço(?:\s+(?:atual|de\s+venda(?:\s+atual)?))?\s*:\s*R?\$?\s*([\d.,]+)/im)?.[1]?.replace(/\./g, "").replace(",", ".") || "0"
   )
   const score = parseFloat(
     report.match(/(?:Score\s*Final|Demanda)\s*:\s*(\d+(?:[.,]\d+)?)/im)?.[1]?.replace(",", ".") || "0"
   )
   const monthlySales = parseInt(
-    report.match(/Vendas\s*mensais[^:]*:\s*([\d.,]+)/im)?.[1]?.replace(/\./g, "") || "0"
+    report.match(/Vendas\s*mensais[^:\n]*:\s*([\d.,]+)/im)?.[1]?.replace(/\./g, "") || "0"
   )
   const potentialMargin = report.match(/(?:Margem|Potencial\s*de\s*margem)\s*:\s*(.+)/im)?.[1]?.trim() || ""
   return { price, score, monthlySales, potentialMargin }

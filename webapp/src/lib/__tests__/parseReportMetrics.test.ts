@@ -28,6 +28,16 @@ describe("parseReportMetrics", () => {
       expect(parseReportMetrics(report).price).toBe(2499)
     })
 
+    it("deve extrair preço de 'Preço de venda'", () => {
+      const report = "- **Preço de venda:** R$ 59,20"
+      expect(parseReportMetrics(report).price).toBe(59.2)
+    })
+
+    it("deve extrair preço de 'Preço de venda' sem bold", () => {
+      const report = "- Preço de venda: R$ 59,20"
+      expect(parseReportMetrics(report).price).toBe(59.2)
+    })
+
     it("deve retornar 0 se não encontrar preço", () => {
       const report = "Nenhuma informação de preço aqui"
       expect(parseReportMetrics(report).price).toBe(0)
@@ -80,6 +90,13 @@ describe("parseReportMetrics", () => {
     it("deve extrair vendas mensais com milhar grande: 12.500", () => {
       const report = "- Vendas mensais: 12.500"
       expect(parseReportMetrics(report).monthlySales).toBe(12500)
+    })
+
+    it("não deve se confundir com tabela 'Vendas mensais' sem dois-pontos", () => {
+      const report = `| **Vendas mensais** | 80 |
+
+- **Vendas mensais:** 80/mês`
+      expect(parseReportMetrics(report).monthlySales).toBe(80)
     })
 
     it("deve retornar 0 se não encontrar vendas", () => {

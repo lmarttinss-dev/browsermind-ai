@@ -103,13 +103,13 @@ describe("Auto-inserção: parsing de dados do produto", () => {
   })
 
   it("deve extrair o preço", () => {
-    const priceMatch = sampleResponse.match(/(?:Preço|preço\s*atual)[:\s]*R?\$?\s*([\d.,]+)/i)
+    const priceMatch = sampleResponse.match(/preço(?:\s+(?:atual|de\s+venda(?:\s+atual)?))?\s*:\s*R?\$?\s*([\d.,]+)/i)
     const price = parseFloat(priceMatch?.[1]?.replace(".", "").replace(",", ".") || "0")
     expect(price).toBe(29.9)
   })
 
   it("deve extrair vendas mensais", () => {
-    const salesMatch = sampleResponse.match(/Vendas\s*mensais[^:]*:\s*([\d.,]+)/im)
+    const salesMatch = sampleResponse.match(/Vendas\s*mensais[^:\n]*:\s*([\d.,]+)/im)
     const sales = parseInt(salesMatch?.[1]?.replace(/\./g, "") || "0")
     expect(sales).toBe(1200)
   })
@@ -131,7 +131,9 @@ describe("Auto-inserção: parsing de dados do produto", () => {
 
   describe("Parsing de preço com diferentes formatos", () => {
     const parsePrice = (text: string) => {
-      const match = text.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
+      // Replica o comportamento do server: remove negrito Markdown antes do match
+      const clean = text.replace(/\*\*/g, "")
+      const match = clean.match(/preço(?:\s+(?:atual|de\s+venda(?:\s+atual)?))?\s*:\s*R?\$?\s*([\d.,]+)/im)
       return parseFloat(match?.[1]?.replace(".", "").replace(",", ".") || "0")
     }
 
@@ -145,6 +147,14 @@ describe("Auto-inserção: parsing de dados do produto", () => {
 
     it("deve parsear R$ 49,90 (formato BR)", () => {
       expect(parsePrice("Preço: R$ 49,90")).toBe(49.9)
+    })
+
+    it("deve parsear 'Preço de venda'", () => {
+      expect(parsePrice("Preço de venda: R$ 59,20")).toBe(59.2)
+    })
+
+    it("deve parsear 'Preço de venda' com negrito", () => {
+      expect(parsePrice("**Preço de venda:** R$ 59,20")).toBe(59.2)
     })
 
     it("deve retornar 0 se não encontrar preço", () => {
