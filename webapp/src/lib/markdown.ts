@@ -11,13 +11,13 @@ function normalizeHeading(text: string): string {
     .trim()
 }
 
-// Mapeia as 17 seções obrigatórias do relatório para âncoras estáveis #secao-N.
+// Mapeia as 17 seções obrigatórias do relatório de mercado para âncoras estáveis #secao-N.
 // A ordem reflete a sequência exata definida no template analise-oferta-demanda-concorrencia.
-const SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
+const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
   { id: "secao-1", match: /metricas da categoria/ },
-  { id: "secao-2", match: /perfil logistico/ },
+  { id: "secao-2", match: /perfil logistico da categoria/ },
   { id: "secao-3", match: /perfil de conta e catalogo/ },
-  { id: "secao-4", match: /analise de frete/ },
+  { id: "secao-4", match: /analise de frete da categoria/ },
   { id: "secao-5", match: /\btarefa 1\b/ },
   { id: "secao-6", match: /\btarefa 2\b/ },
   { id: "secao-7", match: /\btarefa 3\b/ },
@@ -33,6 +33,37 @@ const SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
   { id: "secao-17", match: /conclusao executiva/ },
 ]
 
+// Mapeia as seções do relatório de análise de anúncio (catálogo ou independente)
+// para âncoras estáveis #ad-*. Títulos comuns aos dois ramos usam a mesma âncora.
+const AD_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
+  { id: "ad-resumo-esteira", match: /resumo para esteira/ },
+  { id: "ad-demanda-recente", match: /demanda recente/ },
+  { id: "ad-resumo-diagnostico", match: /resumo do diagnostico/ },
+  { id: "ad-dados-anuncio", match: /dados do anuncio/ },
+  { id: "ad-caracteristicas", match: /caracteristicas do produto/ },
+  { id: "ad-metricas-avantpro", match: /metricas do avantpro/ },
+  { id: "ad-descricao-anuncio", match: /descricao do anuncio/ },
+  { id: "ad-financeira", match: /analise financeira/ },
+  { id: "ad-saude", match: /saude do anuncio/ },
+  { id: "ad-visao-geral", match: /visao geral do catalogo/ },
+  { id: "ad-descricao-catalogo", match: /descricao do catalogo/ },
+  { id: "ad-metricas-catalogo", match: /metricas do catalogo/ },
+  { id: "ad-diagnostico", match: /diagnostico rapido/ },
+  { id: "ad-posicionamento", match: /posicionamento no catalogo/ },
+  { id: "ad-precificacao", match: /precificacao no catalogo/ },
+  { id: "ad-logistica", match: /logistica no catalogo/ },
+  { id: "ad-reputacao", match: /comparativo de reputacao/ },
+  { id: "ad-perguntas", match: /perguntas e respostas/ },
+  { id: "ad-opinioes", match: /opinioes do produto/ },
+  { id: "ad-insights", match: /insights para diferenciacao/ },
+  { id: "ad-market-share", match: /market share/ },
+  { id: "ad-buybox", match: /vencer a buy box/ },
+  { id: "ad-pontos-negativos", match: /pontos negativos e riscos/ },
+  { id: "ad-oportunidades", match: /oportunidades de melhoria/ },
+  { id: "ad-score", match: /score final do (catalogo|anuncio)/ },
+  { id: "ad-conclusao", match: /conclusao (e recomendacoes|produto de catalogo)/ },
+]
+
 function collectText(node: any): string {
   if (!node) return ""
   if (node.type === "text") return node.value || ""
@@ -41,18 +72,81 @@ function collectText(node: any): string {
 }
 
 /**
- * Plugin rehype que adiciona id="secao-N" aos títulos das 17 seções do relatório.
- * Permite que o Sumário use links de âncora (#secao-N) que rolam até a seção.
+ * Reconstrói o Sumário do relatório a partir dos títulos de seção realmente
+ * presentes no markdown, substituindo qualquer Sumário gerado pela IA (que pode
+ * vir truncado ou malformado). Retorna o markdown original se nenhuma seção
+ * conhecida for encontrada.
+ */
+export function injectReportSummary(markdown: string): string {
+  if (!markdown) return markdown
+
+  const lines = markdown.split("\n")
+  const cleaned: string[] = []
+  let i = 0
+
+  // 1) Remove o Sumário existente (gerado pela IA)
+  while (i < lines.length) {
+    if (/^#{2}\s*📑?\s*Sum[áa]rio\b/i.test(lines[i])) {
+      i++ // pula o título "## 📑 Sumário"
+      // pula os itens de lista e linhas em branco que fazem parte do Sumário
+      while (i < lines.length && (/^\s*(\d+\.|-|\*)\s+/.test(lines[i]) || lines[i].trim() === "")) {
+        i++
+      }
+      // pula um separador "---" logo após a lista, se houver
+      if (i < lines.length && /^-{3,}\s*$/.test(lines[i])) i++
+      while (i < lines.length && lines[i].trim() === "") i++
+      continue
+    }
+    cleaned.push(lines[i])
+    i++
+  }
+
+  // 2) Identifica as seções (h2/h3) que casam com as âncoras conhecidas
+  const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
+  const sections: Array<{ index: number; id: string; title: string }> = []
+  cleaned.forEach((line, idx) => {
+    const m = /^(#{2,3})\s+(.+)$/.exec(line)
+    if (!m) return
+    const title = m[2].trim()
+    const normalized = normalizeHeading(title)
+    for (const anchor of anchors) {
+      if (anchor.match.test(normalized)) {
+        sections.push({ index: idx, id: anchor.id, title })
+        break
+      }
+    }
+  })
+
+  if (sections.length === 0) return markdown
+
+  // 3) Constrói o novo Sumário com links de âncora
+  const items = sections.map((s, n) => `${n + 1}. [${s.title}](#${s.id})`)
+  const summary = ["## 📑 Sumário", "", ...items, "", "---", ""]
+
+  // 4) Insere o Sumário antes da primeira seção
+  const insertAt = sections[0].index
+  return [...cleaned.slice(0, insertAt), ...summary, ...cleaned.slice(insertAt)].join("\n")
+}
+
+/**
+ * Plugin rehype que adiciona ids de âncora (secao-N / ad-*) aos títulos
+ * das seções dos relatórios de mercado e de análise de anúncio.
+ * Permite que o Sumário use links de âncora que rolam até a seção.
  */
 export function rehypeSectionIds() {
   return (tree: any) => {
+    let hasMetricasHeading = false
+    let isMarketReport = false
+
     const walk = (node: any) => {
       if (node && node.type === "element" && /^h[1-6]$/.test(node.tagName || "")) {
         const normalized = normalizeHeading(collectText(node))
-        for (const anchor of SECTION_ANCHORS) {
+        for (const anchor of [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]) {
           if (anchor.match.test(normalized)) {
             node.properties = node.properties || {}
             node.properties.id = anchor.id
+            if (anchor.id === "secao-1") hasMetricasHeading = true
+            if (anchor.id.startsWith("secao-")) isMarketReport = true
             break
           }
         }
@@ -62,6 +156,31 @@ export function rehypeSectionIds() {
       }
     }
     walk(tree)
+
+    // Fallback: relatório de mercado gerado sem o título "Métricas da Categoria"
+    // (a IA às vezes coloca a tabela de métricas direto após o Sumário).
+    // Nesse caso, ancora o #secao-1 na primeira tabela logo após o Sumário.
+    if (isMarketReport && !hasMetricasHeading) {
+      let passedSumario = false
+      let assigned = false
+      const walkTables = (node: any) => {
+        if (assigned) return
+        if (node && node.type === "element") {
+          if (node.tagName === "h2" && /sumario/.test(normalizeHeading(collectText(node)))) {
+            passedSumario = true
+          } else if (passedSumario && node.tagName === "table") {
+            node.properties = node.properties || {}
+            node.properties.id = "secao-1"
+            assigned = true
+            return
+          }
+        }
+        if (node && Array.isArray(node.children)) {
+          for (const child of node.children) walkTables(child)
+        }
+      }
+      walkTables(tree)
+    }
   }
 }
 
