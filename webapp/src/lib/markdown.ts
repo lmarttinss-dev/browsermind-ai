@@ -101,11 +101,11 @@ export function injectReportSummary(markdown: string): string {
     i++
   }
 
-  // 2) Identifica as seções (h2/h3) que casam com as âncoras conhecidas
+  // 2) Identifica as seções (h1/h2/h3) que casam com as âncoras conhecidas
   const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
   const sections: Array<{ index: number; id: string; title: string }> = []
   cleaned.forEach((line, idx) => {
-    const m = /^(#{2,3})\s+(.+)$/.exec(line)
+    const m = /^(#{1,3})\s+(.+)$/.exec(line)
     if (!m) return
     const title = m[2].trim()
     const normalized = normalizeHeading(title)
