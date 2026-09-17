@@ -334,10 +334,21 @@ export class PlaywrightManager {
       if (/carregando dados avantpro|carregando.*avantpro/i.test(body)) return "loading";
 
       // Verifica se dados do AvantPro estão presentes (métricas típicas)
-      // Busca nos elementos avantpro especificamente
-      const avantEls = document.querySelectorAll("${avantproSelector}");
-      if (avantEls.length > 0) {
-        const avantText = Array.from(avantEls).map(e => e.textContent || "").join(" ");
+      // Busca nos elementos avantpro, incluindo shadow DOM
+      const avantTexts = [];
+      const collectAvantpro = (root) => {
+        try {
+          root.querySelectorAll("${avantproSelector}").forEach((el) => {
+            avantTexts.push(el.textContent || "");
+          });
+          root.querySelectorAll("*").forEach((el) => {
+            if (el.shadowRoot) collectAvantpro(el.shadowRoot);
+          });
+        } catch (e) { /* ignore */ }
+      };
+      collectAvantpro(document);
+      const avantText = avantTexts.join(" ");
+      if (avantText) {
         if (/carregando/i.test(avantText)) return "loading";
         if (/\\d+[.,]\\d+|R\\$|vendas|visitas|faturamento|conversão|estoque|receita|lucro|margem/i.test(avantText)) return "ready";
       }
@@ -380,6 +391,7 @@ export class PlaywrightManager {
     url: string;
     title: string;
     visibleText: string;
+    avantproMetrics: string;
     headings: string[];
     metaTags: Record<string, string>;
     links: { text: string; href: string }[];
@@ -417,6 +429,13 @@ export class PlaywrightManager {
             const t = walkText(child);
             if (t) parts.push(t);
           }
+          // Percorre shadow DOM aberto (extensões costumam injetar UI isolada em shadow roots)
+          if (el.shadowRoot) {
+            for (const child of el.shadowRoot.childNodes) {
+              const t = walkText(child);
+              if (t) parts.push(t);
+            }
+          }
           const joined = parts.join(" ");
           if (["H1","H2","H3","H4","H5","H6","P","LI","TR","DIV","SECTION","ARTICLE"].includes(el.tagName)) {
             return joined + "\\n";
@@ -438,6 +457,44 @@ export class PlaywrightManager {
           const val = tag.getAttribute("content") || "";
           if (key && val) metaTags[key] = val;
         });
+
+        // Métricas do AvantPro: coleta o texto renderizado dos elementos injetados
+        // pela extensão, incluindo shadow DOM. Usa innerText (reflete o texto
+        // realmente exibido, incluindo ::before/::after) com fallback para textContent.
+        const avantproMetrics = (() => {
+          const selector = "[class*=avantpro], [class*=Avantpro], [class*=AvantPro], [id*=avantpro], [id*=Avantpro], [data-avantpro]";
+          const blocks = new Set();
+          const collect = (root) => {
+            try {
+              root.querySelectorAll(selector).forEach((el) => {
+                const text = ((el.innerText || el.textContent) || "").trim();
+                if (text && text.length > 1) blocks.add(text);
+              });
+              root.querySelectorAll("*").forEach((el) => {
+                if (el.shadowRoot) collect(el.shadowRoot);
+              });
+            } catch (e) { /* ignore */ }
+          };
+          collect(document);
+
+          // Fallback: preço do anúncio do Mercado Livre (elementos padrão da página)
+          // caso a extensão não exponha a métrica de preço diretamente.
+          const mlPriceSelectors = [
+            ".andes-money-amount__fraction",
+            "[itemprop='price']",
+            ".ui-pdp-price__second-line .andes-money-amount__fraction",
+            ".ui-pdp-price",
+          ];
+          for (const sel of mlPriceSelectors) {
+            const el = document.querySelector(sel);
+            if (el) {
+              const priceText = (el.textContent || "").trim();
+              if (priceText) { blocks.add("Preço do anúncio: " + priceText); break; }
+            }
+          }
+
+          return Array.from(blocks).join("\\n").slice(0, 8000);
+        })();
 
         // Preço e MOQ extraídos dos elementos de referência do Alibaba:
         // 1) .price-item → <span> (preço) + <div> seguinte (faixa de MOQ)
@@ -545,6 +602,7 @@ export class PlaywrightManager {
           url: window.location.href,
           title: document.title,
           visibleText: visibleText.slice(0, 120000),
+          avantproMetrics,
           headings: headings.slice(0, 50),
           metaTags,
           rangePrice,
@@ -586,6 +644,7 @@ export class PlaywrightManager {
       url: string;
       title: string;
       visibleText: string;
+      avantproMetrics: string;
       headings: string[];
       metaTags: Record<string, string>;
       links: { text: string; href: string }[];

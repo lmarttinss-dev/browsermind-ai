@@ -434,9 +434,17 @@ app.post("/api/analyze", async (req, res) => {
                 ...shipping.samples.map((s, i) => `  ${i + 1}. Frete grátis: ${s.freeShipping ? "Sim" : "Não"} | FULL: ${s.isFull ? "Sim" : "Não"} | Prazo: ${s.promise || "(não informado)"}`),
               ].filter(Boolean).join("\n")
             : "";
+          // Métricas do AvantPro extraídas de forma estruturada do DOM da extensão.
+          // Colocadas no TOPO do conteúdo para que a IA sempre as encontre,
+          // independentemente da posição em que a extensão as injeta na página.
+          const avantproSection = extracted.avantproMetrics
+            ? `\n📊 Dados do AvantPro (extraídos do DOM da extensão — PRIORIZE estas métricas):\n${extracted.avantproMetrics}`
+            : "";
+
           content = [
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
+            avantproSection,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
