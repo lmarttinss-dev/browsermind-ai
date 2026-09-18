@@ -41,32 +41,32 @@ const MARKET_SECTION_ANCHORS: Array<SectionAnchor> = [
 // Mapeia as seções do relatório de análise de anúncio (catálogo ou independente)
 // para âncoras estáveis #ad-*. Títulos comuns aos dois ramos usam a mesma âncora.
 const AD_SECTION_ANCHORS: Array<SectionAnchor> = [
-  { id: "ad-resumo-esteira", match: /resumo para esteira/, label: "📋 Resumo para Esteira" },
-  { id: "ad-demanda-recente", match: /demanda recente/, label: "📈 Demanda Recente (Velocidade de Vendas)" },
-  { id: "ad-resumo-diagnostico", match: /resumo do diagnostico/, label: "📋 Resumo do Diagnóstico" },
-  { id: "ad-dados-anuncio", match: /dados do anuncio/, label: "📦 Dados do Anúncio" },
-  { id: "ad-caracteristicas", match: /caracteristicas do produto/, label: "📦 Características do Produto" },
-  { id: "ad-metricas-avantpro", match: /metricas do avantpro/, label: "📊 Métricas do AvantPro" },
-  { id: "ad-descricao-anuncio", match: /descricao do anuncio/, label: "📝 Descrição do Anúncio" },
-  { id: "ad-financeira", match: /analise financeira/, label: "💰 Análise Financeira" },
-  { id: "ad-saude", match: /saude do anuncio/, label: "🏥 Saúde do Anúncio" },
-  { id: "ad-visao-geral", match: /visao geral do catalogo/, label: "📚 Visão Geral do Catálogo" },
-  { id: "ad-descricao-catalogo", match: /descricao do catalogo/, label: "📝 Descrição do Catálogo" },
-  { id: "ad-metricas-catalogo", match: /metricas do catalogo/, label: "📊 Métricas do Catálogo (AvantPro)" },
-  { id: "ad-diagnostico", match: /diagnostico rapido/, label: "🔎 Diagnóstico Rápido do Catálogo" },
-  { id: "ad-posicionamento", match: /posicionamento no catalogo/, label: "🏆 Posicionamento no Catálogo" },
-  { id: "ad-precificacao", match: /precificacao no catalogo/, label: "💰 Análise de Precificação no Catálogo" },
-  { id: "ad-logistica", match: /logistica no catalogo/, label: "🚚 Comparativo de Logística no Catálogo" },
-  { id: "ad-reputacao", match: /comparativo de reputacao/, label: "⭐ Comparativo de Reputação" },
-  { id: "ad-perguntas", match: /perguntas e respostas/, label: "💬 Perguntas e Respostas" },
-  { id: "ad-opinioes", match: /opinioes do produto/, label: "⭐ Opiniões do Produto" },
-  { id: "ad-insights", match: /insights para diferenciacao/, label: "🎯 Insights para Diferenciação" },
-  { id: "ad-market-share", match: /market share/, label: "📊 Market Share Estimado no Catálogo" },
-  { id: "ad-buybox", match: /vencer a buy box/, label: "🎯 Estratégia para Vencer a Buy Box" },
-  { id: "ad-pontos-negativos", match: /pontos negativos e riscos/, label: "🚨 Pontos Negativos e Riscos" },
-  { id: "ad-oportunidades", match: /oportunidades de melhoria/, label: "💡 Oportunidades de Melhoria" },
-  { id: "ad-score", match: /score final do (catalogo|anuncio)/, label: "📈 Score Final" },
-  { id: "ad-conclusao", match: /conclusao (e recomendacoes|produto de catalogo)/, label: "✅ Conclusão" },
+  { id: "ad-resumo-esteira", match: /^resumo para esteira/, label: "📋 Resumo para Esteira" },
+  { id: "ad-demanda-recente", match: /^demanda recente/, label: "📈 Demanda Recente (Velocidade de Vendas)" },
+  { id: "ad-resumo-diagnostico", match: /^resumo do diagnostico/, label: "📋 Resumo do Diagnóstico" },
+  { id: "ad-dados-anuncio", match: /^dados do anuncio/, label: "📦 Dados do Anúncio" },
+  { id: "ad-visao-geral", match: /^visao geral do catalogo/, label: "📚 Visão Geral do Catálogo" },
+  { id: "ad-caracteristicas", match: /^caracteristicas do produto/, label: "📦 Características do Produto" },
+  { id: "ad-metricas-avantpro", match: /^metricas do avantpro/, label: "📊 Métricas do AvantPro" },
+  { id: "ad-descricao-anuncio", match: /^descricao do anuncio/, label: "📝 Descrição do Anúncio" },
+  { id: "ad-financeira", match: /^analise financeira/, label: "💰 Análise Financeira" },
+  { id: "ad-saude", match: /^saude do anuncio/, label: "🏥 Saúde do Anúncio" },
+  { id: "ad-descricao-catalogo", match: /^descricao do catalogo/, label: "📝 Descrição do Catálogo" },
+  { id: "ad-metricas-catalogo", match: /^metricas do catalogo/, label: "📊 Métricas do Catálogo (AvantPro)" },
+  { id: "ad-diagnostico", match: /^diagnostico rapido/, label: "🔎 Diagnóstico Rápido do Catálogo" },
+  { id: "ad-posicionamento", match: /^posicionamento no catalogo/, label: "🏆 Posicionamento no Catálogo" },
+  { id: "ad-precificacao", match: /^precificacao no catalogo/, label: "💰 Análise de Precificação no Catálogo" },
+  { id: "ad-logistica", match: /^logistica no catalogo/, label: "🚚 Comparativo de Logística no Catálogo" },
+  { id: "ad-reputacao", match: /^comparativo de reputacao/, label: "⭐ Comparativo de Reputação" },
+  { id: "ad-perguntas", match: /^perguntas e respostas/, label: "💬 Perguntas e Respostas" },
+  { id: "ad-opinioes", match: /^opinioes do produto/, label: "⭐ Opiniões do Produto" },
+  { id: "ad-insights", match: /^insights para diferenciacao/, label: "🎯 Insights para Diferenciação" },
+  { id: "ad-market-share", match: /^market share/, label: "📊 Market Share Estimado no Catálogo" },
+  { id: "ad-buybox", match: /^estrategia para vencer a buy box/, label: "🎯 Estratégia para Vencer a Buy Box" },
+  { id: "ad-pontos-negativos", match: /^pontos negativos e riscos/, label: "🚨 Pontos Negativos e Riscos" },
+  { id: "ad-oportunidades", match: /^oportunidades de melhoria/, label: "💡 Oportunidades de Melhoria" },
+  { id: "ad-score", match: /^score final (do catalogo|do anuncio)/, label: "📈 Score Final" },
+  { id: "ad-conclusao", match: /^conclusao (e recomendacoes|produto de catalogo)/, label: "✅ Conclusão" },
 ]
 
 function collectText(node: any): string {
@@ -150,13 +150,15 @@ export function injectReportSummary(markdown: string): string {
   // 2) Identifica as seções (h1/h2/h3) que casam com as âncoras conhecidas
   const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
   const sections: Array<{ index: number; id: string; title: string; label?: string }> = []
+  const seenIds = new Set<string>()
   cleaned.forEach((line, idx) => {
     const m = /^(#{1,3})\s+(.+)$/.exec(line)
     if (!m) return
     const title = m[2].trim()
     const normalized = normalizeHeading(title)
     for (const anchor of anchors) {
-      if (anchor.match.test(normalized)) {
+      if (anchor.match.test(normalized) && !seenIds.has(anchor.id)) {
+        seenIds.add(anchor.id)
         sections.push({ index: idx, id: anchor.id, title, label: anchor.label })
         break
       }
@@ -189,12 +191,14 @@ export function rehypeSectionIds() {
   return (tree: any) => {
     let hasMetricasHeading = false
     let isMarketReport = false
+    const assignedIds = new Set<string>()
 
     const walk = (node: any) => {
       if (node && node.type === "element" && /^h[1-6]$/.test(node.tagName || "")) {
         const normalized = normalizeHeading(collectText(node))
         for (const anchor of [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]) {
-          if (anchor.match.test(normalized)) {
+          if (anchor.match.test(normalized) && !assignedIds.has(anchor.id)) {
+            assignedIds.add(anchor.id)
             node.properties = node.properties || {}
             node.properties.id = anchor.id
             // Força o nível canônico do título, independentemente do que a IA gerou

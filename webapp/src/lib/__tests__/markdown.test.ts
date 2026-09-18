@@ -195,4 +195,22 @@ describe("injectReportSummary (relatório de anúncio)", () => {
       "4. [📦 Dados do Anúncio](#ad-dados-anuncio)",
     ])
   })
+
+  it("não deve duplicar âncora quando um subtítulo contém a palavra-chave", () => {
+    const markdown = `# Análise de Anúncio
+
+## 📈 Demanda Recente (Velocidade de Vendas)
+
+- Vendas por dia: 10
+
+## Classificação da demanda recente: ✅ Ativa
+
+- Veredito: demanda ativa
+`
+    const result = injectReportSummary(markdown)
+
+    expect(summaryItems(result)).toEqual([
+      "1. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)",
+    ])
+  })
 })
