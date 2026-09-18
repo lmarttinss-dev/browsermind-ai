@@ -165,3 +165,34 @@ describe("normalizeReportHeadings", () => {
     expect(normalizeReportHeadings(markdown)).toBe(markdown)
   })
 })
+
+describe("injectReportSummary (relatório de anúncio)", () => {
+  const buildAdReport = (order: "canonical" | "shuffled") => {
+    const sections = {
+      esteira: "## 📋 Resumo para Esteira\n\n- Nome: Produto X",
+      demanda: "## 📈 Demanda Recente (Velocidade de Vendas)\n\n- Vendas por dia: 10",
+      diagnostico: "## 📋 Resumo do Diagnóstico\n\n- Produto: Produto X",
+      dados: "## 📦 Dados do Anúncio\n\n- Nome: Produto X",
+    }
+
+    if (order === "canonical") {
+      return `# Análise de Anúncio\n\n${sections.esteira}\n\n${sections.demanda}\n\n${sections.diagnostico}\n\n${sections.dados}`
+    }
+    return `# Análise de Anúncio\n\n${sections.dados}\n\n${sections.esteira}\n\n${sections.demanda}\n\n${sections.diagnostico}`
+  }
+
+  const summaryItems = (md: string) => md.split("\n").filter((l) => /^\d+\.\s\[/.test(l))
+
+  it("deve gerar Sumário estável (ordem e rótulos canônicos) independente da ordem do documento", () => {
+    const canonical = injectReportSummary(buildAdReport("canonical"))
+    const shuffled = injectReportSummary(buildAdReport("shuffled"))
+
+    expect(summaryItems(canonical)).toEqual(summaryItems(shuffled))
+    expect(summaryItems(canonical)).toEqual([
+      "1. [📋 Resumo para Esteira](#ad-resumo-esteira)",
+      "2. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)",
+      "3. [📋 Resumo do Diagnóstico](#ad-resumo-diagnostico)",
+      "4. [📦 Dados do Anúncio](#ad-dados-anuncio)",
+    ])
+  })
+})

@@ -11,9 +11,14 @@ function normalizeHeading(text: string): string {
     .trim()
 }
 
+// Âncora estável para uma seção conhecida dos relatórios.
+// `label` é o rótulo canônico exibido no Sumário (quando presente, substitui o
+// título gerado pela IA, garantindo itens de Sumário idênticos entre execuções).
+type SectionAnchor = { id: string; match: RegExp; label?: string }
+
 // Mapeia as 17 seções obrigatórias do relatório de mercado para âncoras estáveis #secao-N.
 // A ordem reflete a sequência exata definida no template analise-oferta-demanda-concorrencia.
-const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
+const MARKET_SECTION_ANCHORS: Array<SectionAnchor> = [
   { id: "secao-1", match: /metricas da categoria/ },
   { id: "secao-2", match: /perfil logistico da categoria/ },
   { id: "secao-3", match: /perfil de conta e catalogo/ },
@@ -35,33 +40,33 @@ const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
 
 // Mapeia as seções do relatório de análise de anúncio (catálogo ou independente)
 // para âncoras estáveis #ad-*. Títulos comuns aos dois ramos usam a mesma âncora.
-const AD_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
-  { id: "ad-resumo-esteira", match: /resumo para esteira/ },
-  { id: "ad-demanda-recente", match: /demanda recente/ },
-  { id: "ad-resumo-diagnostico", match: /resumo do diagnostico/ },
-  { id: "ad-dados-anuncio", match: /dados do anuncio/ },
-  { id: "ad-caracteristicas", match: /caracteristicas do produto/ },
-  { id: "ad-metricas-avantpro", match: /metricas do avantpro/ },
-  { id: "ad-descricao-anuncio", match: /descricao do anuncio/ },
-  { id: "ad-financeira", match: /analise financeira/ },
-  { id: "ad-saude", match: /saude do anuncio/ },
-  { id: "ad-visao-geral", match: /visao geral do catalogo/ },
-  { id: "ad-descricao-catalogo", match: /descricao do catalogo/ },
-  { id: "ad-metricas-catalogo", match: /metricas do catalogo/ },
-  { id: "ad-diagnostico", match: /diagnostico rapido/ },
-  { id: "ad-posicionamento", match: /posicionamento no catalogo/ },
-  { id: "ad-precificacao", match: /precificacao no catalogo/ },
-  { id: "ad-logistica", match: /logistica no catalogo/ },
-  { id: "ad-reputacao", match: /comparativo de reputacao/ },
-  { id: "ad-perguntas", match: /perguntas e respostas/ },
-  { id: "ad-opinioes", match: /opinioes do produto/ },
-  { id: "ad-insights", match: /insights para diferenciacao/ },
-  { id: "ad-market-share", match: /market share/ },
-  { id: "ad-buybox", match: /vencer a buy box/ },
-  { id: "ad-pontos-negativos", match: /pontos negativos e riscos/ },
-  { id: "ad-oportunidades", match: /oportunidades de melhoria/ },
-  { id: "ad-score", match: /score final do (catalogo|anuncio)/ },
-  { id: "ad-conclusao", match: /conclusao (e recomendacoes|produto de catalogo)/ },
+const AD_SECTION_ANCHORS: Array<SectionAnchor> = [
+  { id: "ad-resumo-esteira", match: /resumo para esteira/, label: "📋 Resumo para Esteira" },
+  { id: "ad-demanda-recente", match: /demanda recente/, label: "📈 Demanda Recente (Velocidade de Vendas)" },
+  { id: "ad-resumo-diagnostico", match: /resumo do diagnostico/, label: "📋 Resumo do Diagnóstico" },
+  { id: "ad-dados-anuncio", match: /dados do anuncio/, label: "📦 Dados do Anúncio" },
+  { id: "ad-caracteristicas", match: /caracteristicas do produto/, label: "📦 Características do Produto" },
+  { id: "ad-metricas-avantpro", match: /metricas do avantpro/, label: "📊 Métricas do AvantPro" },
+  { id: "ad-descricao-anuncio", match: /descricao do anuncio/, label: "📝 Descrição do Anúncio" },
+  { id: "ad-financeira", match: /analise financeira/, label: "💰 Análise Financeira" },
+  { id: "ad-saude", match: /saude do anuncio/, label: "🏥 Saúde do Anúncio" },
+  { id: "ad-visao-geral", match: /visao geral do catalogo/, label: "📚 Visão Geral do Catálogo" },
+  { id: "ad-descricao-catalogo", match: /descricao do catalogo/, label: "📝 Descrição do Catálogo" },
+  { id: "ad-metricas-catalogo", match: /metricas do catalogo/, label: "📊 Métricas do Catálogo (AvantPro)" },
+  { id: "ad-diagnostico", match: /diagnostico rapido/, label: "🔎 Diagnóstico Rápido do Catálogo" },
+  { id: "ad-posicionamento", match: /posicionamento no catalogo/, label: "🏆 Posicionamento no Catálogo" },
+  { id: "ad-precificacao", match: /precificacao no catalogo/, label: "💰 Análise de Precificação no Catálogo" },
+  { id: "ad-logistica", match: /logistica no catalogo/, label: "🚚 Comparativo de Logística no Catálogo" },
+  { id: "ad-reputacao", match: /comparativo de reputacao/, label: "⭐ Comparativo de Reputação" },
+  { id: "ad-perguntas", match: /perguntas e respostas/, label: "💬 Perguntas e Respostas" },
+  { id: "ad-opinioes", match: /opinioes do produto/, label: "⭐ Opiniões do Produto" },
+  { id: "ad-insights", match: /insights para diferenciacao/, label: "🎯 Insights para Diferenciação" },
+  { id: "ad-market-share", match: /market share/, label: "📊 Market Share Estimado no Catálogo" },
+  { id: "ad-buybox", match: /vencer a buy box/, label: "🎯 Estratégia para Vencer a Buy Box" },
+  { id: "ad-pontos-negativos", match: /pontos negativos e riscos/, label: "🚨 Pontos Negativos e Riscos" },
+  { id: "ad-oportunidades", match: /oportunidades de melhoria/, label: "💡 Oportunidades de Melhoria" },
+  { id: "ad-score", match: /score final do (catalogo|anuncio)/, label: "📈 Score Final" },
+  { id: "ad-conclusao", match: /conclusao (e recomendacoes|produto de catalogo)/, label: "✅ Conclusão" },
 ]
 
 function collectText(node: any): string {
@@ -144,7 +149,7 @@ export function injectReportSummary(markdown: string): string {
 
   // 2) Identifica as seções (h1/h2/h3) que casam com as âncoras conhecidas
   const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
-  const sections: Array<{ index: number; id: string; title: string }> = []
+  const sections: Array<{ index: number; id: string; title: string; label?: string }> = []
   cleaned.forEach((line, idx) => {
     const m = /^(#{1,3})\s+(.+)$/.exec(line)
     if (!m) return
@@ -152,7 +157,7 @@ export function injectReportSummary(markdown: string): string {
     const normalized = normalizeHeading(title)
     for (const anchor of anchors) {
       if (anchor.match.test(normalized)) {
-        sections.push({ index: idx, id: anchor.id, title })
+        sections.push({ index: idx, id: anchor.id, title, label: anchor.label })
         break
       }
     }
@@ -160,12 +165,18 @@ export function injectReportSummary(markdown: string): string {
 
   if (sections.length === 0) return markdown
 
-  // 3) Constrói o novo Sumário com links de âncora
-  const items = sections.map((s, n) => `${n + 1}. [${s.title}](#${s.id})`)
+  // 3) Constrói o novo Sumário com links de âncora, na ordem canônica das seções
+  // (estável mesmo que a IA gere as seções em ordem diferente) e usando rótulos
+  // canônicos quando definidos (evita variação de emojis/títulos entre execuções).
+  const canonicalOrder = new Map(anchors.map((anchor, n) => [anchor.id, n]))
+  const ordered = [...sections].sort(
+    (a, b) => (canonicalOrder.get(a.id) ?? 999) - (canonicalOrder.get(b.id) ?? 999)
+  )
+  const items = ordered.map((s, n) => `${n + 1}. [${s.label ?? s.title}](#${s.id})`)
   const summary = ["## 📑 Sumário", "", ...items, "", "---", ""]
 
-  // 4) Insere o Sumário antes da primeira seção
-  const insertAt = sections[0].index
+  // 4) Insere o Sumário antes da primeira seção (em ordem de documento)
+  const insertAt = Math.min(...sections.map((s) => s.index))
   return [...cleaned.slice(0, insertAt), ...summary, ...cleaned.slice(insertAt)].join("\n")
 }
 

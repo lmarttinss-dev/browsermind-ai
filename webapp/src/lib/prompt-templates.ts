@@ -1816,6 +1816,8 @@ Coloque os gráficos próximos aos dados que eles representam.`,
 
 ⚠️  PRIMEIRO PASSO OBRIGATÓRIO: Identifique se este é um PRODUTO DE CATÁLOGO ou um ANÚNCIO INDEPENDENTE. O tipo de análise Muda COMPLETAMENTE dependendo desta classificação.
 
+⚠️  SEÇÕES COMUNS OBRIGATÓRIAS: SEMPRE gere, nesta ordem e ANTES de qualquer bloco do tipo, as duas seções: "📋 Resumo para Esteira" e "📈 Demanda Recente (Velocidade de Vendas)". Os blocos "SE FOR ..." são ADICIONAIS — complementam as seções comuns, NUNCA as substituem. Se qualquer seção comum faltar, o relatório está INCOMPLETO.
+
 IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 ⚠️  FORMATO DE PREÇO: Use SEMPRE o formato brasileiro com vírgula como separador decimal (ex: R$ 66,79, NUNCA R$ 66.79).
@@ -1912,8 +1914,9 @@ Classificação da demanda recente (exatamente uma das opções):
 
 ---
 
-# SE FOR 📚 PRODUTO DE CATÁLOGO → USE O TEMPLATE ABAIXO
+# SE FOR 📚 PRODUTO DE CATÁLOGO → ADICIONE O BLOCO ABAIXO
 
+> ⚠️ Gere o bloco abaixo ADICIONALMENTE, DEPOIS das seções comuns (Resumo para Esteira e Demanda Recente).
 > ⚠️ Um produto de catálogo é uma FICHA UNIFICADA onde vários vendedores competem pelo mesmo produto. A análise deve focar em POSICIONAMENTO COMPETITIVO e ESTRATÉGIA PARA VENCER A BUY BOX.
 
 # Template — Produto de Catálogo
@@ -2250,8 +2253,9 @@ Escolha UMA estratégia principal:
 
 ---
 
-# SE FOR 📦 ANÚNCIO INDEPENDENTE → USE O TEMPLATE ABAIXO
+# SE FOR 📦 ANÚNCIO INDEPENDENTE → ADICIONE O BLOCO ABAIXO
 
+> ⚠️ Gere o bloco abaixo ADICIONALMENTE, DEPOIS das seções comuns (Resumo para Esteira e Demanda Recente).
 > ⚠️ Um anúncio independente é controlado por UM ÚNICO vendedor. A análise deve focar em SAÚDE DO ANÚNCIO, CONVERSÃO e OTIMIZAÇÃO.
 
 # Template — Anúncio Independente
