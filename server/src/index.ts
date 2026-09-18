@@ -600,6 +600,15 @@ app.post("/api/analyze", async (req, res) => {
       )
     }
 
+    // Remove títulos de instrução interna do template (ex: "SE FOR ...",
+    // "Template — ...", "PASSO N — ...") que a IA às vezes repete no corpo do
+    // relatório final. O prefixo "PASSO N —" é removido, mantendo o título da seção.
+    aiResponse = aiResponse
+      .split("\n")
+      .map((line) => line.replace(/^(#{1,6}\s*.*?)PASSO\s*\d+\s*[—–-]\s*/i, "$1"))
+      .filter((line) => !/^\s*#{1,6}\s*(SE FOR\s|Template\b)/i.test(line))
+      .join("\n")
+
     // Parse actions from response
     let actions = null;
     try {

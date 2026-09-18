@@ -1818,6 +1818,8 @@ Coloque os gráficos próximos aos dados que eles representam.`,
 
 ⚠️  SEÇÕES COMUNS OBRIGATÓRIAS: SEMPRE gere, nesta ordem e ANTES de qualquer bloco do tipo, as duas seções: "📋 Resumo para Esteira" e "📈 Demanda Recente (Velocidade de Vendas)". Os blocos "SE FOR ..." são ADICIONAIS — complementam as seções comuns, NUNCA as substituem. Se qualquer seção comum faltar, o relatório está INCOMPLETO.
 
+⚠️  NÃO INCLUA NO RELATÓRIO: os títulos internos "SE FOR ..." e "Template — ..." são apenas instruções de geração. O relatório final NÃO deve conter esses títulos — gere apenas as seções de conteúdo.
+
 IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 ⚠️  FORMATO DE PREÇO: Use SEMPRE o formato brasileiro com vírgula como separador decimal (ex: R$ 66,79, NUNCA R$ 66.79).
@@ -1838,7 +1840,7 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 ---
 
-# 🔍 PASSO 1 — Identificação do Tipo de Anúncio
+## 🔍 Identificação do Tipo de Anúncio
 
 ## Como identificar se é PRODUTO DE CATÁLOGO:
 

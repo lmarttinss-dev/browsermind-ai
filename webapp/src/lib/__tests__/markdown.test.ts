@@ -213,4 +213,30 @@ describe("injectReportSummary (relatório de anúncio)", () => {
       "1. [📈 Demanda Recente (Velocidade de Vendas)](#ad-demanda-recente)",
     ])
   })
+
+  it("deve remover títulos de instrução interna (SE FOR / Template) do relatório", () => {
+    const markdown = `# Análise de Anúncio
+
+# 🔍 PASSO 1 — Identificação do Tipo de Anúncio
+
+## 📈 Demanda Recente (Velocidade de Vendas)
+
+- Vendas por dia: 10
+
+# SE FOR 📚 PRODUTO DE CATÁLOGO → ADICIONE O BLOCO ABAIXO
+
+# Template — Produto de Catálogo
+
+## 📚 Visão Geral do Catálogo
+
+- Nome: X
+`
+    const result = injectReportSummary(markdown)
+
+    expect(result).not.toContain("SE FOR")
+    expect(result).not.toContain("Template —")
+    expect(result).not.toContain("PASSO 1")
+    expect(result).toContain("🔍 Identificação do Tipo de Anúncio")
+    expect(result).toContain("📚 Visão Geral do Catálogo")
+  })
 })

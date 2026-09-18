@@ -114,6 +114,18 @@ export function normalizeReportHeadings(markdown: string): string {
     .join("\n")
 }
 
+// Remove títulos de instrução interna do template (ex: "SE FOR ...",
+// "Template — ...", "PASSO N — ...") que a IA às vezes repete no corpo do
+// relatório final. O prefixo "PASSO N —" é removido, mantendo o título da seção.
+function stripInstructionHeadings(markdown: string): string {
+  if (!markdown) return markdown
+  return markdown
+    .split("\n")
+    .map((line) => line.replace(/^(#{1,6}\s*.*?)PASSO\s*\d+\s*[—–-]\s*/i, "$1"))
+    .filter((line) => !/^\s*#{1,6}\s*(SE FOR\s|Template\b)/i.test(line))
+    .join("\n")
+}
+
 /**
  * Reconstrói o Sumário do relatório a partir dos títulos de seção realmente
  * presentes no markdown, substituindo qualquer Sumário gerado pela IA (que pode
@@ -123,8 +135,11 @@ export function normalizeReportHeadings(markdown: string): string {
 export function injectReportSummary(markdown: string): string {
   if (!markdown) return markdown
 
+  // Remove títulos de instrução interna do template antes de processar o Sumário
+  const cleanMarkdown = stripInstructionHeadings(markdown)
+
   // Normaliza os níveis de título das seções conhecidas para a hierarquia canônica
-  const normalized = normalizeReportHeadings(markdown)
+  const normalized = normalizeReportHeadings(cleanMarkdown)
 
   const lines = normalized.split("\n")
   const cleaned: string[] = []
@@ -165,7 +180,7 @@ export function injectReportSummary(markdown: string): string {
     }
   })
 
-  if (sections.length === 0) return markdown
+  if (sections.length === 0) return cleanMarkdown
 
   // 3) Constrói o novo Sumário com links de âncora, na ordem canônica das seções
   // (estável mesmo que a IA gere as seções em ordem diferente) e usando rótulos
