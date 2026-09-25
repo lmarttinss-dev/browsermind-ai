@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Percent, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -201,7 +201,6 @@ export const ProductDetailPage = () => {
   const price = product.price > 0 ? product.price : metrics.price
   const score = product.score > 0 ? product.score : metrics.score
   const monthlySales = product.monthlySales > 0 ? product.monthlySales : metrics.monthlySales
-  const potentialMargin = product.potentialMargin || metrics.potentialMargin
 
   const suppliersCount = product.suppliers?.length || 0
 
@@ -349,7 +348,7 @@ export const ProductDetailPage = () => {
         {activeTab === "produto" && (
           <>
             {/* Métricas */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-5 border-b border-gray-700">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5 border-b border-gray-700">
               <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
                 <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Preço</span>
                 <span className="text-xl font-bold text-emerald-400">
@@ -372,14 +371,6 @@ export const ProductDetailPage = () => {
                 </span>
                 <span className="text-xl font-bold text-purple-400">
                   {monthlySales > 0 ? monthlySales.toLocaleString("pt-BR") : "—"}
-                </span>
-              </div>
-              <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1">
-                  <Percent className="w-3 h-3" /> Margem
-                </span>
-                <span className="text-xl font-bold text-blue-400">
-                  {potentialMargin?.replace(/\*+/g, "") || "—"}
                 </span>
               </div>
               <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">

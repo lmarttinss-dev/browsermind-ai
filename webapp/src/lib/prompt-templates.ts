@@ -946,7 +946,7 @@ pie
 
 ---
 
-# Tarefa 1 — Análise da Demanda
+## Tarefa 1 — Análise da Demanda
 
 Avalie:
 
@@ -1007,7 +1007,7 @@ Explique detalhadamente os motivos da classificação. Analise se a demanda é c
 
 ---
 
-# Tarefa 2 — Análise da Concorrência
+## Tarefa 2 — Análise da Concorrência
 
 Avalie:
 
@@ -1112,7 +1112,7 @@ Explique os fatores que influenciam a concorrência. Considere se a categoria es
 
 ---
 
-# Tarefa 3 — Análise de Concentração de Mercado
+## Tarefa 3 — Análise de Concentração de Mercado
 
 > Use a métrica de **% Participação** de cada anúncio (fornecida pelo AvantPro) para calcular a concentração de mercado. Some as participações individuais para obter os totais por vendedor e por faixa (Top 3, Top 10).
 
@@ -1170,7 +1170,7 @@ pie
 
 ---
 
-# Tarefa 4 — Oportunidade de Entrada
+## Tarefa 4 — Oportunidade de Entrada
 
 Responda:
 
@@ -1199,7 +1199,7 @@ Explique em detalhes.
 
 ---
 
-# Tarefa 5 — Potencial de Lucro
+## Tarefa 5 — Potencial de Lucro
 
 Considerando:
 
@@ -1224,7 +1224,7 @@ Classifique:
 
 ---
 
-# Tarefa 6 — Score de Oportunidade
+## Tarefa 6 — Score de Oportunidade
 
 Atribua uma nota de 0 a 10 para:
 
@@ -1257,7 +1257,7 @@ Score Final = Média das Notas
 
 ---
 
-# Tarefa 7 — Estratégia Recomendada
+## Tarefa 7 — Estratégia Recomendada
 
 Escolha apenas uma:
 
@@ -1272,7 +1272,7 @@ Explique detalhadamente a decisão.
 
 ---
 
-# Tarefa 8 — Plano de Ataque de 30 Dias
+## Tarefa 8 — Plano de Ataque de 30 Dias
 
 Monte um plano contendo:
 
@@ -1301,7 +1301,7 @@ Monte um plano contendo:
 
 ---
 
-# Estratégia de SEO
+## Estratégia de SEO
 
 Sugira:
 
@@ -1312,7 +1312,7 @@ Sugira:
 
 ---
 
-# Estratégia de Imagens
+## Estratégia de Imagens
 
 Sugira:
 
@@ -1323,7 +1323,7 @@ Sugira:
 
 ---
 
-# Estratégia de Precificação
+## Estratégia de Precificação
 
 Defina:
 
@@ -1334,7 +1334,7 @@ Defina:
 
 ---
 
-# 💲 Sugestão de Precificação para Venda
+## 💲 Sugestão de Precificação para Venda
 
 Com base na análise da concorrência, determine o preço ideal de venda:
 
@@ -1425,7 +1425,7 @@ Considerando o custo total de importação por unidade (landed cost) e as taxas 
 
 ---
 
-# Conclusão Executiva
+## Conclusão Executiva
 
 Produza uma conclusão final de até 10 linhas contendo:
 
@@ -1471,6 +1471,12 @@ Forneça respostas objetivas, quantitativas e estratégicas.
 ## Estrutura Geral
 
 - Use emojis nos cabeçalhos de seção EXATAMENTE como especificado abaixo.
+- **🚨 NÍVEIS DE TÍTULO (OBRIGATÓRIO — HIERARQUIA PADRONIZADA):**
+  - \`#\` (um #) — APENAS no título do relatório (\`# 🕵️ Análise de Oferta, Demanda e Concorrência — Mercado Livre\`).
+  - \`##\` (dois #) — TODAS as seções principais: Métricas da Categoria, Tarefa 1 a 8, Estratégia de SEO, Estratégia de Imagens, Estratégia de Precificação, Sugestão de Precificação para Venda e Conclusão Executiva.
+  - \`###\` (três #) — subseções: Perfil Logístico da Categoria, Perfil de Conta e Catálogo e Análise de Frete da Categoria.
+  - \`####\` (quatro #) — sub-subseções (ex: \`#### 📈 Volume e Validação\`).
+  - NUNCA use \`#\` em seções internas do relatório — apenas no título.
 - Use tabelas Markdown para dados comparativos (não use listas onde tabelas são especificadas).
 - Use negrito para destacar **valores numéricos** e **classificações**.
 - Use citações (>) para alertas, notas e insights estratégicos.
@@ -1502,7 +1508,7 @@ O relatório DEVE começar exatamente com este formato:
 
 ## Seções Obrigatórias (na ordem)
 
-### 📊 Métricas da Categoria (AvantPro)
+## 📊 Métricas da Categoria (AvantPro)
 
 > ⚠️ **OBRIGATÓRIO**: Esta seção DEVE ser incluída logo após o cabeçalho, ANTES da Tarefa 1.
 
@@ -1547,7 +1553,7 @@ Bloco \`\`\`mermaid com pie chart usando apenas os rótulos "Frete Grátis" e "F
 #### 📝 Análise da Oferta de Frete
 Bullet points com predominância, impacto competitivo, valor do frete pago, oportunidade e alerta.
 
-### 🧭 Tarefa 1 — Análise da Demanda
+## 🧭 Tarefa 1 — Análise da Demanda
 
 Deve conter OBRIGATORIAMENTE as subseções abaixo, nesta ordem:
 
@@ -1590,7 +1596,7 @@ Bloco \`\`\`mermaid com xychart. Inclua legenda interpretativa abaixo do gráfic
 
 ---
 
-### 🛡️ Tarefa 2 — Análise da Concorrência
+## 🛡️ Tarefa 2 — Análise da Concorrência
 
 #### 🏢 Estrutura Competitiva
 Tabela Markdown com top vendedores (Vendedor | Vendas Estimadas | Participação | Ritmo Atual /mês).
@@ -1614,7 +1620,7 @@ Parágrafo(s).
 
 ---
 
-### 📊 Tarefa 3 — Análise de Concentração de Mercado
+## 📊 Tarefa 3 — Análise de Concentração de Mercado
 
 #### 📈 Participação de Mercado
 Tabela Markdown: Grupo | Participação.
@@ -1638,7 +1644,7 @@ Parágrafo.
 
 ---
 
-### 🚪 Tarefa 4 — Oportunidade de Entrada
+## 🚪 Tarefa 4 — Oportunidade de Entrada
 
 #### ✅ Existe espaço para novos vendedores?
 **SIM** ou **NÃO**, seguido de bullet points com subnichos/oportunidades.
@@ -1651,7 +1657,7 @@ Bullet points com **negrito** no início de cada item.
 
 ---
 
-### 💰 Tarefa 5 — Potencial de Lucro
+## 💰 Tarefa 5 — Potencial de Lucro
 
 #### 📊 Análise de Margem
 Tabela Markdown: Fator | Valor.
@@ -1663,7 +1669,7 @@ Parágrafo(s).
 
 ---
 
-### 🎯 Tarefa 6 — Score de Oportunidade
+## 🎯 Tarefa 6 — Score de Oportunidade
 
 Tabela Markdown: Critério | Nota | Justificativa.
 
@@ -1677,7 +1683,7 @@ Tabela de interpretação: Nota | Interpretação.
 
 ---
 
-### 🧭 Tarefa 7 — Estratégia Recomendada
+## 🧭 Tarefa 7 — Estratégia Recomendada
 
 #### 🎯 **[ESTRATÉGIA EM NEGRITO E CAIXA ALTA]**
 
@@ -1686,13 +1692,13 @@ Parágrafo(s) com bullet points numerados de caminhos possíveis.
 
 ---
 
-### 📅 Tarefa 8 — Plano de Ataque de 30 Dias
+## 📅 Tarefa 8 — Plano de Ataque de 30 Dias
 
 Uma subseção por semana (\`#### 📆 Semana 1 — [TÍTULO]\`), cada uma com tabela Markdown: Dia | Ação.
 
 ---
 
-### 🔍 Estratégia de SEO
+## 🔍 Estratégia de SEO
 
 #### 🏷️ Título Ideal
 Citação (>) com o título exato entre aspas.
@@ -1708,7 +1714,7 @@ Parágrafo com recomendação clara.
 
 ---
 
-### 🎨 Estratégia de Imagens
+## 🎨 Estratégia de Imagens
 
 #### 📸 Quantidade
 Número.
@@ -1721,7 +1727,7 @@ Bullet points com **negrito** no tipo de gatilho.
 
 ---
 
-### 💲 Estratégia de Precificação
+## 💲 Estratégia de Precificação
 
 #### 💰 Preços Recomendados
 Tabela Markdown: Estratégia | Preço | Margem Estimada.
@@ -1731,7 +1737,7 @@ Bullet points.
 
 ---
 
-### 💲 Sugestão de Precificação para Venda
+## 💲 Sugestão de Precificação para Venda
 
 #### 📊 Análise de Precificação da Concorrência
 
@@ -1760,7 +1766,7 @@ Tabela Markdown: Fase | Preço | Objetivo | Gatilho para Mudança.
 
 ---
 
-### 📋 Conclusão Executiva
+## 📋 Conclusão Executiva
 
 Lista numerada de 1 a 6 respondendo exatamente:
 
@@ -1810,6 +1816,10 @@ Coloque os gráficos próximos aos dados que eles representam.`,
 
 ⚠️  PRIMEIRO PASSO OBRIGATÓRIO: Identifique se este é um PRODUTO DE CATÁLOGO ou um ANÚNCIO INDEPENDENTE. O tipo de análise Muda COMPLETAMENTE dependendo desta classificação.
 
+⚠️  SEÇÕES COMUNS OBRIGATÓRIAS: SEMPRE gere, nesta ordem e ANTES de qualquer bloco do tipo, as duas seções: "📋 Resumo para Esteira" e "📈 Demanda Recente (Velocidade de Vendas)". Os blocos "SE FOR ..." são ADICIONAIS — complementam as seções comuns, NUNCA as substituem. Se qualquer seção comum faltar, o relatório está INCOMPLETO.
+
+⚠️  NÃO INCLUA NO RELATÓRIO: os títulos internos "SE FOR ..." e "Template — ..." são apenas instruções de geração. O relatório final NÃO deve conter esses títulos — gere apenas as seções de conteúdo.
+
 IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da página). Complemente com informações contextuais da página quando necessário.
 
 ⚠️  FORMATO DE PREÇO: Use SEMPRE o formato brasileiro com vírgula como separador decimal (ex: R$ 66,79, NUNCA R$ 66.79).
@@ -1830,7 +1840,7 @@ IMPORTANTE: PRIORIZE SEMPRE as métricas exatas extraídas do AvantPro (DOM da p
 
 ---
 
-# 🔍 PASSO 1 — Identificação do Tipo de Anúncio
+## 🔍 Identificação do Tipo de Anúncio
 
 ## Como identificar se é PRODUTO DE CATÁLOGO:
 
@@ -1906,8 +1916,9 @@ Classificação da demanda recente (exatamente uma das opções):
 
 ---
 
-# SE FOR 📚 PRODUTO DE CATÁLOGO → USE O TEMPLATE ABAIXO
+# SE FOR 📚 PRODUTO DE CATÁLOGO → ADICIONE O BLOCO ABAIXO
 
+> ⚠️ Gere o bloco abaixo ADICIONALMENTE, DEPOIS das seções comuns (Resumo para Esteira e Demanda Recente).
 > ⚠️ Um produto de catálogo é uma FICHA UNIFICADA onde vários vendedores competem pelo mesmo produto. A análise deve focar em POSICIONAMENTO COMPETITIVO e ESTRATÉGIA PARA VENCER A BUY BOX.
 
 # Template — Produto de Catálogo
@@ -2244,8 +2255,9 @@ Escolha UMA estratégia principal:
 
 ---
 
-# SE FOR 📦 ANÚNCIO INDEPENDENTE → USE O TEMPLATE ABAIXO
+# SE FOR 📦 ANÚNCIO INDEPENDENTE → ADICIONE O BLOCO ABAIXO
 
+> ⚠️ Gere o bloco abaixo ADICIONALMENTE, DEPOIS das seções comuns (Resumo para Esteira e Demanda Recente).
 > ⚠️ Um anúncio independente é controlado por UM ÚNICO vendedor. A análise deve focar em SAÚDE DO ANÚNCIO, CONVERSÃO e OTIMIZAÇÃO.
 
 # Template — Anúncio Independente

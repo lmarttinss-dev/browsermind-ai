@@ -434,9 +434,17 @@ app.post("/api/analyze", async (req, res) => {
                 ...shipping.samples.map((s, i) => `  ${i + 1}. Frete grátis: ${s.freeShipping ? "Sim" : "Não"} | FULL: ${s.isFull ? "Sim" : "Não"} | Prazo: ${s.promise || "(não informado)"}`),
               ].filter(Boolean).join("\n")
             : "";
+          // Métricas do AvantPro extraídas de forma estruturada do DOM da extensão.
+          // Colocadas no TOPO do conteúdo para que a IA sempre as encontre,
+          // independentemente da posição em que a extensão as injeta na página.
+          const avantproSection = extracted.avantproMetrics
+            ? `\n📊 Dados do AvantPro (extraídos do DOM da extensão — PRIORIZE estas métricas):\n${extracted.avantproMetrics}`
+            : "";
+
           content = [
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
+            avantproSection,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
@@ -592,6 +600,15 @@ app.post("/api/analyze", async (req, res) => {
       )
     }
 
+    // Remove títulos de instrução interna do template (ex: "SE FOR ...",
+    // "Template — ...", "PASSO N — ...") que a IA às vezes repete no corpo do
+    // relatório final. O prefixo "PASSO N —" é removido, mantendo o título da seção.
+    aiResponse = aiResponse
+      .split("\n")
+      .map((line) => line.replace(/^(#{1,6}\s*.*?)PASSO\s*\d+\s*[—–-]\s*/i, "$1"))
+      .filter((line) => !/^\s*#{1,6}\s*(SE FOR\s|Template\b)/i.test(line))
+      .join("\n")
+
     // Parse actions from response
     let actions = null;
     try {
@@ -608,22 +625,30 @@ app.post("/api/analyze", async (req, res) => {
     let pipelineProductId = null;
     try {
       if ((templateId === "importacao-simplificada" || templateId === "analise-anuncio-independente") && content) {
-        const titleMatch = aiResponse.match(/(?:Nome|Produto\/Nicho|Título)\s*:\s*(.+)/im)
-        const priceMatch = aiResponse.match(/(?:Preço|preço\s*atual)\s*:\s*R?\$?\s*([\d.,]+)/im)
-        const scoreMatch = aiResponse.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
-        const salesMatch = aiResponse.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:]*:\s*([\d.,]+)/im)
-        const competitionMatch = aiResponse.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
-        const marginMatch = aiResponse.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
-        const categoryMatch = aiResponse.match(/Categoria\s*:\s*(.+)/im)
+        // Normaliza o relatório para parsing: remove marcadores de negrito Markdown (**)
+        // para que as regexes casem com os rótulos independentemente de formatação.
+        const reportText = aiResponse.replace(/\*\*/g, "")
+
+        const titleMatch = reportText.match(/(?:Nome|Produto\/Nicho|Título|Produto)\s*:\s*(.+)/im)
+        const priceMatch = reportText.match(/preço(?:\s+(?:atual|de\s+venda(?:\s+atual)?))?\s*:\s*R?\$?\s*([\d.,]+)/im)
+        const scoreMatch = reportText.match(/(?:Demanda|Score\s*Final)\s*:\s*(\d+(?:[.,]\d+)?)/im)
+        const salesMatch = reportText.match(/(?:Vendas\s*mensais|Ritmo\s*atual)[^:\n]*:\s*([\d.,]+)/im)
+        const competitionMatch = reportText.match(/(?:Concorrência|Nível.*(?:concorrência|competição))\s*:\s*(Baixa|Média|Alta|Saturado)/im)
+        const marginMatch = reportText.match(/(?:Margem|Potencial\s*de\s*(?:margem|melhoria))\s*:\s*([\d]+(?:[–\-][\d]+)?\s*%)/im)
+        const categoryMatch = reportText.match(/Categoria\s*:\s*(.+)/im)
         const categoryRaw = categoryMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 100) || ""
-        const recentDemandMatch = aiResponse.match(/Demanda\s*recente\s*:\s*(.+)/im)
+        const recentDemandMatch = reportText.match(/Demanda\s*recente\s*:\s*(.+)/im)
         const recentDemand = recentDemandMatch?.[1]?.replace(/\*+/g, "").trim().slice(0, 60) || ""
         const imageMatch = content.match(/og:image"\s*content="([^"]+)"/i) || content.match(/(https?:\/\/[^\s"]+\.(?:jpg|jpeg|png|webp))/i)
 
         const urlMatch = content.match(/^URL:\s*(.+)/m)
         const pageTitleMatch = content.match(/^Title:\s*(.+)/m)
 
-        const productTitle = titleMatch?.[1]?.trim() || pageTitleMatch?.[1]?.trim() || "Produto analisado"
+        // Prioriza o título do DOM (h1.ui-pdp-title, já limpo na extração) sobre
+        // o campo extraído do relatório gerado pela IA. Remove markdown residual.
+        const productTitle = (pageTitleMatch?.[1]?.trim() || titleMatch?.[1]?.trim() || "Produto analisado")
+          .replace(/\*+/g, "")
+          .trim()
         const productUrl = urlMatch?.[1]?.trim().replace(/`/g, "").trim() || ""
 
         if (productUrl) {

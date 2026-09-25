@@ -11,9 +11,14 @@ function normalizeHeading(text: string): string {
     .trim()
 }
 
+// Âncora estável para uma seção conhecida dos relatórios.
+// `label` é o rótulo canônico exibido no Sumário (quando presente, substitui o
+// título gerado pela IA, garantindo itens de Sumário idênticos entre execuções).
+type SectionAnchor = { id: string; match: RegExp; label?: string }
+
 // Mapeia as 17 seções obrigatórias do relatório de mercado para âncoras estáveis #secao-N.
 // A ordem reflete a sequência exata definida no template analise-oferta-demanda-concorrencia.
-const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
+const MARKET_SECTION_ANCHORS: Array<SectionAnchor> = [
   { id: "secao-1", match: /metricas da categoria/ },
   { id: "secao-2", match: /perfil logistico da categoria/ },
   { id: "secao-3", match: /perfil de conta e catalogo/ },
@@ -35,33 +40,33 @@ const MARKET_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
 
 // Mapeia as seções do relatório de análise de anúncio (catálogo ou independente)
 // para âncoras estáveis #ad-*. Títulos comuns aos dois ramos usam a mesma âncora.
-const AD_SECTION_ANCHORS: Array<{ id: string; match: RegExp }> = [
-  { id: "ad-resumo-esteira", match: /resumo para esteira/ },
-  { id: "ad-demanda-recente", match: /demanda recente/ },
-  { id: "ad-resumo-diagnostico", match: /resumo do diagnostico/ },
-  { id: "ad-dados-anuncio", match: /dados do anuncio/ },
-  { id: "ad-caracteristicas", match: /caracteristicas do produto/ },
-  { id: "ad-metricas-avantpro", match: /metricas do avantpro/ },
-  { id: "ad-descricao-anuncio", match: /descricao do anuncio/ },
-  { id: "ad-financeira", match: /analise financeira/ },
-  { id: "ad-saude", match: /saude do anuncio/ },
-  { id: "ad-visao-geral", match: /visao geral do catalogo/ },
-  { id: "ad-descricao-catalogo", match: /descricao do catalogo/ },
-  { id: "ad-metricas-catalogo", match: /metricas do catalogo/ },
-  { id: "ad-diagnostico", match: /diagnostico rapido/ },
-  { id: "ad-posicionamento", match: /posicionamento no catalogo/ },
-  { id: "ad-precificacao", match: /precificacao no catalogo/ },
-  { id: "ad-logistica", match: /logistica no catalogo/ },
-  { id: "ad-reputacao", match: /comparativo de reputacao/ },
-  { id: "ad-perguntas", match: /perguntas e respostas/ },
-  { id: "ad-opinioes", match: /opinioes do produto/ },
-  { id: "ad-insights", match: /insights para diferenciacao/ },
-  { id: "ad-market-share", match: /market share/ },
-  { id: "ad-buybox", match: /vencer a buy box/ },
-  { id: "ad-pontos-negativos", match: /pontos negativos e riscos/ },
-  { id: "ad-oportunidades", match: /oportunidades de melhoria/ },
-  { id: "ad-score", match: /score final do (catalogo|anuncio)/ },
-  { id: "ad-conclusao", match: /conclusao (e recomendacoes|produto de catalogo)/ },
+const AD_SECTION_ANCHORS: Array<SectionAnchor> = [
+  { id: "ad-resumo-esteira", match: /^resumo para esteira/, label: "📋 Resumo para Esteira" },
+  { id: "ad-demanda-recente", match: /^demanda recente/, label: "📈 Demanda Recente (Velocidade de Vendas)" },
+  { id: "ad-resumo-diagnostico", match: /^resumo do diagnostico/, label: "📋 Resumo do Diagnóstico" },
+  { id: "ad-dados-anuncio", match: /^dados do anuncio/, label: "📦 Dados do Anúncio" },
+  { id: "ad-visao-geral", match: /^visao geral do catalogo/, label: "📚 Visão Geral do Catálogo" },
+  { id: "ad-caracteristicas", match: /^caracteristicas do produto/, label: "📦 Características do Produto" },
+  { id: "ad-metricas-avantpro", match: /^metricas do avantpro/, label: "📊 Métricas do AvantPro" },
+  { id: "ad-descricao-anuncio", match: /^descricao do anuncio/, label: "📝 Descrição do Anúncio" },
+  { id: "ad-financeira", match: /^analise financeira/, label: "💰 Análise Financeira" },
+  { id: "ad-saude", match: /^saude do anuncio/, label: "🏥 Saúde do Anúncio" },
+  { id: "ad-descricao-catalogo", match: /^descricao do catalogo/, label: "📝 Descrição do Catálogo" },
+  { id: "ad-metricas-catalogo", match: /^metricas do catalogo/, label: "📊 Métricas do Catálogo (AvantPro)" },
+  { id: "ad-diagnostico", match: /^diagnostico rapido/, label: "🔎 Diagnóstico Rápido do Catálogo" },
+  { id: "ad-posicionamento", match: /^posicionamento no catalogo/, label: "🏆 Posicionamento no Catálogo" },
+  { id: "ad-precificacao", match: /^precificacao no catalogo/, label: "💰 Análise de Precificação no Catálogo" },
+  { id: "ad-logistica", match: /^logistica no catalogo/, label: "🚚 Comparativo de Logística no Catálogo" },
+  { id: "ad-reputacao", match: /^comparativo de reputacao/, label: "⭐ Comparativo de Reputação" },
+  { id: "ad-perguntas", match: /^perguntas e respostas/, label: "💬 Perguntas e Respostas" },
+  { id: "ad-opinioes", match: /^opinioes do produto/, label: "⭐ Opiniões do Produto" },
+  { id: "ad-insights", match: /^insights para diferenciacao/, label: "🎯 Insights para Diferenciação" },
+  { id: "ad-market-share", match: /^market share/, label: "📊 Market Share Estimado no Catálogo" },
+  { id: "ad-buybox", match: /^estrategia para vencer a buy box/, label: "🎯 Estratégia para Vencer a Buy Box" },
+  { id: "ad-pontos-negativos", match: /^pontos negativos e riscos/, label: "🚨 Pontos Negativos e Riscos" },
+  { id: "ad-oportunidades", match: /^oportunidades de melhoria/, label: "💡 Oportunidades de Melhoria" },
+  { id: "ad-score", match: /^score final (do catalogo|do anuncio)/, label: "📈 Score Final" },
+  { id: "ad-conclusao", match: /^conclusao (e recomendacoes|produto de catalogo)/, label: "✅ Conclusão" },
 ]
 
 function collectText(node: any): string {
@@ -69,6 +74,56 @@ function collectText(node: any): string {
   if (node.type === "text") return node.value || ""
   if (Array.isArray(node.children)) return node.children.map(collectText).join("")
   return ""
+}
+
+/**
+ * Nível canônico (1-6) de cada seção conhecida.
+ * No relatório de mercado, Perfil Logístico, Perfil de Conta e Catálogo e
+ * Análise de Frete são subseções de "Métricas da Categoria" (nível 3).
+ * Todas as demais seções (Tarefas, SEO, Imagens, Precificação, Conclusão) são
+ * nível 2. Seções do relatório de anúncio também são nível 2.
+ */
+function canonicalHeadingLevel(anchorId: string): number {
+  if (anchorId.startsWith("ad-")) return 2
+  if (anchorId === "secao-2" || anchorId === "secao-3" || anchorId === "secao-4") return 3
+  return 2
+}
+
+/**
+ * Reescreve os níveis de título das seções conhecidas para a hierarquia
+ * canônica, eliminando a oscilação entre execuções (a IA varia entre #, ## e ###).
+ * Títulos que não casam com nenhuma seção conhecida permanecem inalterados.
+ */
+export function normalizeReportHeadings(markdown: string): string {
+  if (!markdown) return markdown
+  const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
+  return markdown
+    .split("\n")
+    .map((line) => {
+      const m = /^(#{1,6})\s+(.+)$/.exec(line)
+      if (!m) return line
+      const title = m[2].trim()
+      const normalized = normalizeHeading(title)
+      for (const anchor of anchors) {
+        if (anchor.match.test(normalized)) {
+          return `${"#".repeat(canonicalHeadingLevel(anchor.id))} ${title}`
+        }
+      }
+      return line
+    })
+    .join("\n")
+}
+
+// Remove títulos de instrução interna do template (ex: "SE FOR ...",
+// "Template — ...", "PASSO N — ...") que a IA às vezes repete no corpo do
+// relatório final. O prefixo "PASSO N —" é removido, mantendo o título da seção.
+function stripInstructionHeadings(markdown: string): string {
+  if (!markdown) return markdown
+  return markdown
+    .split("\n")
+    .map((line) => line.replace(/^(#{1,6}\s*.*?)PASSO\s*\d+\s*[—–-]\s*/i, "$1"))
+    .filter((line) => !/^\s*#{1,6}\s*(SE FOR\s|Template\b)/i.test(line))
+    .join("\n")
 }
 
 /**
@@ -80,7 +135,13 @@ function collectText(node: any): string {
 export function injectReportSummary(markdown: string): string {
   if (!markdown) return markdown
 
-  const lines = markdown.split("\n")
+  // Remove títulos de instrução interna do template antes de processar o Sumário
+  const cleanMarkdown = stripInstructionHeadings(markdown)
+
+  // Normaliza os níveis de título das seções conhecidas para a hierarquia canônica
+  const normalized = normalizeReportHeadings(cleanMarkdown)
+
+  const lines = normalized.split("\n")
   const cleaned: string[] = []
   let i = 0
 
@@ -101,30 +162,38 @@ export function injectReportSummary(markdown: string): string {
     i++
   }
 
-  // 2) Identifica as seções (h2/h3) que casam com as âncoras conhecidas
+  // 2) Identifica as seções (h1/h2/h3) que casam com as âncoras conhecidas
   const anchors = [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]
-  const sections: Array<{ index: number; id: string; title: string }> = []
+  const sections: Array<{ index: number; id: string; title: string; label?: string }> = []
+  const seenIds = new Set<string>()
   cleaned.forEach((line, idx) => {
-    const m = /^(#{2,3})\s+(.+)$/.exec(line)
+    const m = /^(#{1,3})\s+(.+)$/.exec(line)
     if (!m) return
     const title = m[2].trim()
     const normalized = normalizeHeading(title)
     for (const anchor of anchors) {
-      if (anchor.match.test(normalized)) {
-        sections.push({ index: idx, id: anchor.id, title })
+      if (anchor.match.test(normalized) && !seenIds.has(anchor.id)) {
+        seenIds.add(anchor.id)
+        sections.push({ index: idx, id: anchor.id, title, label: anchor.label })
         break
       }
     }
   })
 
-  if (sections.length === 0) return markdown
+  if (sections.length === 0) return cleanMarkdown
 
-  // 3) Constrói o novo Sumário com links de âncora
-  const items = sections.map((s, n) => `${n + 1}. [${s.title}](#${s.id})`)
+  // 3) Constrói o novo Sumário com links de âncora, na ordem canônica das seções
+  // (estável mesmo que a IA gere as seções em ordem diferente) e usando rótulos
+  // canônicos quando definidos (evita variação de emojis/títulos entre execuções).
+  const canonicalOrder = new Map(anchors.map((anchor, n) => [anchor.id, n]))
+  const ordered = [...sections].sort(
+    (a, b) => (canonicalOrder.get(a.id) ?? 999) - (canonicalOrder.get(b.id) ?? 999)
+  )
+  const items = ordered.map((s, n) => `${n + 1}. [${s.label ?? s.title}](#${s.id})`)
   const summary = ["## 📑 Sumário", "", ...items, "", "---", ""]
 
-  // 4) Insere o Sumário antes da primeira seção
-  const insertAt = sections[0].index
+  // 4) Insere o Sumário antes da primeira seção (em ordem de documento)
+  const insertAt = Math.min(...sections.map((s) => s.index))
   return [...cleaned.slice(0, insertAt), ...summary, ...cleaned.slice(insertAt)].join("\n")
 }
 
@@ -137,14 +206,18 @@ export function rehypeSectionIds() {
   return (tree: any) => {
     let hasMetricasHeading = false
     let isMarketReport = false
+    const assignedIds = new Set<string>()
 
     const walk = (node: any) => {
       if (node && node.type === "element" && /^h[1-6]$/.test(node.tagName || "")) {
         const normalized = normalizeHeading(collectText(node))
         for (const anchor of [...MARKET_SECTION_ANCHORS, ...AD_SECTION_ANCHORS]) {
-          if (anchor.match.test(normalized)) {
+          if (anchor.match.test(normalized) && !assignedIds.has(anchor.id)) {
+            assignedIds.add(anchor.id)
             node.properties = node.properties || {}
             node.properties.id = anchor.id
+            // Força o nível canônico do título, independentemente do que a IA gerou
+            node.tagName = `h${canonicalHeadingLevel(anchor.id)}`
             if (anchor.id === "secao-1") hasMetricasHeading = true
             if (anchor.id.startsWith("secao-")) isMarketReport = true
             break
