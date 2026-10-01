@@ -7,7 +7,8 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 import express from "express";
 import cors from "cors";
-import axios from "axios";
+import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
+import { Agent as HttpsAgent } from "node:https";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
@@ -72,6 +73,55 @@ const AVANTPRO_CONFIG = {
   apiBase: "https://prod-ml.avantprocloud.com.br",
   productCode: "avantpro-ml",
 };
+
+// ==========================================
+// DeepSeek — chamada com retry e timeout para tolerar falhas transitórias de DNS/rede
+// (ex.: EAI_AGAIN ao resolver api.deepseek.com, comum em WSL)
+// ==========================================
+const TRANSIENT_ERROR_CODES = new Set(["EAI_AGAIN", "EAI_FAIL", "ECONNRESET", "ETIMEDOUT", "ECONNREFUSED", "ENOTFOUND", "EPIPE"])
+const TRANSIENT_HTTP_STATUS = new Set([429, 500, 502, 503, 504])
+const DEEPSEEK_MAX_ATTEMPTS = 4
+
+// Força IPv4 para evitar falhas de resolução IPv6 no WSL
+const deepSeekHttpsAgent = new HttpsAgent({ family: 4 })
+
+function extractErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined
+  const obj = error as { code?: unknown; cause?: { code?: unknown } }
+  if (typeof obj.code === "string") return obj.code
+  if (obj.cause && typeof obj.cause.code === "string") return obj.cause.code
+  return undefined
+}
+
+function isTransientError(error: unknown): boolean {
+  if (axios.isAxiosError(error) && error.response) {
+    if (TRANSIENT_HTTP_STATUS.has(error.response.status)) return true
+  }
+  const code = extractErrorCode(error)
+  return code ? TRANSIENT_ERROR_CODES.has(code) : false
+}
+
+// POST com retry exponencial e timeout, forçando IPv4 (evita EAI_AGAIN no WSL)
+async function postWithRetry(url: string, data: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse> {
+  let lastError: unknown
+  for (let attempt = 0; attempt < DEEPSEEK_MAX_ATTEMPTS; attempt++) {
+    try {
+      return await axios.post(url, data, {
+        timeout: 60000,
+        httpsAgent: deepSeekHttpsAgent,
+        ...config,
+      })
+    } catch (error) {
+      lastError = error
+      if (attempt >= DEEPSEEK_MAX_ATTEMPTS - 1 || !isTransientError(error)) break
+      const delay = 500 * Math.pow(2, attempt)
+      const code = extractErrorCode(error)
+      console.warn(`⚠️ Rede: erro transitório (${code || "desconhecido"}) em ${url}. Tentativa ${attempt + 2}/${DEEPSEEK_MAX_ATTEMPTS} em ${delay}ms`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+  throw lastError
+}
 
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "10mb" }));
@@ -566,7 +616,7 @@ app.post("/api/analyze", async (req, res) => {
       aiResponse = "";
       let lastFinishReason = "";
       for (let round = 0; round < 4; round++) {
-        const r = await axios.post("https://api.deepseek.com/chat/completions", {
+        const r = await postWithRetry("https://api.deepseek.com/chat/completions", {
           model: deepseekModel,
           messages,
           max_tokens: 16384,
@@ -1423,7 +1473,7 @@ ${supplierInfo}
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
 
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+      const r = await postWithRetry("https://api.deepseek.com/chat/completions", {
         model: deepseekModel,
         messages: [
           { role: "system", content: systemPrompt },
@@ -1676,7 +1726,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
 
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+      const r = await postWithRetry("https://api.deepseek.com/chat/completions", {
         model: deepseekModel,
         messages: [
           { role: "system", content: SUPPLIER_ANALYSIS_PROMPT },
