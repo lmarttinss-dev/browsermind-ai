@@ -8,7 +8,10 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 import express from "express";
 import cors from "cors";
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
-import { Agent as HttpsAgent } from "node:https";
+import https from "node:https";
+import dns from "node:dns";
+import type { ClientRequestArgs } from "node:http";
+import type { Duplex } from "node:stream";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
@@ -82,8 +85,45 @@ const TRANSIENT_ERROR_CODES = new Set(["EAI_AGAIN", "EAI_FAIL", "ECONNRESET", "E
 const TRANSIENT_HTTP_STATUS = new Set([429, 500, 502, 503, 504])
 const DEEPSEEK_MAX_ATTEMPTS = 4
 
-// Força IPv4 para evitar falhas de resolução IPv6 no WSL
-const deepSeekHttpsAgent = new HttpsAgent({ family: 4 })
+// Resolve via DNS público (8.8.8.8 / 1.1.1.1) com fallback para o resolver do
+// sistema. Contorna o resolver do WSL, que falha de forma intermitente (EAI_AGAIN).
+const publicDnsResolver = new dns.Resolver()
+publicDnsResolver.setServers(["8.8.8.8", "1.1.1.1"])
+
+function resilientLookup(
+  hostname: string,
+  options: dns.LookupOptions,
+  callback: (err: NodeJS.ErrnoException | null, address: string | dns.LookupAddress[], family?: number) => void,
+): void {
+  publicDnsResolver.resolve4(hostname, (err, addresses) => {
+    if (err || addresses.length === 0) {
+      dns.lookup(hostname, options, callback)
+      return
+    }
+    if (options.all) {
+      const list: dns.LookupAddress[] = addresses.map((ip) => ({ address: ip, family: 4 }))
+      callback(null, list, 4)
+    } else {
+      callback(null, addresses[0], 4)
+    }
+  })
+}
+
+// Agente HTTPS que injeta a resolução resiliente em cada conexão e força IPv4
+class DeepSeekHttpsAgent extends https.Agent {
+  constructor() {
+    super({ family: 4 })
+  }
+
+  createConnection(
+    options: ClientRequestArgs,
+    callback?: (err: Error | null, stream: Duplex) => void,
+  ): Duplex | null | undefined {
+    return super.createConnection({ ...options, lookup: resilientLookup }, callback)
+  }
+}
+
+const deepSeekHttpsAgent = new DeepSeekHttpsAgent()
 
 function extractErrorCode(error: unknown): string | undefined {
   if (!error || typeof error !== "object") return undefined
