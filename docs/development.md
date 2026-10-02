@@ -202,3 +202,39 @@ Para debugar ações no browser:
 | 404 no webapp | Falta proxy no Vite | Adicionar rota em `vite.config.ts` |
 | DISPLAY not set | WSLg não configurado | Verificar com `echo $DISPLAY` |
 | Extensão não carrega | Caminho incorreto ou headless | Verificar path e usar `headless: false` |
+| `getaddrinfo EAI_AGAIN` / `net::ERR_NAME_NOT_RESOLVED` | DNS do WSL intermitente | Ver [Corrigir DNS no WSL](#corrigir-dns-no-wsl) |
+
+### Corrigir DNS no WSL
+
+O WSL gera automaticamente o `/etc/resolv.conf` apontando para o gateway do Windows
+(`172.25.240.1`). Em redes instáveis, esse resolver falha de forma intermitente,
+causando `getaddrinfo EAI_AGAIN` (Node) e `net::ERR_NAME_NOT_RESOLVED` (browser).
+
+Para usar um DNS público (8.8.8.8 / 1.1.1.1):
+
+1. Impedir a regeneração automática do `/etc/resolv.conf`:
+
+   ```bash
+   sudo tee -a /etc/wsl.conf > /dev/null <<'EOF'
+   [network]
+   generateResolvConf = false
+   EOF
+   ```
+
+2. Substituir o conteúdo de `/etc/resolv.conf`:
+
+   ```bash
+   sudo tee /etc/resolv.conf > /dev/null <<'EOF'
+   nameserver 8.8.8.8
+   nameserver 1.1.1.1
+   EOF
+   ```
+
+3. No PowerShell (Windows), reiniciar o WSL:
+
+   ```powershell
+   wsl --shutdown
+   ```
+
+> O código já tem mitigação em runtime (retry + DNS público nas chamadas DeepSeek
+> e retry na navegação do browser), mas a correção acima resolve a causa raiz.

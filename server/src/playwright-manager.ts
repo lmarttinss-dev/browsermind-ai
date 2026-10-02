@@ -17,6 +17,19 @@ export interface ActionResult {
   screenshot?: string;
 }
 
+// Erros de navegação transitórios (DNS/rede) que justificam nova tentativa
+const RETRYABLE_NAVIGATION_ERRORS = [
+  "ERR_ABORTED",
+  "ERR_BLOCKED_BY_CLIENT",
+  "ERR_NAME_NOT_RESOLVED",
+  "ERR_CONNECTION_REFUSED",
+  "ERR_CONNECTION_RESET",
+  "ERR_CONNECTION_TIMED_OUT",
+  "ERR_TIMED_OUT",
+  "ERR_INTERNET_DISCONNECTED",
+  "ERR_NETWORK_CHANGED",
+];
+
 export class PlaywrightManager {
   private browser: Browser | null = null;
   private context: BrowserContext | null = null;
@@ -212,22 +225,24 @@ export class PlaywrightManager {
         return;
       } catch (err) {
         const msg = String(err);
-        // ERR_ABORTED: ocorre quando a navegação é cancelada (ex: redirect, anti-bot, popup)
-        // Bloqueio de domínio: alguns sites redirecionam para página em branco
-        if (msg.includes("ERR_ABORTED") || msg.includes("net::ERR_BLOCKED_BY_CLIENT")) {
-          if (attempt < retries) {
-            console.log(`🔄 Navegação abortada (tentativa ${attempt + 1}/${retries + 1}), re-tentando em 1s...`);
-            await new Promise(r => setTimeout(r, 1000));
-            continue;
-          }
-          // Na última tentativa, tenta com waitUntil: "load" como fallback
-          if (attempt === retries) {
-            console.log("⚠️ Última tentativa com waitUntil: load...");
-            await page.goto(url, { waitUntil: "load", timeout: timeout + 10000 });
-            return;
-          }
+        const isRetryable = RETRYABLE_NAVIGATION_ERRORS.some(code => msg.includes(code));
+
+        if (isRetryable && attempt < retries) {
+          const delay = 1000 * Math.pow(2, attempt);
+          console.log(`🔄 Navegação falhou (${msg.slice(0, 100)}). Tentativa ${attempt + 2}/${retries + 1} em ${delay}ms...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
         }
-        // Outros erros (timeout, DNS, etc) — relança
+
+        // Na última tentativa de erro de carregamento, tenta waitUntil: "load" como fallback
+        // (ERR_ABORTED/BLOCKED: navegação cancelada por redirect, anti-bot ou popup)
+        if (attempt === retries && (msg.includes("ERR_ABORTED") || msg.includes("ERR_BLOCKED_BY_CLIENT"))) {
+          console.log("⚠️ Última tentativa com waitUntil: load...");
+          await page.goto(url, { waitUntil: "load", timeout: timeout + 10000 });
+          return;
+        }
+
+        // Outros erros — relança
         throw err;
       }
     }
