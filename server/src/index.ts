@@ -8,6 +8,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 import express from "express";
 import cors from "cors";
 import axios from "axios";
+import { postDeepSeek } from "./deepseek-client.js";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
@@ -566,12 +567,12 @@ app.post("/api/analyze", async (req, res) => {
       aiResponse = "";
       let lastFinishReason = "";
       for (let round = 0; round < 4; round++) {
-        const r = await axios.post("https://api.deepseek.com/chat/completions", {
+        const r = await postDeepSeek({
           model: deepseekModel,
           messages,
           max_tokens: 16384,
           temperature: 0.7,
-        }, { headers: { Authorization: `Bearer ${key}` } });
+        }, key);
         const chunk = r.data.choices?.[0]?.message?.content || "";
         lastFinishReason = r.data.choices?.[0]?.finish_reason || "";
         aiResponse += chunk;
@@ -1423,7 +1424,7 @@ ${supplierInfo}
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
 
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+      const r = await postDeepSeek({
         model: deepseekModel,
         messages: [
           { role: "system", content: systemPrompt },
@@ -1431,7 +1432,7 @@ ${supplierInfo}
         ],
         max_tokens: 8192,
         temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } })
+      }, key)
       aiResponse = r.data.choices?.[0]?.message?.content || ""
 
     } else {
@@ -1676,7 +1677,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.")
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash"
 
-      const r = await axios.post("https://api.deepseek.com/chat/completions", {
+      const r = await postDeepSeek({
         model: deepseekModel,
         messages: [
           { role: "system", content: SUPPLIER_ANALYSIS_PROMPT },
@@ -1684,7 +1685,7 @@ app.post("/api/supplier/analyze", async (req, res) => {
         ],
         max_tokens: 16384,
         temperature: 0.7,
-      }, { headers: { Authorization: `Bearer ${key}` } })
+      }, key)
       aiResponse = r.data.choices?.[0]?.message?.content || ""
 
     } else {
