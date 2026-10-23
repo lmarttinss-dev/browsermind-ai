@@ -1,12 +1,13 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Tag, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
+import { ArrowLeft, ExternalLink, Trash2, Calendar, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { rehypeSectionIds, scrollToAnchor, injectReportSummary } from "@/lib/markdown"
 import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
+import { ProductCategoryEditor } from "@/components/pipeline/ProductCategoryEditor"
 import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
 
 const STAGE_LABELS: Record<PipelineStage, { label: string; color: string }> = {
@@ -280,13 +281,8 @@ export const ProductDetailPage = () => {
             )}
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
-          <div className="flex items-center gap-4 text-sm text-gray-400">
-            {product.category && (
-              <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5" />
-                {product.category.replace(/\*+/g, "")}
-              </span>
-            )}
+          <div className="flex flex-wrap items-start gap-3 text-sm text-gray-400">
+            <ProductCategoryEditor key={product._id} product={product} onUpdate={setProduct} />
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               {new Date(product.analyzedAt).toLocaleDateString("pt-BR")}

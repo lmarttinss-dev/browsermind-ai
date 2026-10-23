@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { useNavigate } from "react-router-dom"
-import { ChevronDown, Check, Filter, X } from "lucide-react"
+import { ChevronDown, Check, Filter, Search, X } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
 import { ProductCard } from "./ProductCard"
 import { usePipelineStore } from "@/store/usePipelineStore"
@@ -27,9 +27,19 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
   const navigate = useNavigate()
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [categorySearch, setCategorySearch] = useState("")
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const filterRef = useRef<HTMLDivElement | null>(null)
 
   const selectedCategory = categories.find(c => c._id === selectedCategoryId)
+  const normalizeSearch = (value: string) =>
+    value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().trim()
+  const search = normalizeSearch(categorySearch)
+  const filteredCategories = categories.filter(c => normalizeSearch(c.name).includes(search))
+
+  useEffect(() => {
+    if (!filterOpen) setCategorySearch("")
+  }, [filterOpen])
 
   useEffect(() => {
     fetchCategories()
@@ -122,8 +132,16 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
         {/* Filtro por categoria */}
         <div className="flex items-center gap-2 px-4 pt-3" ref={filterRef}>
           <Filter className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-          <div className="relative">
+          <div className="relative" onKeyDown={event => {
+            if (event.key === "Escape") {
+              setFilterOpen(false)
+              filterButtonRef.current?.focus()
+            }
+          }}>
             <button
+              ref={filterButtonRef}
+              aria-expanded={filterOpen}
+              aria-controls="category-filter-options"
               onClick={() => setFilterOpen(!filterOpen)}
               className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg border text-xs transition-colors ${
                 selectedCategoryId
@@ -143,7 +161,27 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
 
             {filterOpen && (
               <div className="absolute left-0 top-full mt-1 w-[440px] max-w-[90vw] bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
-                <div className="max-h-72 overflow-y-auto py-1">
+                <div className="border-b border-gray-700 p-2">
+                  <div className="flex items-center gap-2 rounded-lg border border-gray-600 bg-gray-900/60 px-2.5 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-400/10">
+                    <Search className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+                    <input
+                      autoFocus
+                      type="text"
+                      aria-label="Pesquisar categoria"
+                      placeholder="Pesquisar categoria..."
+                      value={categorySearch}
+                      onChange={event => setCategorySearch(event.target.value)}
+                      className="min-w-0 flex-1 bg-transparent py-2 text-xs text-gray-200 placeholder-gray-500 outline-none"
+                    />
+                    {categorySearch && (
+                      <button type="button" aria-label="Limpar pesquisa" onClick={() => setCategorySearch("")}
+                        className="rounded p-0.5 text-gray-500 hover:bg-gray-700 hover:text-gray-200">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div id="category-filter-options" className="max-h-72 overflow-y-auto py-1">
                   <button
                     onClick={() => { setFilter(null); setFilterOpen(false) }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${!selectedCategoryId ? "bg-blue-600/10 text-blue-300" : "text-gray-300 hover:bg-gray-700"}`}
@@ -153,7 +191,7 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
                     {!selectedCategoryId && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                   </button>
 
-                  {categories.map(c => {
+                  {filteredCategories.map(c => {
                     const isActive = c._id === selectedCategoryId
                     return (
                       <button
@@ -167,6 +205,11 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
                       </button>
                     )
                   })}
+                  {filteredCategories.length === 0 && (
+                    <p role="status" className="px-3 py-5 text-center text-xs text-gray-500">
+                      Nenhuma categoria encontrada.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
