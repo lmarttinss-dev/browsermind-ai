@@ -12,12 +12,12 @@ import {
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { useNavigate } from "react-router-dom"
-import { ChevronDown, Check, Filter, Search, X } from "lucide-react"
+import { ChevronDown, Check, Filter, Search, Trash2, Loader2, X } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
 import { ProductCard } from "./ProductCard"
 import { usePipelineStore } from "@/store/usePipelineStore"
 import { useCategoryStore } from "@/store/useCategoryStore"
-import type { PipelineProduct, PipelineStage } from "@/lib/api"
+import { api, type Category, type PipelineProduct, type PipelineStage } from "@/lib/api"
 
 const STAGES: PipelineStage[] = ["triagem", "analise", "aprovado", "importando", "concluido"]
 
@@ -28,6 +28,27 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState("")
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState("")
+
+  const handleDeleteCategory = async (category: Category) => {
+    if (deletingCategoryId) return
+    if (!window.confirm(`Excluir a categoria "${category.name}"? Os produtos vinculados serão mantidos na esteira e ficarão sem categoria.`)) return
+    setDeletingCategoryId(category._id)
+    setDeleteError("")
+    try {
+      await api.deleteCategory(category._id)
+      useCategoryStore.setState(state => ({
+        categories: state.categories.filter(c => c._id !== category._id),
+        selectedCategoryId: state.selectedCategoryId === category._id ? null : state.selectedCategoryId,
+      }))
+      await Promise.all([fetchCategories(), usePipelineStore.getState().fetchProducts()])
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Erro ao excluir categoria")
+    } finally {
+      setDeletingCategoryId(null)
+    }
+  }
   const filterButtonRef = useRef<HTMLButtonElement | null>(null)
   const filterRef = useRef<HTMLDivElement | null>(null)
 
@@ -194,15 +215,26 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
                   {filteredCategories.map(c => {
                     const isActive = c._id === selectedCategoryId
                     return (
-                      <button
-                        key={c._id}
-                        onClick={() => { setFilter(c._id); setFilterOpen(false) }}
-                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${isActive ? "bg-blue-600/10 text-blue-300" : "text-gray-300 hover:bg-gray-700"}`}
-                      >
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                        <span className="flex-1 whitespace-normal break-words leading-snug">{c.name}</span>
-                        {isActive && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
-                      </button>
+                      <div key={c._id} className={`group flex items-center pr-2 transition-colors ${isActive ? "bg-blue-600/10" : "hover:bg-gray-700/60"}`}>
+                        <button
+                          onClick={() => { setFilter(c._id); setFilterOpen(false) }}
+                          className={`min-w-0 flex-1 flex items-center gap-2 px-3 py-2 text-xs text-left ${isActive ? "text-blue-300" : "text-gray-300"}`}
+                        >
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                          <span className="flex-1 whitespace-normal break-words leading-snug">{c.name}</span>
+                          {isActive && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={deletingCategoryId !== null}
+                          onClick={() => void handleDeleteCategory(c)}
+                          aria-label={`Excluir categoria ${c.name}`}
+                          title="Excluir categoria"
+                          className="shrink-0 rounded-md p-1.5 text-gray-500 transition-colors hover:bg-red-500/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:opacity-40"
+                        >
+                          {deletingCategoryId === c._id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
                     )
                   })}
                   {filteredCategories.length === 0 && (
@@ -225,6 +257,10 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
             </button>
           )}
         </div>
+
+        {deleteError && (
+          <p role="alert" className="mx-4 mt-2 rounded-lg border border-red-800 bg-red-900/20 px-3 py-2 text-xs text-red-400">{deleteError}</p>
+        )}
 
         <div className="flex gap-4 overflow-x-auto p-4 h-full">
           {STAGES.map(stage => {

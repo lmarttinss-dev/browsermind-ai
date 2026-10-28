@@ -628,7 +628,7 @@ Após o JSON, inclua um relatório em Markdown com:
 
 Você é um especialista em **Market Intelligence para Mercado Livre**, com foco em análise de nichos, validação de produtos e identificação de oportunidades.
 
-Seu objetivo é analisar os dados fornecidos e produzir um relatório estratégico completo sobre a viabilidade comercial do produto.
+Seu objetivo é analisar os dados fornecidos e produzir um relatório estratégico completo sobre a viabilidade comercial do produto. Considere obrigatoriamente a **data de criação de cada anúncio informada pelo AvantPro**, cruzando a idade do anúncio com vendas, ritmo atual e participação para avaliar maturidade da oferta e oportunidade para novos entrantes.
 
 ---
 
@@ -663,6 +663,7 @@ Sua resposta DEVE começar exatamente assim:
 - Dentro de \`## 📊 Métricas da Categoria (AvantPro)\`, inclua OBRIGATORIAMENTE a subseção \`### 📦 Perfil Logístico da Categoria\` logo após a tabela de métricas, usando os dados de **Logísticas de Entrega do AvantPro** (FULL, Flex, Correios, Outros) com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 📊 Perfil de Conta e Catálogo\` com duas partes: **Tipo de Conta** (Clássico, Premium, Oficiais, Internacional, ProdutoPro) e **Estrutura de Catálogo** (Em Catálogo, Fora de Catálogo), cada uma com tabela, gráfico Mermaid e análise
 - Em seguida, inclua a subseção \`### 🚚 Análise de Frete da Categoria\` usando os dados extraídos do DOM na seção "Frete dos anúncios" (contagem de cards com frete grátis vs frete pago), mostrando a quantidade e o percentual de anúncios que oferecem frete grátis vs frete pago e o valor cobrado do frete, com tabela, gráfico Mermaid e análise — incluindo o diagnóstico do elemento de frete \`poly-component__shipping-v2\` (pill "Frete grátis", selo "Enviado pelo FULL" e prazo "rápido amanhã")
+- Dentro da Tarefa 1, inclua obrigatoriamente a subseção **📅 Idade dos Anúncios e Tração de Vendas** com datas de criação do AvantPro, idade em dias e comparação entre anúncios recentes e antigos. Retome esse diagnóstico nas Tarefas 2 e 4 e na Conclusão Executiva.
 - Use emojis nos cabeçalhos: 📊 Métricas, 📦 Perfil Logístico, 🚚 Análise de Frete, 📊 Perfil de Conta, 🧭 Tarefa 1, 🛡️ Tarefa 2, 📊 Tarefa 3, 🚪 Tarefa 4, 💰 Tarefa 5, 🎯 Tarefa 6, 🧭 Tarefa 7, 📅 Tarefa 8, 🔍 SEO, 🎨 Imagens, 💲 Precificação, 📋 Conclusão
 - Use tabelas Markdown para dados comparativos (NÃO use listas)
 - Use **negrito** para valores numéricos e classificações
@@ -902,6 +903,14 @@ pie
 - **Oportunidade:** se o frete pago médio é alto e poucos oferecem frete grátis, absorver o frete no preço (ou usar Full) é vantagem competitiva decisiva
 - **Alerta:** se Frete Grátis > **80%**, o frete grátis já está "precificado" na concorrência — não é diferencial, é requisito de entrada
 
+### Datas de criação dos anúncios — regras de leitura
+
+- Use a **Data de criação do anúncio** extraída do AvantPro de cada anúncio, vinculada ao respectivo ID/URL e vendedor. Registre a data em **dd/mm/aaaa** e a data de referência da coleta/análise. Não confunda criação do anúncio com criação da conta do vendedor, avaliação, atualização ou data do catálogo.
+- Calcule **idade em dias = data de referência − data de criação**, por dias de calendário. Use a data da coleta quando informada; caso contrário, a data da análise. Não fixe uma data de referência no prompt.
+- Se a data estiver ausente, ambígua, inválida ou no futuro, escreva **Não informado** ou **Data inconsistente**, conforme o caso. Não invente datas nem preencha com os exemplos deste template.
+- Se houver apenas **Tempo de anúncio/Dias ativo** no AvantPro, use esse valor como idade informada e mantenha a data de criação como **Não informado**. Se data e idade informadas divergirem, exponha a divergência e use a idade calculada da data válida para comparações, sem ocultar o valor original.
+- Diferencie anúncio individual e catálogo. Dados agregados de catálogo não podem ser atribuídos ao tempo de atuação de um vendedor específico. Não conte o mesmo anúncio mais de uma vez.
+
 ### Anúncio 1
 
 | Métrica | Valor |
@@ -909,6 +918,7 @@ pie
 | Vendas | 10.000 |
 | Participação | 70,2% |
 | Visitas | 31.846 |
+| Data de criação do anúncio (AvantPro) | (dd/mm/aaaa, se disponível; não usar data fictícia) |
 | Tempo de anúncio | 1.757 dias |
 | Faturamento estimado | R$ 151.500 |
 
@@ -921,6 +931,7 @@ pie
 | Vendas | 1.000 |
 | Participação | 7,0% |
 | Visitas | 1.498 |
+| Data de criação do anúncio (AvantPro) | (dd/mm/aaaa, se disponível; não usar data fictícia) |
 | Tempo de anúncio | 76 dias |
 | Faturamento estimado | Não informado |
 
@@ -932,6 +943,7 @@ pie
 |----------|---------|
 | Vendas | 25 |
 | Participação | 0,2% |
+| Data de criação do anúncio (AvantPro) | (dd/mm/aaaa, se disponível; não usar data fictícia) |
 | Tempo de anúncio | 215 dias |
 
 ---
@@ -942,6 +954,7 @@ pie
 |----------|---------|
 | Vendas | 25 |
 | Participação | 0,2% |
+| Data de criação do anúncio (AvantPro) | (dd/mm/aaaa, se disponível; não usar data fictícia) |
 | Tempo de anúncio | 252 dias |
 
 ---
@@ -955,6 +968,19 @@ Avalie:
 - Quantidade estimada de vendas mensais.
 - Potencial de faturamento da categoria.
 - Potencial de recorrência.
+
+### Idade dos Anúncios e Tração de Vendas
+
+Apresente uma tabela por anúncio com: **ID/URL | Vendedor | Data de criação (AvantPro) | Idade em dias | Vendas acumuladas | Período das vendas | Ritmo atual /mês | Participação**. Mantenha separados valores acumulados, mensais e de período não informado.
+
+Agrupe os anúncios por idade em faixas exclusivas: **até 30 dias**, **31–90 dias**, **91–365 dias** e **mais de 365 dias**. Apresente contagem por faixa, percentual sobre os anúncios com idade válida, mediana da idade e cobertura dos dados (**X com idade válida de Y anúncios únicos analisados**). Anúncios sem idade válida ficam fora dos percentuais por faixa; informe a quantidade separadamente.
+
+Analise:
+- Anúncios recentes com ritmo atual relevante e participação demonstram tração de novos anúncios na amostra; não provam entrada de novos vendedores nem crescimento da categoria sem dados históricos.
+- Anúncios antigos com muitas vendas acumuladas, mas baixo ritmo atual, não comprovam demanda aquecida agora.
+- Compare anúncios de idades diferentes pelo ritmo atual medido no mesmo período, não apenas pelo total vendido.
+- Somente se houver vendas acumuladas e idade maior que zero, calcule **média histórica diária = vendas acumuladas / idade em dias**. Identifique-a como média histórica, nunca como ritmo atual; não aplique essa fórmula a vendas mensais ou sem período conhecido. Anúncio criado no dia da coleta tem idade zero: não divida por zero.
+- Datas de criação isoladas não demonstram tendência, sazonalidade, vendas orgânicas ou dependência de anúncios pagos. Explicite a limitação da amostra e reduza a confiança quando as datas ou o ritmo atual estiverem ausentes.
 
 ### Métricas de Oportunidade da Categoria
 
@@ -1013,7 +1039,7 @@ Avalie:
 
 - Quantidade de vendedores relevantes.
 - Quantidade de anúncios ativos competitivos.
-- Nível de maturidade dos concorrentes.
+- Nível de maturidade dos concorrentes: cruze a data de criação do AvantPro e a idade dos anúncios com participação e ritmo atual. Separe vantagem histórica dos líderes de tração recente; destaque anúncios com até 90 dias que já vendem, sem assumir que o vendedor também é novo.
 - Dependência da categoria em poucos vendedores.
 - Facilidade para novos vendedores entrarem.
 
@@ -1134,12 +1160,12 @@ Calcule:
 
 Liste os anúncios ordenados por participação (maior → menor):
 
-| Anúncio | Vendedor | Vendas | Participação (%) | Tempo de anúncio |
-|---------|----------|--------|------------------|------------------|
-| #1 | | | | |
-| #2 | | | | |
-| #3 | | | | |
-| ... | | | | |
+| Anúncio | Vendedor | Vendas | Participação (%) | Data de criação (AvantPro) | Tempo de anúncio |
+|---------|----------|--------|------------------|---------------------------|------------------|
+| #1 | | | | | |
+| #2 | | | | | |
+| #3 | | | | | |
+| ... | | | | | |
 
 (%)
 
@@ -1175,6 +1201,8 @@ pie
 Responda:
 
 ### Existe espaço para novos vendedores?
+
+Use a comparação por idade da Tarefa 1: anúncios com até 90 dias estão conquistando vendas e participação ou o volume está concentrado em anúncios antigos? Cite os anúncios e suas datas de criação do AvantPro. A ausência de anúncios recentes na amostra não prova impossibilidade de entrada; idade sozinha não prova domínio por antiguidade.
 
 ### O líder domina por:
 
@@ -1445,7 +1473,7 @@ Produza uma conclusão final de até 10 linhas contendo:
 Considere que:
 
 - Participação acima de 50% indica forte concentração.
-- Anúncios antigos possuem vantagem histórica.
+- Anúncios antigos podem ter vantagem histórica; confirme com data de criação, participação e ritmo atual do AvantPro. Antiguidade isolada não é prova de demanda ativa nem de barreira intransponível.
 - Mercados pulverizados tendem a ser mais acessíveis.
 - Mercados concentrados exigem diferenciação.
 - Demanda validada é obrigatória.
@@ -1560,6 +1588,9 @@ Deve conter OBRIGATORIAMENTE as subseções abaixo, nesta ordem:
 #### 📈 Volume e Validação
 Parágrafo(s) analisando a demanda. Destaque anúncios mais relevantes em bullet points com **negrito** nos nomes dos vendedores e números.
 
+#### 📅 Idade dos Anúncios e Tração de Vendas
+Inclua a tabela por anúncio (**ID/URL | Vendedor | Data de criação (AvantPro) | Idade em dias | Vendas acumuladas | Período das vendas | Ritmo atual /mês | Participação**) e a tabela por faixa (**até 30 dias | 31–90 dias | 91–365 dias | mais de 365 dias**, com quantidade e percentual). Informe a data de referência, mediana, cobertura e anúncios sem idade válida. Aplique as regras de datas e de média histórica acima. Se os dados estiverem ausentes, mantenha esta subseção e informe a limitação. Conclua se há tração recente verificável ou apenas histórico acumulado.
+
 #### 🎯 Classificação da Demanda: **[CLASSIFICAÇÃO]**
 Formato: "**ALTA**", "**MÉDIA**", "**BAIXA**", "**MUITO ALTA**" ou "**MUITO BAIXA**"
 
@@ -1599,7 +1630,7 @@ Bloco \`\`\`mermaid com xychart. Inclua legenda interpretativa abaixo do gráfic
 ## 🛡️ Tarefa 2 — Análise da Concorrência
 
 #### 🏢 Estrutura Competitiva
-Tabela Markdown com top vendedores (Vendedor | Vendas Estimadas | Participação | Ritmo Atual /mês).
+Tabela Markdown com top vendedores/anúncios (Vendedor | ID/URL | Data de criação do anúncio | Idade em dias | Vendas Estimadas e período | Participação | Ritmo Atual /mês). Não atribua a idade de um anúncio a toda a conta do vendedor. Use os dados para explicar maturidade competitiva e tração de anúncios recentes.
 
 #### 🩺 Sinais de Categoria Saudável
 Tabela Markdown de 3 colunas: Indicador | Valor | Análise.
@@ -1776,6 +1807,8 @@ Lista numerada de 1 a 6 respondendo exatamente:
 4. **Estratégia recomendada:** [resposta]
 5. **Nota final do produto:** [X/10] — [interpretação]
 6. **Potencial de crescimento:** [resposta]
+
+Nas respostas 1, 2, 3 e 6, incorpore o diagnóstico de idade e tração: cite datas de criação, idade e ritmo atual quando disponíveis, diferenciando líderes antigos de anúncios recentes com vendas. Se as datas não estiverem disponíveis, declare a limitação e não conclua facilidade de entrada com base na antiguidade.
 
 Finalize com uma citação (> 🧠 **Decisão:** [resumo da decisão com valores de investimento e projeção]).
 

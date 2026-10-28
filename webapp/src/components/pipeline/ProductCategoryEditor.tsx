@@ -36,10 +36,23 @@ export function ProductCategoryEditor({ product, onUpdate }: {
     setBusy(true)
     setError("")
     try {
-      if (product.categoryId) await api.updateCategory(product.categoryId, { name: trimmed })
-      const { product: updated } = await api.updatePipelineProduct(product._id, { category: trimmed })
-      onUpdate(updated)
-      setCurrentName(trimmed)
+      const { categories } = await api.getCategories()
+      const slug = trimmed.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      const existing = categories.find(category => category.slug === slug || category.name === trimmed)
+      if (existing && existing._id !== product.categoryId) {
+        const { product: updated } = await api.assignCategoryToProduct(product._id, existing._id)
+        onUpdate(updated)
+        setCurrentName(updated.category)
+        setColor(existing.color)
+      } else if (product.categoryId) {
+        const { category } = await api.updateCategory(product.categoryId, { name: trimmed })
+        onUpdate({ ...product, category: category.name })
+        setCurrentName(category.name)
+      } else {
+        const { product: updated } = await api.updatePipelineProduct(product._id, { category: trimmed })
+        onUpdate(updated)
+        setCurrentName(updated.category)
+      }
       setEditing(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar categoria")
@@ -74,7 +87,7 @@ export function ProductCategoryEditor({ product, onUpdate }: {
           <X className="h-4 w-4" />
         </button>
       </div>
-      {product.categoryId && <p className="mt-2 text-[11px] leading-relaxed text-gray-500">O nome será atualizado para todos os produtos desta categoria.</p>}
+      {product.categoryId && <p className="mt-2 text-[11px] leading-relaxed text-gray-500">Se o nome já existir, este produto será movido para essa categoria. Caso contrário, o nome será alterado para todos os produtos da categoria atual.</p>}
       {error && <p role="alert" className="mt-2 text-xs text-red-400">{error}</p>}
     </form>
   )

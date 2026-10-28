@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { Category } from "../models/category.js"
 import { Product, PIPELINE_STAGES } from "../models/product.js"
 
 export const router = Router()
@@ -85,9 +86,13 @@ router.patch("/:id/category", async (req, res) => {
   try {
     const { categoryId } = req.body
 
+    const category = categoryId ? await Category.findById(categoryId) : null
+    if (categoryId && !category) {
+      return res.status(404).json({ error: "Categoria não encontrada" })
+    }
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { $set: { categoryId: categoryId || null } },
+      { $set: { categoryId: category?._id || null, category: category?.name || "" } },
       { new: true }
     )
 

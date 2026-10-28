@@ -1,3 +1,7 @@
+import express from "express"
+import request from "supertest"
+import categoryRouter from "../routes/categories"
+import pipelineRouter from "../routes/pipeline"
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest"
 import mongoose from "mongoose"
 import { MongoMemoryServer } from "mongodb-memory-server"
@@ -79,5 +83,49 @@ describe("Category - vínculo com produtos", () => {
 
     const updated = await Product.findById(product._id)
     expect(updated?.categoryId).toBeNull()
+  })
+})
+
+const app = express()
+app.use(express.json())
+app.use("/categories", categoryRouter)
+app.use("/pipeline", pipelineRouter)
+
+describe("Category routes - atualizacao", () => {
+  it("atualiza nome, slug e produtos vinculados", async () => {
+    const category = await Category.create({ name: "Nome antigo" })
+    const product = await Product.create({ title: "Teste", url: "https://example.com", category: category.name, categoryId: category._id })
+    const response = await request(app).patch(`/categories/${category._id}`).send({ name: "  Novo Nome  " })
+    expect(response.status).toBe(200)
+    expect(response.body.category.name).toBe("Novo Nome")
+    expect(response.body.category.slug).toBe("novo-nome")
+    expect((await Product.findById(product._id))?.category).toBe("Novo Nome")
+  })
+
+  it("retorna conflito em vez de erro generico para nome equivalente", async () => {
+    const source = await Category.create({ name: "Origem" })
+    await Category.create({ name: "Destino" })
+    const response = await request(app).patch(`/categories/${source._id}`).send({ name: "DESTINO" })
+    expect(response.status).toBe(409)
+    expect(response.body.error).toContain("existe")
+    expect((await Category.findById(source._id))?.name).toBe("Origem")
+  })
+
+  it("rejeita nome vazio", async () => {
+    const category = await Category.create({ name: "Teste" })
+    const response = await request(app).patch(`/categories/${category._id}`).send({ name: "  " })
+    expect(response.status).toBe(400)
+  })
+
+  it("move apenas o produto para uma categoria existente e sincroniza o nome", async () => {
+    const source = await Category.create({ name: "Origem" })
+    const target = await Category.create({ name: "Destino" })
+    const product = await Product.create({ title: "Teste", url: "https://example.com", category: source.name, categoryId: source._id })
+    const other = await Product.create({ title: "Outro", url: "https://example.com/other", category: source.name, categoryId: source._id })
+    const response = await request(app).patch(`/pipeline/${product._id}/category`).send({ categoryId: target._id })
+    expect(response.status).toBe(200)
+    expect(response.body.product.categoryId).toBe(String(target._id))
+    expect(response.body.product.category).toBe("Destino")
+    expect((await Product.findById(other._id))?.category).toBe("Origem")
   })
 })
