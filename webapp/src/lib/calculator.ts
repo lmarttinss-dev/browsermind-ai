@@ -34,6 +34,23 @@ export type SalesInput = {
   packagingCost: number
 }
 
+/** Complete, versioned form state for reopening a product calculation. */
+export type CalculatorState = {
+  version: 1
+  dollarRate: number
+  productMode: "single" | "multiple"
+  product: ProductInput
+  sales: SalesInput
+  isKit: boolean
+  kitQuantity: number
+  source: {
+    supplierIndex: number
+    quoteIndex: number | null
+    supplierName: string
+  } | null
+  savedAt?: string
+}
+
 export type ImportCalcResult = {
   customsValueUSD: number
   customsValueBRL: number

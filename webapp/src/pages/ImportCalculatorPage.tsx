@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Loader2, Link, CheckCircle2, Boxes } from "lucide-react"
 import { api, type PipelineProduct, type Supplier } from "@/lib/api"
@@ -7,6 +7,7 @@ import {
   calcSales,
   calcInvestment,
   COURIER_RATE,
+  type CalculatorState,
   type ProductInput,
   type SalesInput,
 } from "@/lib/calculator"
@@ -28,9 +29,14 @@ const ImportCalculatorPage = () => {
     supplier: Supplier | null
     supplierIndex: number
     quoteIndex: number | null
+    supplierName: string
   } | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [savedSuccess, setSavedSuccess] = useState(false)
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState("")
+  const [loadError, setLoadError] = useState("")
+  const [rateLabel, setRateLabel] = useState("HOJE")
+  const rateEdited = useRef(false)
 
   // Lê parâmetros da URL manualmente (mais confiável que useSearchParams com navigate)
   const params = new URLSearchParams(search)
@@ -38,6 +44,8 @@ const ImportCalculatorPage = () => {
   const supplierIndex = params.get("supplier")
   const quoteIndex = params.get("quote")
   const urlPrice = params.get("price")
+  const restoreSaved = params.get("saved") === "1" || (supplierIndex === null && params.get("new") !== "1")
+  const requireSaved = params.get("saved") === "1"
 
   const [product, setProduct] = useState<ProductInput>({
     name: "",
@@ -68,85 +76,100 @@ const ImportCalculatorPage = () => {
     return parseFloat(cleaned) || 0
   }
 
-  // Busca produto da esteira se veio com productId
+  // Restore saved inputs, then refresh the exchange rate for this consultation.
   useEffect(() => {
-    if (!productId) return
-    setIsLoadingProduct(true)
-    api.getPipelineProduct(productId)
-      .then((res) => {
-        setPipelineProduct(res.product)
-        const prod = res.product
+    let cancelled = false
+    rateEdited.current = false
+    setPipelineProduct(null)
+    setSelectedSupplierInfo(null)
+    setSavedFingerprint(null)
+    setLoadError("")
+    setSaveError("")
+    setIsLoadingProduct(!!productId)
+    setLoadingRate(true)
+    setProduct({ name: "", importTax: 60, quantity: 50, unitPriceDollar: 0, shippingDollar: 0, icms: 17 })
+    setSales({ isKit: false, salesTax: 4, salePrice: 0, shippingFee: 9, adFee: 11, packagingCost: 0 })
+    setProductMode("single")
+    setIsKit(false)
+    setKitQuantity(2)
+    setDollarRate(5.17)
+    setRateLabel("PADRÃO")
 
-        // Preenche nome do produto
-        setProduct((prev) => ({ ...prev, name: prod.title || "" }))
-
-        // Determina o preço de venda: product.price > metrics > urlParam
-        const metricsPrice = parseReportMetrics(prod.analysisReport || "").price
-        const resolvedPrice = prod.price > 0 ? prod.price : (metricsPrice > 0 ? metricsPrice : 0)
-        const salePrice = resolvedPrice > 0 ? resolvedPrice : (urlPrice ? parseFloat(urlPrice) : 0)
-
-        // Preenche dados de venda
-        setSales((prev) => ({
-          ...prev,
-          salePrice: salePrice > 0 ? salePrice : prev.salePrice,
-        }))
-
-        // Se tem supplier/quote nos params, extrai dados
-        if (supplierIndex && prod.suppliers) {
-          const sIdx = parseInt(supplierIndex, 10)
-          const supplier = prod.suppliers[sIdx]
-          if (supplier) {
-            // Determina qual cotação usar: a especificada nos params ou a mais recente
-            let effectiveQuoteIndex: number | null = quoteIndex ? parseInt(quoteIndex, 10) : null
-
-            if (effectiveQuoteIndex === null && supplier.quotes && supplier.quotes.length > 0) {
-              const sortedQuotes = supplier.quotes
-                .map((q, i) => ({ index: i, date: new Date(q.quotedAt).getTime() }))
-                .sort((a, b) => b.date - a.date)
-              effectiveQuoteIndex = sortedQuotes[0].index
+    const load = async () => {
+      try {
+        if (productId) {
+          const { product: prod } = await api.getPipelineProduct(productId)
+          if (cancelled) return
+          setPipelineProduct(prod)
+          const saved = restoreSaved ? prod.calculatorState : undefined
+          if (saved) {
+            setProduct(saved.product)
+            setSales(saved.sales)
+            setDollarRate(saved.dollarRate)
+            setProductMode(saved.productMode)
+            setIsKit(saved.isKit)
+            setKitQuantity(saved.kitQuantity)
+            setRateLabel("SALVO")
+            if (saved.source) {
+              setSelectedSupplierInfo({ ...saved.source, supplier: null })
             }
+          } else {
+            if (requireSaved) throw new Error("Este produto ainda não possui um cálculo salvo.")
 
-            setSelectedSupplierInfo({
-              supplier,
-              supplierIndex: sIdx,
-              quoteIndex: effectiveQuoteIndex,
-            })
-
-            // Preço do fornecedor — atualiza via setProduct separado
-            if (effectiveQuoteIndex !== null) {
-              const quote = supplier.quotes?.[effectiveQuoteIndex]
-              if (quote) {
-                setProduct((prev) => ({
-                  ...prev,
-                  unitPriceDollar: parsePrice(quote.unitPrice),
-                  shippingDollar: parsePrice(quote.totalShippingCost),
-                  quantity: parseInt(quote.moq, 10) || 50,
+            const metricsPrice = parseReportMetrics(prod.analysisReport || "").price
+            const salePrice = prod.price > 0 ? prod.price : (metricsPrice > 0 ? metricsPrice : Number(urlPrice) || 0)
+            setProduct(prev => ({ ...prev, name: prod.title || "" }))
+            setSales(prev => ({ ...prev, salePrice }))
+            if (supplierIndex !== null) {
+              const sIdx = Number(supplierIndex)
+              const supplier = prod.suppliers?.[sIdx]
+              if (supplier) {
+                const qIdx = quoteIndex !== null ? Number(quoteIndex) :
+                  supplier.quotes?.map((q, index) => ({ index, date: new Date(q.quotedAt).getTime() }))
+                    .sort((a, b) => b.date - a.date)[0]?.index ?? null
+                const quote = qIdx !== null ? supplier.quotes?.[qIdx] : null
+                setSelectedSupplierInfo({ supplier, supplierIndex: sIdx, quoteIndex: qIdx, supplierName: supplier.name })
+                setProduct(prev => ({ ...prev,
+                  unitPriceDollar: parsePrice(quote?.unitPrice ?? supplier.unitPrice),
+                  shippingDollar: parsePrice(quote?.totalShippingCost),
+                  quantity: parseInt(quote?.moq ?? supplier.moq, 10) || 50,
                 }))
               }
-            } else {
-              setProduct((prev) => ({
-                ...prev,
-                unitPriceDollar: parsePrice(supplier.unitPrice),
-                quantity: parseInt(supplier.moq, 10) || 50,
-              }))
             }
           }
         }
-      })
-      .catch((err) => console.error("Erro ao buscar produto da esteira:", err))
-      .finally(() => setIsLoadingProduct(false))
-  }, [productId, supplierIndex, quoteIndex])
+        try {
+          const response = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL")
+          const data = await response.json()
+          const rate = parseFloat(data.USDBRL.ask)
+          if (!cancelled && !rateEdited.current && Number.isFinite(rate) && rate > 0) {
+            setDollarRate(Math.round(rate * 100) / 100)
+            setRateLabel("HOJE")
+          }
+        } catch { /* Keep the saved (or default) editable rate when the rate service is unavailable. */ }
+      } catch (err) {
+        if (!cancelled) setLoadError(err instanceof Error ? err.message : "Erro ao carregar produto")
+      } finally {
+        if (!cancelled) {
+          setIsLoadingProduct(false)
+          setLoadingRate(false)
+        }
+      }
+    }
+    void load()
+    return () => { cancelled = true }
+  }, [productId, supplierIndex, quoteIndex, urlPrice, restoreSaved, requireSaved])
 
-  useEffect(() => {
-    fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL")
-      .then((res) => res.json())
-      .then((data) => {
-        const rate = parseFloat(data.USDBRL.ask)
-        if (!isNaN(rate)) setDollarRate(Math.round(rate * 100) / 100)
-      })
-      .catch(() => {})
-      .finally(() => setLoadingRate(false))
-  }, [])
+  const calculatorState: CalculatorState = {
+    version: 1, dollarRate, productMode, product, sales: { ...sales, isKit }, isKit, kitQuantity,
+    source: selectedSupplierInfo ? {
+      supplierIndex: selectedSupplierInfo.supplierIndex,
+      quoteIndex: selectedSupplierInfo.quoteIndex,
+      supplierName: selectedSupplierInfo.supplierName,
+    } : null,
+  }
+  const fingerprint = JSON.stringify(calculatorState)
+  const savedSuccess = savedFingerprint === fingerprint
 
   // Etapa 1 - Cálculos de importação (usa a quantidade que o usuário digitou)
   const importCalc = useMemo(
@@ -185,10 +208,12 @@ const ImportCalculatorPage = () => {
   )
 
   const handleSaveCalculator = async () => {
-    if (!productId) return
+    if (!productId || isLoadingProduct || loadError) return
+    setSaveError("")
     setIsSaving(true)
     try {
       await api.saveCalculatorResult(productId, {
+        calculatorState,
         unitCost: importCalc.unitCost,
         roi: salesCalc.roi,
         contributionMargin: salesCalc.contributionMargin,
@@ -197,9 +222,9 @@ const ImportCalculatorPage = () => {
         salePrice: sales.salePrice,
         quantity: product.quantity,
       })
-      setSavedSuccess(true)
+      setSavedFingerprint(fingerprint)
     } catch (err) {
-      console.error("Erro ao salvar resultado:", err)
+      setSaveError(err instanceof Error ? err.message : "Não foi possível salvar o cálculo. Tente novamente.")
     } finally {
       setIsSaving(false)
     }
@@ -239,12 +264,19 @@ const ImportCalculatorPage = () => {
                     ? pipelineProduct.title.slice(0, 50) + "…"
                     : pipelineProduct.title}
                 </span>
-                {selectedSupplierInfo?.supplier && (
+                {selectedSupplierInfo && (
                   <span className="inline-flex items-center gap-1.5 bg-amber-900/30 text-amber-400 text-xs font-medium px-3 py-1 rounded-full border border-amber-800/30">
                     <Package className="w-3 h-3" />
-                    Fornecedor: {selectedSupplierInfo.supplier.name}
+                    Fornecedor: {selectedSupplierInfo.supplierName}{selectedSupplierInfo.quoteIndex !== null ? ` • Cotação #${selectedSupplierInfo.quoteIndex + 1}` : ""}
                   </span>
                 )}
+                <button
+                  onClick={handleSaveCalculator}
+                  disabled={isSaving || !!loadError || savedSuccess}
+                  className="text-xs bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg px-3 py-1.5"
+                >
+                  {isSaving ? "Salvando..." : savedSuccess ? "Cálculo salvo" : "Salvar cálculo no produto"}
+                </button>
                 <button
                   onClick={() => navigate(`/pipeline/${productId}`)}
                   className="text-xs text-gray-500 hover:text-blue-400 underline transition-colors"
@@ -258,6 +290,11 @@ const ImportCalculatorPage = () => {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {(loadError || saveError) && (
+          <p role="alert" className="text-sm text-red-300 bg-red-900/20 border border-red-800/40 rounded-lg p-3">
+            {loadError || saveError}
+          </p>
+        )}
         {/* Etapa 1 e 2 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* ETAPA 1 */}
@@ -279,14 +316,18 @@ const ImportCalculatorPage = () => {
                   <input
                     type="number"
                     value={Number(dollarRate.toFixed(2))}
-                    onChange={(e) => setDollarRate(Math.round(Number(e.target.value) * 100) / 100)}
+                    onChange={(e) => {
+                      rateEdited.current = true
+                      setRateLabel("MANUAL")
+                      setDollarRate(Math.round(Number(e.target.value) * 100) / 100)
+                    }}
                     className="w-14 text-sm font-semibold bg-transparent border-none focus:outline-none text-gray-200"
                     step="0.01"
                   />
                   {loadingRate ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />
                   ) : (
-                    <span className="text-xs text-emerald-400 font-medium bg-emerald-900/30 px-2 py-0.5 rounded">HOJE</span>
+                    <span className="text-xs text-emerald-400 font-medium bg-emerald-900/30 px-2 py-0.5 rounded">{rateLabel}</span>
                   )}
                 </div>
               </div>
@@ -734,7 +775,7 @@ const ImportCalculatorPage = () => {
           <div className="flex justify-center pb-8">
             <button
               onClick={handleSaveCalculator}
-              disabled={isSaving}
+              disabled={isSaving || isLoadingProduct || !!loadError}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors"
             >
               {isSaving ? (
@@ -742,7 +783,7 @@ const ImportCalculatorPage = () => {
               ) : (
                 <Link className="w-4 h-4" />
               )}
-              {isSaving ? "Salvando..." : "Salvar Resultado na Esteira"}
+              {isSaving ? "Salvando..." : "Salvar cálculo no produto"}
             </button>
           </div>
         )}
@@ -752,7 +793,7 @@ const ImportCalculatorPage = () => {
           <div className="flex flex-col items-center gap-4 pb-8">
             <div className="flex items-center gap-2 text-emerald-400 bg-emerald-900/20 border border-emerald-800/30 rounded-xl px-6 py-4">
               <CheckCircle2 className="w-5 h-5" />
-              <span className="text-sm font-semibold">Resultado salvo na esteira!</span>
+              <span className="text-sm font-semibold">Cálculo completo salvo no produto!</span>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -763,9 +804,7 @@ const ImportCalculatorPage = () => {
               </button>
               <button
                 onClick={() => {
-                  setSavedSuccess(false)
-                  setPipelineProduct(null)
-                  setSelectedSupplierInfo(null)
+                  setSavedFingerprint(null)
                 }}
                 className="flex items-center gap-1.5 px-4 py-2 bg-gray-700/50 hover:bg-gray-600 text-gray-400 text-sm rounded-lg transition-colors"
               >

@@ -182,7 +182,7 @@ export const SupplierDetailPage = () => {
   }
 
   const handleToggleViability = async () => {
-    if (!product) return
+    if (!product || !supplier) return
     try {
       const res = await api.updateSupplierViability(product._id, index, !supplier.viable)
       setProduct({ ...product, suppliers: res.suppliers })
