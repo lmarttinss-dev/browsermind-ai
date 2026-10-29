@@ -7,6 +7,10 @@ const number = (min = 0, max = Infinity) => ({
 
 export const calculatorStateSchema = new Schema({
   version: { type: Number, required: true, enum: [1] },
+  currency: { type: String, enum: ["USD", "BRL"] },
+  domesticPurchase: { type: new Schema({
+    unitPrice: number(), shippingCost: number(),
+  }, { _id: false }), required: function () { return this.currency === "BRL" } },
   dollarRate: number(Number.MIN_VALUE),
   productMode: { type: String, required: true, enum: ["single", "multiple"] },
   product: { type: new Schema({

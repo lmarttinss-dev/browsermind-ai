@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   trunc2,
   calcImport,
+  calcDomesticPurchase,
   calcSales,
   calcInvestment,
   COURIER_RATE,
@@ -347,5 +348,33 @@ describe("Pipeline com Kit", () => {
   it("com 100 un e kit de 3, vende 33 kits (arredonda para baixo)", () => {
     const qty = Math.floor(100 / 3)
     expect(qty).toBe(33)
+  })
+})
+
+describe("Compra nacional em reais", () => {
+  it("rateia o frete sem encargos de importação ou conversão cambial", () => {
+    const result = calcDomesticPurchase({ unitPrice: 20, shippingCost: 50 }, 10)
+    expect(result).toEqual({ productSubtotal: 200, shippingCost: 50, totalCost: 250, unitCost: 25 })
+  })
+
+  it("trunca o rateio e suporta frete grátis e quantidade zerada", () => {
+    expect(calcDomesticPurchase({ unitPrice: 10, shippingCost: 1 }, 3).unitCost).toBe(10.33)
+    expect(calcDomesticPurchase({ unitPrice: 19.9, shippingCost: 0 }, 10).totalCost).toBe(199)
+    expect(calcDomesticPurchase({ unitPrice: 10, shippingCost: 0 }, 0).unitCost).toBe(0)
+  })
+
+  it("propaga o custo nacional para lucro, kits e investimento", () => {
+    const purchase = calcDomesticPurchase({ unitPrice: 20, shippingCost: 50 }, 10)
+    const sales: SalesInput = { isKit: true, salesTax: 4, salePrice: 100, shippingFee: 9, adFee: 11, packagingCost: 1 }
+    const kitCost = purchase.unitCost * 2
+    const result = calcSales(sales, kitCost)
+    expect(result.productCost).toBe(50)
+    expect(result.profitPerUnit).toBe(25)
+    expect(result.roi).toBe(50)
+    const investment = calcInvestment(purchase.totalCost, kitCost, sales.salePrice, 5, result.totalExpenses)
+    expect(investment.totalInvestment).toBe(250)
+    expect(investment.totalRevenue).toBe(500)
+    expect(investment.totalReturn).toBe(375)
+    expect(investment.multiplier).toBe(0.5)
   })
 })

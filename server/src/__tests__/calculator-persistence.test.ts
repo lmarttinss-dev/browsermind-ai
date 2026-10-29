@@ -30,6 +30,31 @@ const state = {
 const results = { unitCost: 12.62, roi: 66, contributionMargin: 23.9, profitPerUnit: 8.35, multiplier: 0.66, salePrice: 34.9, quantity: 100 }
 
 describe("Product calculator persistence", () => {
+  it("round-trips currency and separate national and imported purchase inputs", async () => {
+    const product = await Product.create({ title: "Nacional", url: "https://example.com/nacional" })
+    const path = `/api/pipeline/${product._id}`
+    for (const currency of ["BRL", "USD"]) {
+      const nationalState = { ...state, currency, domesticPurchase: { unitPrice: 20, shippingCost: 50 } }
+      await request(app).patch(`${path}/calculator`).send({ ...results, calculatorState: nationalState }).expect(200)
+      const { body } = await request(app).get(path).expect(200)
+      expect(body.product.calculatorState).toEqual({ ...nationalState, savedAt: expect.any(String) })
+    }
+  })
+
+  it("rejects unknown currencies and incomplete or negative national costs", async () => {
+    const product = await Product.create({ title: "Nacional", url: "https://example.com/nacional" })
+    const path = `/api/pipeline/${product._id}/calculator`
+    for (const invalid of [
+      { ...state, currency: "EUR" },
+      { ...state, currency: "BRL" },
+      { ...state, currency: "BRL", domesticPurchase: { unitPrice: 20 } },
+      { ...state, currency: "BRL", domesticPurchase: { unitPrice: -1, shippingCost: 0 } },
+      { ...state, currency: "BRL", domesticPurchase: { unitPrice: 20, shippingCost: -1 } },
+    ]) {
+      await request(app).patch(path).send({ ...results, calculatorState: invalid }).expect(400)
+    }
+  })
+
   it("round-trips every form field, kit and quote even after product/supplier changes", async () => {
     const product = await Product.create({ title: "Adaptador", url: "https://example.com" })
     const path = `/api/pipeline/${product._id}`

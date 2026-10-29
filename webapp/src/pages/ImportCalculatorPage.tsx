@@ -4,6 +4,9 @@ import { Calculator, DollarSign, Package, TrendingUp, HelpCircle, ArrowRight, Lo
 import { api, type PipelineProduct, type Supplier } from "@/lib/api"
 import {
   calcImport,
+  calcDomesticPurchase,
+  type Currency,
+  type DomesticPurchaseInput,
   calcSales,
   calcInvestment,
   COURIER_RATE,
@@ -18,6 +21,9 @@ type ProductMode = "single" | "multiple"
 const ImportCalculatorPage = () => {
   const { search } = useLocation()
   const navigate = useNavigate()
+  const [currency, setCurrency] = useState<Currency>("USD")
+  const [domesticPurchase, setDomesticPurchase] = useState<DomesticPurchaseInput>({ unitPrice: 0, shippingCost: 0 })
+  const isDomestic = currency === "BRL"
   const [dollarRate, setDollarRate] = useState(5.17)
   const [loadingRate, setLoadingRate] = useState(true)
   const [productMode, setProductMode] = useState<ProductMode>("single")
@@ -89,6 +95,8 @@ const ImportCalculatorPage = () => {
     setLoadingRate(true)
     setProduct({ name: "", importTax: 60, quantity: 50, unitPriceDollar: 0, shippingDollar: 0, icms: 17 })
     setSales({ isKit: false, salesTax: 4, salePrice: 0, shippingFee: 9, adFee: 11, packagingCost: 0 })
+    setCurrency("USD")
+    setDomesticPurchase({ unitPrice: 0, shippingCost: 0 })
     setProductMode("single")
     setIsKit(false)
     setKitQuantity(2)
@@ -103,6 +111,8 @@ const ImportCalculatorPage = () => {
           setPipelineProduct(prod)
           const saved = restoreSaved ? prod.calculatorState : undefined
           if (saved) {
+            setCurrency(saved.currency ?? "USD")
+            setDomesticPurchase(saved.domesticPurchase ?? { unitPrice: 0, shippingCost: 0 })
             setProduct(saved.product)
             setSales(saved.sales)
             setDollarRate(saved.dollarRate)
@@ -161,7 +171,7 @@ const ImportCalculatorPage = () => {
   }, [productId, supplierIndex, quoteIndex, urlPrice, restoreSaved, requireSaved])
 
   const calculatorState: CalculatorState = {
-    version: 1, dollarRate, productMode, product, sales: { ...sales, isKit }, isKit, kitQuantity,
+    version: 1, currency, domesticPurchase, dollarRate, productMode, product, sales: { ...sales, isKit }, isKit, kitQuantity,
     source: selectedSupplierInfo ? {
       supplierIndex: selectedSupplierInfo.supplierIndex,
       quoteIndex: selectedSupplierInfo.quoteIndex,
@@ -177,11 +187,19 @@ const ImportCalculatorPage = () => {
     [product, dollarRate],
   )
 
+  const domesticCalc = useMemo(
+    () => calcDomesticPurchase(domesticPurchase, product.quantity),
+    [domesticPurchase, product.quantity],
+  )
+  const purchaseCalc = isDomestic
+    ? domesticCalc
+    : { unitCost: importCalc.unitCost, totalCost: importCalc.totalImport }
+
   // Custo unitário efetivo na Etapa 2: se for kit, unitCost × qtd
   const effectiveUnitCost = useMemo(() => {
-    if (!isKit) return importCalc.unitCost
-    return importCalc.unitCost * kitQuantity
-  }, [isKit, kitQuantity, importCalc.unitCost])
+    if (!isKit) return purchaseCalc.unitCost
+    return purchaseCalc.unitCost * kitQuantity
+  }, [isKit, kitQuantity, purchaseCalc.unitCost])
 
   // Quantidade de itens vendáveis: quando for kit, divide pela qtd por kit
   const saleableQuantity = isKit
@@ -198,13 +216,13 @@ const ImportCalculatorPage = () => {
   const investmentCalc = useMemo(
     () =>
       calcInvestment(
-        importCalc.totalImport,
+        purchaseCalc.totalCost,
         effectiveUnitCost,
         sales.salePrice,
         saleableQuantity,
         salesCalc.totalExpenses,
       ),
-    [importCalc.totalImport, salesCalc, sales.salePrice, saleableQuantity, effectiveUnitCost],
+    [purchaseCalc.totalCost, salesCalc, sales.salePrice, saleableQuantity, effectiveUnitCost],
   )
 
   const handleSaveCalculator = async () => {
@@ -214,7 +232,7 @@ const ImportCalculatorPage = () => {
     try {
       await api.saveCalculatorResult(productId, {
         calculatorState,
-        unitCost: importCalc.unitCost,
+        unitCost: purchaseCalc.unitCost,
         roi: salesCalc.roi,
         contributionMargin: salesCalc.contributionMargin,
         profitPerUnit: salesCalc.profitPerUnit,
@@ -243,10 +261,10 @@ const ImportCalculatorPage = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
             <h1 className="text-lg font-semibold text-gray-100">
-              Calculadora de Importação Simplificada
+              Calculadora de Custos e Viabilidade
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              Descubra o custo real, o preço de venda ideal e o lucro da sua importação
+              Simule compras importadas ou nacionais e descubra o lucro da revenda
             </p>
 
             {/* Badge: Produto da Esteira */}
@@ -304,12 +322,12 @@ const ImportCalculatorPage = () => {
             </span>
 
             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-orange-400" />
-                  <h2 className="text-lg font-bold text-gray-100">Simulação de Custos da Importação</h2>
+                  <h2 className="text-lg font-bold text-gray-100">{isDomestic ? "Custos da Compra Nacional" : "Simulação de Custos da Importação"}</h2>
                 </div>
-                <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-1.5">
+                {!isDomestic && <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-1.5">
                   <DollarSign className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-400">Dólar</span>
                   <span className="font-semibold text-sm text-gray-200">R$</span>
@@ -329,14 +347,58 @@ const ImportCalculatorPage = () => {
                   ) : (
                     <span className="text-xs text-emerald-400 font-medium bg-emerald-900/30 px-2 py-0.5 rounded">{rateLabel}</span>
                   )}
-                </div>
+                </div>}
               </div>
               <p className="text-sm text-gray-500 mb-6">
                 Descubra o custo do produto na sua porta, pronto para revender.
               </p>
 
+              <fieldset className="mb-6">
+                <legend className="text-xs font-medium text-gray-400 mb-2">Moeda da compra</legend>
+                <div className="grid grid-cols-2 gap-3">
+                  {([
+                    { code: "USD", name: "Dólar", symbol: "$", description: "Compra internacional" },
+                    { code: "BRL", name: "Real", symbol: "R$", description: "Fornecedor nacional" },
+                  ] as const).map((option) => (
+                    <div key={option.code} className="relative min-w-0">
+                      <input
+                        id={`purchase-currency-${option.code}`}
+                        type="radio"
+                        name="purchase-currency"
+                        value={option.code}
+                        checked={currency === option.code}
+                        onChange={() => setCurrency(option.code)}
+                        aria-label={`${option.name} (${option.code})`}
+                        className="peer sr-only"
+                      />
+                      <label
+                        htmlFor={`purchase-currency-${option.code}`}
+                        className="flex h-full cursor-pointer flex-col gap-3 rounded-xl border border-gray-600/70 bg-gray-900/30 p-3.5 transition duration-200 hover:border-gray-500 hover:bg-gray-700/40 peer-checked:border-orange-400/80 peer-checked:bg-orange-500/10 peer-checked:shadow-sm peer-checked:shadow-orange-950/30 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-orange-400 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-gray-800"
+                      >
+                        <span className="flex items-center justify-between gap-2">
+                          <span className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${currency === option.code ? "bg-orange-500/20 text-orange-300" : "bg-gray-700/70 text-gray-400"}`}>
+                            {option.symbol}
+                          </span>
+                          <span aria-hidden="true" className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${currency === option.code ? "border-orange-400 bg-orange-400" : "border-gray-500"}`}>
+                            {currency === option.code && <span className="h-1.5 w-1.5 rounded-full bg-gray-900" />}
+                          </span>
+                        </span>
+                        <span>
+                          <span className="flex flex-wrap items-baseline gap-x-1.5">
+                            <span className={`text-sm font-semibold ${currency === option.code ? "text-orange-200" : "text-gray-200"}`}>{option.name}</span>
+                            <span className="text-[10px] font-medium tracking-wide text-gray-500">{option.code}</span>
+                          </span>
+                          <span className="mt-1 block text-xs leading-relaxed text-gray-400">{option.description}</span>
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {isDomestic && <p className="text-xs leading-relaxed text-gray-400 mt-3">Informe o preço do fornecedor com impostos incluídos e o frete total da compra em reais.</p>}
+              </fieldset>
+
               {/* Toggle 1 produto / Vários */}
-              <div className="flex items-center justify-between bg-gray-750 rounded-lg p-3 mb-6 bg-gray-700/50">
+              {!isDomestic && <div className="flex items-center justify-between bg-gray-750 rounded-lg p-3 mb-6 bg-gray-700/50">
                 <div className="flex items-center gap-1">
                   <span className="text-sm text-gray-300">Múltiplos produtos na mesma importação?</span>
                   <HelpCircle className="w-3.5 h-3.5 text-gray-500" />
@@ -363,7 +425,7 @@ const ImportCalculatorPage = () => {
                     Vários
                   </button>
                 </div>
-              </div>
+              </div>}
 
               {/* Inputs Etapa 1 */}
               <div className="grid grid-cols-2 gap-4">
@@ -377,7 +439,7 @@ const ImportCalculatorPage = () => {
                     className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                   />
                 </div>
-                <div>
+                {!isDomestic && <div>
                   <label className="text-xs text-gray-400 mb-1 block flex items-center gap-1">
                     <Package className="w-3 h-3" /> Imposto de Importação
                   </label>
@@ -390,12 +452,14 @@ const ImportCalculatorPage = () => {
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
                   </div>
-                </div>
+                </div>}
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Quantidade</label>
+                  <label htmlFor="purchase-quantity" className="text-xs text-gray-400 mb-1 block">Quantidade</label>
                   <div className="relative">
                     <input
                       type="number"
+                      id="purchase-quantity"
+                      min={1}
                       value={product.quantity}
                       onChange={(e) => setProduct({ ...product, quantity: Number(e.target.value) })}
                       className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
@@ -404,32 +468,40 @@ const ImportCalculatorPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Preço unitário (em dólar)</label>
+                  <label htmlFor="purchase-unit-price" className="text-xs text-gray-400 mb-1 block">{isDomestic ? "Preço unitário (em reais)" : "Preço unitário (em dólar)"}</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">{isDomestic ? "R$" : "$"}</span>
                     <input
                       type="number"
-                      value={product.unitPriceDollar}
-                      onChange={(e) => setProduct({ ...product, unitPriceDollar: Number(e.target.value) })}
-                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-7 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                      id="purchase-unit-price"
+                      min={0}
+                      value={isDomestic ? domesticPurchase.unitPrice : product.unitPriceDollar}
+                      onChange={(e) => isDomestic
+                        ? setDomesticPurchase({ ...domesticPurchase, unitPrice: Number(e.target.value) })
+                        : setProduct({ ...product, unitPriceDollar: Number(e.target.value) })}
+                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                       step="0.01"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Custo do Frete (em dólar)</label>
+                  <label htmlFor="purchase-shipping" className="text-xs text-gray-400 mb-1 block">{isDomestic ? "Frete total (em reais)" : "Custo do Frete (em dólar)"}</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">{isDomestic ? "R$" : "$"}</span>
                     <input
                       type="number"
-                      value={product.shippingDollar}
-                      onChange={(e) => setProduct({ ...product, shippingDollar: Number(e.target.value) })}
-                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-7 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                      id="purchase-shipping"
+                      min={0}
+                      value={isDomestic ? domesticPurchase.shippingCost : product.shippingDollar}
+                      onChange={(e) => isDomestic
+                        ? setDomesticPurchase({ ...domesticPurchase, shippingCost: Number(e.target.value) })
+                        : setProduct({ ...product, shippingDollar: Number(e.target.value) })}
+                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                       step="0.01"
                     />
                   </div>
                 </div>
-                <div>
+                {!isDomestic && <div>
                   <label className="text-xs text-gray-400 mb-1 block">ICMS do seu estado</label>
                   <div className="relative">
                     <input
@@ -440,45 +512,56 @@ const ImportCalculatorPage = () => {
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
                   </div>
-                </div>
+                </div>}
               </div>
 
               {/* Resultado Etapa 1 */}
               <div className="mt-6 bg-orange-900/20 border border-orange-800/30 rounded-xl p-5">
                 <p className="text-xs font-bold text-orange-400 uppercase tracking-wide mb-1">Custo Unitário Final</p>
-                <p className="text-3xl font-bold text-gray-100">R$ {formatBRL(importCalc.unitCost)}</p>
+                <p className="text-3xl font-bold text-gray-100">R$ {formatBRL(purchaseCalc.unitCost)}</p>
                 <p className="text-sm text-gray-500 mt-1">Na sua porta, pronto para venda</p>
               </div>
 
               {/* Detalhamento */}
               <details className="mt-4">
                 <summary className="text-xs font-bold text-gray-400 uppercase tracking-wide cursor-pointer hover:text-gray-200">
-                  Ver detalhamento dos custos da importação
+                  {isDomestic ? "Ver detalhamento da compra nacional" : "Ver detalhamento dos custos da importação"}
                 </summary>
                 <div className="mt-3 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Valor aduaneiro USD</span>
-                    <span className="font-medium text-gray-200">${formatUSD(importCalc.customsValueUSD)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Valor aduaneiro BRL</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.customsValueBRL)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Imp. Importação ({product.importTax}%)</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.importTaxValue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">ICMS ({product.icms}%)</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.icmsValue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Taxa Courier (DHL)</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.courierFee)}</span>
-                  </div>
+                  {isDomestic ? <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Produtos ({product.quantity} un)</span>
+                      <span className="font-medium text-gray-200">R$ {formatBRL(domesticCalc.productSubtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Frete nacional</span>
+                      <span className="font-medium text-gray-200">R$ {formatBRL(domesticCalc.shippingCost)}</span>
+                    </div>
+                  </> : <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Valor aduaneiro USD</span>
+                      <span className="font-medium text-gray-200">${formatUSD(importCalc.customsValueUSD)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Valor aduaneiro BRL</span>
+                      <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.customsValueBRL)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Imp. Importação ({product.importTax}%)</span>
+                      <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.importTaxValue)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">ICMS ({product.icms}%)</span>
+                      <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.icmsValue)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Taxa Courier (DHL)</span>
+                      <span className="font-medium text-gray-200">R$ {formatBRL(importCalc.courierFee)}</span>
+                    </div>
+                  </>}
                   <div className="flex justify-between border-t border-gray-700 pt-2 font-semibold">
-                    <span className="text-gray-200">Total da importação</span>
-                    <span className="text-gray-200">R$ {formatBRL(importCalc.totalImport)}</span>
+                    <span className="text-gray-200">{isDomestic ? "Total da compra" : "Total da importação"}</span>
+                    <span className="text-gray-200">R$ {formatBRL(purchaseCalc.totalCost)}</span>
                   </div>
                 </div>
               </details>
@@ -555,7 +638,7 @@ const ImportCalculatorPage = () => {
                       className="w-24 border border-gray-600 bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 text-center focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     />
                     <span className="text-xs text-gray-500">
-                      × R$ {importCalc.unitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (custo unit.)
+                      × R$ {purchaseCalc.unitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} (custo unit.)
                     </span>
                     <span className="text-sm font-bold text-cyan-400 ml-auto">
                       = R$ {effectiveUnitCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
@@ -733,7 +816,7 @@ const ImportCalculatorPage = () => {
                   R$ {formatBRL(investmentCalc.totalInvestment)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {product.quantity} un × R$ {formatBRL(importCalc.unitCost)}
+                  {product.quantity} un × R$ {formatBRL(purchaseCalc.unitCost)}
                 </p>
               </div>
 
@@ -767,7 +850,7 @@ const ImportCalculatorPage = () => {
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-gray-600">
-          Cálculos estimados • ICMS aplicado por dentro • Confirme alíquotas com seu contador
+          {isDomestic ? "Cálculos estimados • Compra nacional com impostos incluídos no preço do fornecedor" : "Cálculos estimados • ICMS aplicado por dentro • Confirme alíquotas com seu contador"}
         </p>
 
         {/* Salvar na Esteira */}
