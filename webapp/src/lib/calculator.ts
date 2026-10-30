@@ -16,6 +16,13 @@ export const COURIER_RATE = 0.2279
 // Tipos
 // ---------------------------------------------------------------------------
 
+export type Currency = "USD" | "BRL"
+
+export type DomesticPurchaseInput = {
+  unitPrice: number
+  shippingCost: number
+}
+
 export type ProductInput = {
   name: string
   importTax: number
@@ -32,6 +39,25 @@ export type SalesInput = {
   shippingFee: number
   adFee: number
   packagingCost: number
+}
+
+/** Complete, versioned form state for reopening a product calculation. */
+export type CalculatorState = {
+  version: 1
+  currency?: Currency
+  domesticPurchase?: DomesticPurchaseInput
+  dollarRate: number
+  productMode: "single" | "multiple"
+  product: ProductInput
+  sales: SalesInput
+  isKit: boolean
+  kitQuantity: number
+  source: {
+    supplierIndex: number
+    quoteIndex: number | null
+    supplierName: string
+  } | null
+  savedAt?: string
 }
 
 export type ImportCalcResult = {
@@ -119,6 +145,17 @@ export function calcImport(
     totalImport,
     unitCost,
   }
+}
+
+/**
+ * Compra nacional em reais, com impostos já no preço do fornecedor.
+ * O frete total da compra é rateado entre as unidades.
+ */
+export function calcDomesticPurchase(purchase: DomesticPurchaseInput, quantity: number) {
+  const productSubtotal = trunc2(quantity * purchase.unitPrice)
+  const totalCost = trunc2(productSubtotal + purchase.shippingCost)
+  const unitCost = quantity > 0 ? trunc2(totalCost / quantity) : 0
+  return { productSubtotal, shippingCost: purchase.shippingCost, totalCost, unitCost }
 }
 
 // ---------------------------------------------------------------------------

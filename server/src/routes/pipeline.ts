@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { Category } from "../models/category.js"
 import { Product, PIPELINE_STAGES } from "../models/product.js"
 
 export const router = Router()
@@ -85,9 +86,13 @@ router.patch("/:id/category", async (req, res) => {
   try {
     const { categoryId } = req.body
 
+    const category = categoryId ? await Category.findById(categoryId) : null
+    if (categoryId && !category) {
+      return res.status(404).json({ error: "Categoria não encontrada" })
+    }
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { $set: { categoryId: categoryId || null } },
+      { $set: { categoryId: category?._id || null, category: category?.name || "" } },
       { new: true }
     )
 
@@ -112,7 +117,16 @@ router.delete("/:id", async (req, res) => {
 // Salvar resultado da calculadora de viabilidade no produto
 router.patch("/:id/calculator", async (req, res) => {
   try {
-    const { unitCost, roi, contributionMargin, profitPerUnit, multiplier, salePrice, quantity } = req.body
+    const { unitCost, roi, contributionMargin, profitPerUnit, multiplier, salePrice, quantity, calculatorState } = req.body
+    const results = [unitCost, roi, contributionMargin, profitPerUnit, multiplier, salePrice, quantity]
+    if (!results.every(value => typeof value === "number" && Number.isFinite(value))) {
+      return res.status(400).json({ error: "Resultados da calculadora inválidos" })
+    }
+    const savedState = calculatorState == null ? undefined : { ...calculatorState, savedAt: new Date() }
+    if (savedState) {
+      const validation = new Product({ title: "Validação", url: "validation", calculatorState: savedState }).validateSync()
+      if (validation) return res.status(400).json({ error: "Preencha valores válidos na calculadora" })
+    }
 
     const product = await Product.findById(req.params.id)
     if (!product) return res.status(404).json({ error: "Produto não encontrado" })
@@ -146,6 +160,7 @@ router.patch("/:id/calculator", async (req, res) => {
           potentialMargin: roi != null ? `${roi.toFixed(0)}%` : product.potentialMargin,
           ...(salePrice != null && { price: salePrice }),
           analysisReport: updatedAnalysisReport,
+          ...(savedState && { calculatorState: savedState }),
         },
       },
       { new: true }

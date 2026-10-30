@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { Category } from "../models/category.js"
+import { Category, normalizeCategorySlug } from "../models/category.js"
 import { Product, PIPELINE_STAGES, COMPETITION_LEVELS } from "../models/product.js"
 
 export const router = Router()
@@ -97,13 +97,22 @@ router.get("/:id", async (req, res) => {
   }
 })
 
-// Atualiza categoria
+// Atualiza categoria e o nome exibido nos produtos vinculados
 router.patch("/:id", async (req, res) => {
   try {
     const { name, description, color, mlCategoryUrl } = req.body
+    if (name !== undefined && (typeof name !== "string" || !name.trim())) {
+      return res.status(400).json({ error: "Informe um nome válido para a categoria." })
+    }
 
     const update: Record<string, unknown> = {}
-    if (name !== undefined) update.name = name
+    if (name !== undefined) {
+      update.name = name.trim()
+      update.slug = normalizeCategorySlug(name.trim())
+      if (!update.slug) {
+        return res.status(400).json({ error: "O nome da categoria deve conter letras ou números." })
+      }
+    }
     if (description !== undefined) update.description = description
     if (color !== undefined) update.color = color
     if (mlCategoryUrl !== undefined) update.mlCategoryUrl = mlCategoryUrl
@@ -111,8 +120,18 @@ router.patch("/:id", async (req, res) => {
     const category = await Category.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true })
     if (!category) return res.status(404).json({ error: "Categoria não encontrada" })
 
+    if (name !== undefined) {
+      await Product.updateMany({ categoryId: category._id }, { $set: { category: category.name } })
+    }
     res.json({ success: true, category })
   } catch (error) {
+    if ((error as { code?: number }).code === 11000) {
+      return res.status(409).json({ error: "Já existe uma categoria com esse nome ou um nome equivalente." })
+    }
+    if ((error as Error).name === "ValidationError" || (error as Error).name === "CastError") {
+      return res.status(400).json({ error: "Dados da categoria inválidos." })
+    }
+    console.error("Erro ao atualizar categoria:", error)
     res.status(500).json({ error: "Erro ao atualizar categoria" })
   }
 })

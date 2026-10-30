@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose"
+import { calculatorStateSchema, type CalculatorState } from "./calculator-state.js"
 
 export const PIPELINE_STAGES = ["triagem", "analise", "aprovado", "importando", "concluido"] as const
 export type PipelineStage = typeof PIPELINE_STAGES[number]
@@ -67,6 +68,7 @@ export type PipelineProduct = Document & {
   marketReport: string
   isKit: boolean
   kitItems: KitItem[]
+  calculatorState?: CalculatorState
   createdAt: Date
   updatedAt: Date
 }
@@ -130,6 +132,7 @@ const productSchema = new Schema<PipelineProduct>(
     marketReport: { type: String, default: "" },
     isKit: { type: Boolean, default: false },
     kitItems: { type: [kitItemSchema], default: [] },
+    calculatorState: { type: calculatorStateSchema, default: undefined },
   },
   { timestamps: true }
 )

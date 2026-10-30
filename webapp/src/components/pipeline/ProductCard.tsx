@@ -1,6 +1,7 @@
+import { Link } from "react-router-dom"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame } from "lucide-react"
+import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame, Calculator } from "lucide-react"
 import { useCategoryStore } from "@/store/useCategoryStore"
 import type { PipelineProduct } from "@/lib/api"
 
@@ -96,6 +97,17 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
           {product.competitionLevel}
         </span>
       </div>
+
+      {product.calculatorState && (
+        <Link
+          to={`/calculator?productId=${product._id}&saved=1`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 mb-2"
+        >
+          <Calculator className="w-3 h-3" /> Abrir cálculo salvo
+        </Link>
+      )}
 
       {/* Categoria + Link */}
       <div className="flex items-center justify-between text-[10px] text-gray-500">

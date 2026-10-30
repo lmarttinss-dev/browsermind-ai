@@ -1,3 +1,5 @@
+import type { CalculatorState } from "./calculator";
+
 const API_BASE = "";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -240,6 +242,7 @@ export type PipelineProduct = {
   marketReport: string;
   isKit: boolean
   kitItems: KitItem[]
+  calculatorState?: CalculatorState
   createdAt: string;
   updatedAt: string;
 };
@@ -286,6 +289,7 @@ export type ComparisonResponse = {
 };
 
 export type CalculatorResult = {
+  calculatorState?: CalculatorState
   unitCost: number
   roi: number
   contributionMargin: number

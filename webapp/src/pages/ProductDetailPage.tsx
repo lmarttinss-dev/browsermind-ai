@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { Link, useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, ExternalLink, Trash2, Calendar, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -57,7 +57,7 @@ export const ProductDetailPage = () => {
     if (suppliersWithQuotes.length > 0) {
       setShowSupplierSelector(true)
     } else {
-      navigate(`/calculator?productId=${product._id}&price=${price}`)
+      navigate(`/calculator?productId=${product._id}&price=${price}&new=1`)
     }
   }
 
@@ -230,7 +230,17 @@ export const ProductDetailPage = () => {
             {urlCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <ExternalLink className="w-3.5 h-3.5" />}
             {urlCopied ? "URL copiada!" : "Abrir no ML"}
           </button>
-        )}        <button
+        )}
+        {product.calculatorState && (
+          <Link
+            to={`/calculator?productId=${product._id}&saved=1`}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-emerald-900/50 hover:bg-emerald-900 text-emerald-300 rounded-lg transition-colors"
+          >
+            <Calculator className="w-3.5 h-3.5" />
+            Abrir cálculo salvo
+          </Link>
+        )}
+        <button
           onClick={handleOpenCalculator}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-amber-700/50 hover:bg-amber-700 text-amber-300 rounded-lg transition-colors"
         >
@@ -469,7 +479,7 @@ export const ProductDetailPage = () => {
                 onClick={() => {
                   if (!product) return
                   setShowSupplierSelector(false)
-                  navigate(`/calculator?productId=${product._id}`)
+                  navigate(`/calculator?productId=${product._id}&new=1`)
                 }}
                 className="w-full text-left p-4 rounded-lg border border-gray-600 bg-gray-700/30 hover:bg-gray-700 transition-colors"
               >
