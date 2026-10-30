@@ -1,3 +1,4 @@
+import { formatCompetitorListings, restoreCompetitorReportLinks, type CompetitorListing } from "./competitor-listings.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -360,6 +361,7 @@ app.post("/api/analyze", async (req, res) => {
 
     // Auto-extract from Playwright if no content provided
     let content = pageContent || "";
+    let competitorListings: CompetitorListing[] = [];
     if (!content) {
       try {
         const status = await playwrightManager.getStatus();
@@ -419,6 +421,8 @@ app.post("/api/analyze", async (req, res) => {
           }
 
           const extracted = await playwrightManager.extractPageContent();
+          if (marketAnalysis) competitorListings = extracted.competitorListings;
+          const competitorSection = marketAnalysis ? formatCompetitorListings(competitorListings) : "";
           const shipping = extracted.shippingSummary;
           const shippingSection = shipping && shipping.totalCards > 0
             ? [
@@ -445,12 +449,13 @@ app.post("/api/analyze", async (req, res) => {
           content = [
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
+            competitorSection,
             avantproSection,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
             Object.keys(extracted.metaTags).length > 0
               ? `\nMeta:\n${Object.entries(extracted.metaTags).map(([k, v]) => `${k}: ${v}`).join("\n")}`
               : "",
-            extracted.links.length > 0
+            extracted.links.length > 0 && !competitorSection
               ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
               : "",
             `\nContent:\n${extracted.visibleText}`,
@@ -589,6 +594,7 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     if (!aiResponse) throw new Error("Resposta vazia da IA");
+    if (marketAnalysis) aiResponse = restoreCompetitorReportLinks(aiResponse, competitorListings);
 
     // Corrige a data da análise no relatório (pós-processamento, bypass do cutoff da IA)
     if (templateId === "analise-oferta-demanda-concorrencia") {

@@ -1,3 +1,4 @@
+import { extractCompetitorListings, type CompetitorListing } from "./competitor-listings.js";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import fs from "fs";
 import path from "path";
@@ -395,6 +396,7 @@ export class PlaywrightManager {
     headings: string[];
     metaTags: Record<string, string>;
     links: { text: string; href: string }[];
+    competitorListings: CompetitorListing[];
     rangePrice: string;
     moq: string;
     tradeAssurance: boolean;
@@ -409,6 +411,8 @@ export class PlaywrightManager {
     };
   }> {
     const page = await this.getPage();
+
+    const competitorListings = await page.evaluate(extractCompetitorListings);
 
     const extractionScript = `
       (() => {
@@ -664,8 +668,8 @@ export class PlaywrightManager {
               if (!href || href === "#" || href.startsWith("javascript:")) return;
               if (href.startsWith("//")) href = "https:" + href;
               else if (href.startsWith("/")) href = window.location.origin + href;
-              // Remover query string e fragmento para URLs de produto do Mercado Livre e Alibaba
-              if (href.includes("/product-detail/") || href.includes("/up/MLB") || href.includes("/p/MLB")) {
+              // Limpar URLs do Alibaba; preservar seletores de oferta do Mercado Livre.
+              if (href.includes("/product-detail/")) {
                 href = href.split("?")[0].split("#")[0];
               }
               let text = (a.textContent || "").trim().slice(0, 200);
@@ -687,7 +691,7 @@ export class PlaywrightManager {
       })()
     `;
 
-    return page.evaluate(extractionScript) as Promise<{
+    return page.evaluate(extractionScript).then(data => ({ ...data, competitorListings })) as Promise<{
       url: string;
       title: string;
       visibleText: string;
@@ -695,6 +699,7 @@ export class PlaywrightManager {
       headings: string[];
       metaTags: Record<string, string>;
       links: { text: string; href: string }[];
+      competitorListings: CompetitorListing[];
       rangePrice: string;
       moq: string;
       tradeAssurance: boolean;
