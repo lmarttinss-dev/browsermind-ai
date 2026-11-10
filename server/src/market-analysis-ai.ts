@@ -2,6 +2,13 @@ import { parseReportSections, formatMarketReport } from "./market-report-templat
 import { analyzeSelection } from "./market-analysis.js"
 
 export type SelectionAnalysis = ReturnType<typeof analyzeSelection>
+export type MarketNarrative = {
+  model: string
+  text: string
+  generatedAt: string
+  sections?: ReturnType<typeof parseReportSections>
+}
+export type MarketAnalysis = SelectionAnalysis & { ai?: MarketNarrative }
 export const MARKET_MODELS = ["gemini-flash-2.5", "gemini-pro-2.5", "gemini-flash-3", "gemini-pro-3.1", "gpt-4.1", "claude-sonnet", "deepseek-flash", "deepseek-pro"]
 export type NarrativeGenerator = (model: string, prompt: string, system: string) => Promise<string>
 const SYSTEM = `Você é um analista de ofertas do Mercado Livre. Responda em português brasileiro, APENAS com um objeto JSON válido, sem Markdown externo.

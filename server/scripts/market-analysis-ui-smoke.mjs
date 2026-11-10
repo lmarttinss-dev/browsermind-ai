@@ -40,9 +40,11 @@ await page.route('**/*', async route => {
     row.sponsored = row.adsStatus === 'yes';
     return route.fulfill({ json: { success: true, snapshot } });
   }
-  if (pathname.startsWith('/api/market-analysis/listings/') && route.request().method() === 'DELETE') {
-    const id = pathname.split('/').at(-1); snapshot.listings = snapshot.listings.filter(row => row.id !== id);
-    return route.fulfill({ json: { success: true, snapshot } });
+  if (pathname === '/api/market-analysis/listings/bulk-delete') {
+    const { ids } = route.request().postDataJSON();
+    const before = snapshot.listings.length;
+    snapshot.listings = snapshot.listings.filter(row => !ids.includes(row.id));
+    return route.fulfill({ json: { success: true, snapshot, deletedCount: before - snapshot.listings.length } });
   }
   if (pathname === '/api/market-analysis/save-current') {
     if (captureFails) return route.fulfill({ status: 409, json: { error: 'Inicie o Browser para capturar.' } });
@@ -66,7 +68,7 @@ await page.route('**/*', async route => {
 try {
   await page.goto('http://localhost:5180/market-analysis');
   await page.getByRole('heading', { name: 'Panorama AvantPro', exact: true }).waitFor();
-  assert.equal(await page.getByRole('button', { name: 'Analisar 0 anúncios selecionados' }).isDisabled(), true);
+  assert.equal(await page.getByRole('button', { name: 'Analisar anúncio', exact: true }).isDisabled(), true);
   await page.getByRole('button', { name: 'Capturar anúncio aberto', exact: true }).click();
   await page.getByRole('img', { name: 'Capa de Adaptador USB-C Full', exact: true }).waitFor();
   assert.equal(await page.getByRole('checkbox').count(), 1, 'Each capture must add exactly one offer');
@@ -74,20 +76,42 @@ try {
   await page.getByRole('img', { name: 'Sem foto de Adaptador USB-C Flex', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Capturar anúncio aberto', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Selecionar Cabo USB-C', exact: true }).waitFor();
-  await page.getByLabel('Ads de Adaptador USB-C Full', { exact: true }).selectOption('yes');
+  const outputDir = process.env.MARKET_SMOKE_OUTPUT || '/tmp/browsermind-market-smoke';
+  await mkdir(outputDir, { recursive: true });
+  await page.screenshot({ path: `${outputDir}/ofertas-desktop.png` });
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 1), true, 'Offers must fit a mobile viewport');
+  await page.screenshot({ path: `${outputDir}/ofertas-mobile.png` });
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  const fullRow = page.getByRole('listitem').filter({ has: page.getByRole('checkbox', { name: 'Selecionar Adaptador USB-C Full', exact: true }) });
+  const fullAds = page.getByLabel('Ads de Adaptador USB-C Full', { exact: true });
+  assert.equal(await fullAds.isVisible(), false);
+  await fullRow.getByText('Detalhes da oferta', { exact: true }).click();
+  await fullAds.selectOption('yes');
   await page.getByText('Informação de Ads salva.', { exact: true }).waitFor();
   await page.getByRole('checkbox', { name: 'Selecionar Adaptador USB-C Full', exact: true }).check();
   await page.getByRole('textbox', { name: 'Buscar anúncios' }).fill('Flex');
   await page.getByRole('button', { name: 'Selecionar visíveis', exact: true }).click();
-  assert.match(await page.locator('main').innerText(), /2\/3 selecionados · 1 visíveis/);
-  await page.getByLabel('Opera com Full', { exact: true }).selectOption('no');
-  await page.getByRole('button', { name: 'Analisar 2 anúncios selecionados', exact: true }).click();
+  await page.getByText('2 ofertas selecionadas · 1 visível', { exact: true }).waitFor();
+  const fullProfile = page.getByLabel('Opera com Full', { exact: true });
+  assert.equal(await fullProfile.isVisible(), false);
+  await page.getByText('Configurações opcionais', { exact: true }).click();
+  await fullProfile.selectOption('no');
+  await page.getByRole('button', { name: 'Comparar anúncios', exact: true }).click();
   const result = page.getByRole('region', { name: 'Resultado da análise' });
   await result.getByRole('heading', { name: 'Entrar com plano', exact: true }).waitFor();
   assert.equal(await result.getByRole('heading', { name: 'Análise pelo modelo de IA', exact: true }).count(), 0, 'Do not duplicate the model report');
-  assert.equal(await result.getByRole('heading', { name: 'Plano de ação passo a passo', exact: true }).count(), 1);
+  const firstAction = result.getByText('Semana 1', { exact: true });
+  assert.equal(await firstAction.isVisible(), false);
+  await result.getByText('Plano de ação', { exact: true }).click();
+  await firstAction.waitFor();
+  await result.getByText('Plano de ação', { exact: true }).click();
+  await result.getByText('Ofertas analisadas (2)', { exact: true }).click();
+  assert.equal(await result.getByRole('link', { name: /Adaptador USB-C/ }).count(), 2);
+  assert.equal(await result.getByRole('link', { name: /Cabo USB-C/ }).count(), 0);
+  await result.getByText('Ofertas analisadas (2)', { exact: true }).click();
   assert.equal(typeof requestBody.model, 'string');
-  const adsCard = result.locator('article').filter({ has: page.getByRole('heading', { name: 'Concorrentes com ADS', exact: true }) });
+  const adsCard = result.locator('dl > div').filter({ hasText: 'Concorrentes com ADS' });
   assert.match(await adsCard.innerText(), /1\/2/);
   assert.match(await adsCard.innerText(), /50% patrocinam/);
   assert.deepEqual(requestBody.savedListingIds.sort(), ['listing-0', 'listing-1']);
@@ -98,24 +122,24 @@ try {
   await page.getByRole('button', { name: 'Exportar PDF', exact: true }).click();
   const download = await downloadPromise;
   assert.match(download.suggestedFilename(), /^panorama-avantpro-.*\.pdf$/);
-  await page.getByText('Anúncios e configuração da análise', { exact: true }).click();
+  await page.getByText('Preparar outra análise', { exact: true }).click();
   await page.getByRole('textbox', { name: 'Buscar anúncios' }).fill('');
-  await page.getByText('Anúncios e configuração da análise', { exact: true }).click();
-  const outputDir = process.env.MARKET_SMOKE_OUTPUT || '/tmp/browsermind-market-smoke';
-  await mkdir(outputDir, { recursive: true });
+  await page.getByText('Preparar outra análise', { exact: true }).click();
   await download.saveAs(`${outputDir}/relatorio.pdf`);
   assert.equal((await readFile(`${outputDir}/relatorio.pdf`)).subarray(0, 5).toString(), '%PDF-');
   await page.locator('main').evaluate(el => { el.scrollTop = 0; });
   await page.screenshot({ path: `${outputDir}/panorama-desktop.png`, fullPage: true });
   await result.getByRole('heading', { name: 'Entrar com plano', exact: true }).evaluate(el => el.scrollIntoView({ block: 'start' }));
   await page.screenshot({ path: `${outputDir}/panorama-result.png`, fullPage: true });
-  await page.getByText('Anúncios e configuração da análise', { exact: true }).click();
+  await page.getByText('Preparar outra análise', { exact: true }).click();
   await page.getByLabel('Opera com Full', { exact: true }).selectOption('yes');
   assert.equal(await result.count(), 0, 'Changed profile must invalidate the displayed result');
   await page.reload();
   await page.getByRole('checkbox', { name: 'Selecionar Adaptador USB-C Full', exact: true }).waitFor();
   assert.equal(await page.getByRole('checkbox').count(), 3, 'Saved offers must reload');
-  assert.equal(await page.getByLabel('Ads de Adaptador USB-C Full', { exact: true }).inputValue(), 'yes');
+  await fullRow.getByText('Detalhes da oferta', { exact: true }).click();
+  assert.equal(await fullAds.inputValue(), 'yes');
+  await fullRow.getByText('Detalhes da oferta', { exact: true }).click();
   await page.getByRole('button', { name: 'Histórico (1)', exact: true }).click();
   await page.getByRole('button', { name: /Adaptadores USB-C · fixture/ }).click();
   await result.getByRole('heading', { name: 'Entrar com plano', exact: true }).waitFor();
@@ -124,12 +148,29 @@ try {
   await page.screenshot({ path: `${outputDir}/panorama-mobile.png`, fullPage: true });
   assert.equal(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 1), true, 'Main page must not overflow horizontally');
   await page.setViewportSize({ width: 1440, height: 1100 });
-  await page.getByText('Anúncios e configuração da análise', { exact: true }).click();
+  await page.getByText('Preparar outra análise', { exact: true }).click();
   captureFails = true;
   await page.getByRole('button', { name: 'Capturar anúncio aberto', exact: true }).click();
   await page.getByRole('alert').filter({ hasText: 'Inicie o Browser para capturar.' }).waitFor();
+  const cableRow = page.getByRole('listitem').filter({ has: page.getByRole('checkbox', { name: 'Selecionar Cabo USB-C', exact: true }) });
+  await cableRow.getByText('Detalhes da oferta', { exact: true }).click();
   await page.getByRole('button', { name: 'Excluir Cabo USB-C da lista', exact: true }).click();
-  assert.equal(await page.getByRole('checkbox', { name: 'Selecionar Cabo USB-C', exact: true }).count(), 0);
+  await page.getByRole('checkbox', { name: 'Selecionar Cabo USB-C', exact: true }).waitFor({ state: 'hidden' });
+  await page.getByRole('textbox', { name: 'Buscar anúncios' }).fill('Flex');
+  await page.getByRole('button', { name: 'Selecionar todos', exact: true }).click();
+  await page.getByText('2 ofertas selecionadas · 1 visível', { exact: true }).waitFor();
+  const removeSelected = page.getByRole('button', { name: 'Excluir selecionados', exact: true });
+  page.once('dialog', dialog => dialog.dismiss());
+  await removeSelected.click();
+  assert.equal(snapshot.listings.length, 2);
+  page.once('dialog', async dialog => {
+    assert.match(dialog.message(), /Excluir 2 anúncios selecionados/);
+    await dialog.accept();
+  });
+  await removeSelected.click();
+  await page.getByText('2 anúncios excluídos da lista de seleção.', { exact: true }).waitFor();
+  assert.equal(snapshot.listings.length, 0);
+  assert.equal(await removeSelected.count(), 0);
   assert.deepEqual(errors, []);
   const longReport = { ...pdfInput, ai: { ...pdfInput.ai, sections: { ...pdfInput.ai.sections,
     decision: { ...pdfInput.ai.sections.decision, title: 'Avaliar logística e precificação antes de ampliar a operação com os anúncios selecionados', summary: 'Valide a demanda observada e sua capacidade operacional antes de investir. '.repeat(9).slice(0, 650) },
@@ -138,6 +179,6 @@ try {
     actions: pdfInput.ai.sections.actions.map(action => ({ ...action, description: 'Faça um teste controlado com orçamento definido e acompanhe conversão, margem e pontualidade antes de aumentar o investimento. '.repeat(2).slice(0, 250) })),
   } } };
   await writeFile(`${outputDir}/relatorio-longo.pdf`, await createMarketReportPdf(validatePdfReport(longReport)));
-  console.log('PASS: selection across filters, profile, selected-only metrics, export, invalidation, history, mobile, errors.');
+  console.log('PASS: compact offers, optional settings, selected-only comparison, export, history, mobile, bulk removal.');
   console.log(`Screenshots: ${outputDir}`);
 } finally { await browser.close(); }

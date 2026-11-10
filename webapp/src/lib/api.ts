@@ -48,10 +48,16 @@ export const api = {
   },
   getSavedMarketListings: () => request<{ success: boolean; snapshot: MarketSnapshot }>("/api/market-analysis/listings"),
   updateMarketListingAds: (id: string, adsStatus: "yes" | "no" | "unknown") => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}/ads`, { method: "PATCH", body: JSON.stringify({ adsStatus }) }),
-  removeSavedMarketListing: (id: string) => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  removeSavedMarketListings: (ids: string[]) =>
+    request<{ success: boolean; snapshot: MarketSnapshot; deletedCount: number }>("/api/market-analysis/listings/bulk-delete", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
   captureMarketListings: () => request<{ success: boolean; snapshot: MarketSnapshot; savedId: string; warning?: string }>("/api/market-analysis/save-current", { method: "POST" }),
-  analyzeMarketSelection: (snapshotId: string, selectedIds: string[], profile: AccountProfile, model: string) =>
-    request<{ success: boolean; analysis: MarketAnalysis }>("/api/market-analysis/analyze", { method: "POST", body: JSON.stringify({ savedListingIds: selectedIds, profile, model }) }),
+  getProductMarketAnalysis: (productId: string) =>
+    request<{ success: boolean; title: string; analysis: MarketAnalysis | null }>(`/api/market-analysis/products/${encodeURIComponent(productId)}`),
+  analyzeMarketSelection: (selectedIds: string[], profile: AccountProfile, model: string, productId?: string) =>
+    request<{ success: boolean; analysis: MarketAnalysis }>("/api/market-analysis/analyze", { method: "POST", body: JSON.stringify({ savedListingIds: selectedIds, profile, model, productId }) }),
 
   // AvantPro
   avantproAuth: (email: string) =>

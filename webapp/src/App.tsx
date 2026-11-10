@@ -61,7 +61,7 @@ export default function App() {
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/categories/:id" element={<CategoryDashboardPage />} />
-        <Route path="/market-analysis" element={<MarketAnalysisPage />} />
+        <Route path="/market-analysis/:productId?" element={<MarketAnalysisPage />} />
         <Route path="/calculator" element={<ImportCalculatorPage />} />
       </Routes>
 

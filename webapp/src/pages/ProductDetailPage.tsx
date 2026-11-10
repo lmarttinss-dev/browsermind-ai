@@ -208,7 +208,7 @@ export const ProductDetailPage = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-700">
+      <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-gray-700">
         <button
           onClick={() => navigate("/pipeline")}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
@@ -231,6 +231,12 @@ export const ProductDetailPage = () => {
             {urlCopied ? "URL copiada!" : "Abrir no ML"}
           </button>
         )}
+        <Link
+          to={`/market-analysis/${product._id}`}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-indigo-900/50 hover:bg-indigo-900 text-indigo-300 rounded-lg transition-colors"
+        >
+          <BarChart3 className="w-3.5 h-3.5" /> Panorama AvantPro
+        </Link>
         {product.calculatorState && (
           <Link
             to={`/calculator?productId=${product._id}&saved=1`}

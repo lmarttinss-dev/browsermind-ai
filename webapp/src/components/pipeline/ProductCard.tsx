@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame, Calculator } from "lucide-react"
+import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame, Calculator, BarChart3 } from "lucide-react"
 import { useCategoryStore } from "@/store/useCategoryStore"
 import type { PipelineProduct } from "@/lib/api"
 
@@ -108,6 +108,15 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
           <Calculator className="w-3 h-3" /> Abrir cálculo salvo
         </Link>
       )}
+
+      <Link
+        to={`/market-analysis/${product._id}`}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center gap-1 text-xs text-indigo-300 hover:text-indigo-200 mb-2"
+      >
+        <BarChart3 className="w-3 h-3" /> Panorama AvantPro
+      </Link>
 
       {/* Categoria + Link */}
       <div className="flex items-center justify-between text-[10px] text-gray-500">

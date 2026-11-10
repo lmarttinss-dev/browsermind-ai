@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose"
+import type { MarketAnalysis } from "../market-analysis-ai.js"
 import { calculatorStateSchema, type CalculatorState } from "./calculator-state.js"
 
 export const PIPELINE_STAGES = ["triagem", "analise", "aprovado", "importando", "concluido"] as const
@@ -66,6 +67,7 @@ export type PipelineProduct = Document & {
   suppliers: Supplier[]
   supplierReport: string
   marketReport: string
+  avantproAnalysis?: MarketAnalysis
   isKit: boolean
   kitItems: KitItem[]
   calculatorState?: CalculatorState
@@ -130,6 +132,7 @@ const productSchema = new Schema<PipelineProduct>(
     suppliers: { type: [supplierSchema], default: [] },
     supplierReport: { type: String, default: "" },
     marketReport: { type: String, default: "" },
+    avantproAnalysis: { type: Schema.Types.Mixed, select: false },
     isKit: { type: Boolean, default: false },
     kitItems: { type: [kitItemSchema], default: [] },
     calculatorState: { type: calculatorStateSchema, default: undefined },
