@@ -15,7 +15,7 @@ let lastSave;
 const state = {
   version: 1, dollarRate: 5.35, productMode: 'multiple',
   product: { name: 'Adaptador USB salvo', importTax: 60, quantity: 100, unitPriceDollar: 0.3, shippingDollar: 79.48, icms: 17 },
-  sales: { isKit: true, salesTax: 7, salePrice: 34.9, shippingFee: 6.95, adFee: 13, packagingCost: 0.5 },
+  sales: { isKit: true, salesTax: 7, salePrice: 34.9, shippingFee: 6.95, adFee: 13, packagingCost: 0.5, marketplaceShippingCost: 12.95 },
   isKit: true, kitQuantity: 3,
   source: { supplierIndex: 0, quoteIndex: 0, supplierName: 'Fornecedor salvo' },
   savedAt: '2026-10-28T03:00:00Z',
@@ -74,6 +74,7 @@ try {
   assert.equal(lastSave.calculatorState.kitQuantity, 3);
   assert.equal(lastSave.calculatorState.dollarRate, 9);
   assert.deepEqual(lastSave.calculatorState.source, state.source);
+  assert.equal(lastSave.calculatorState.sales.marketplaceShippingCost, undefined);
   await page.getByRole('button', { name: 'Continuar Calculando', exact: true }).click();
   await save.waitFor();
   await page.getByRole('button', { name: 'Ver na esteira →', exact: true }).click();
@@ -116,9 +117,8 @@ try {
   await page.getByLabel('Preço unitário (em reais)', { exact: true }).fill('27.05');
   await page.getByLabel('Preço de venda (R$)', { exact: true }).fill('47.90');
   await page.getByLabel('Comissão do Mercado Livre (%)', { exact: true }).fill('0.13');
-  await page.getByLabel('Frete pago pelo vendedor (R$)', { exact: true }).fill('0');
+  await page.getByLabel('Frete pago pelo vendedor (R$)', { exact: true }).fill('12.95');
   await page.getByLabel('Custo de embalagem (R$)', { exact: true }).fill('0');
-  await page.getByLabel('Custo do envio Mercado Livre (manual) (R$)', { exact: true }).fill('12.95');
   await page.getByText('R$ 4,48', { exact: true }).waitFor();
   await page.getByText('9,4%', { exact: true }).waitFor();
 

@@ -23,7 +23,6 @@ export const calculatorStateSchema = new Schema({
     salesTax: number(0, 100), salePrice: number(), shippingFee: number(),
     adFee: number(0, 100), packagingCost: number(),
     otherCosts: { ...number(), required: false },
-    marketplaceShippingCost: { ...number(), required: false },
     pricingMode: { type: String, enum: ["price", "margin"] },
     targetMargin: {
       ...number(0, 100),

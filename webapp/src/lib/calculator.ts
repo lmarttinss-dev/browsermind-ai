@@ -41,7 +41,6 @@ export type SalesInput = {
   adFee: number
   packagingCost: number
   otherCosts?: number
-  marketplaceShippingCost?: number
   pricingMode?: "price" | "margin"
   targetMargin?: number
 }
@@ -54,7 +53,7 @@ export type CalculatorState = {
   dollarRate: number
   productMode: "single" | "multiple"
   product: ProductInput
-  sales: SalesInput
+  sales: SalesInput & { marketplaceShippingCost?: number } // Campo de cálculos salvos antes da remoção.
   isKit: boolean
   kitQuantity: number
   source: {
@@ -169,8 +168,7 @@ export function calcDomesticPurchase(purchase: DomesticPurchaseInput, quantity: 
 // ---------------------------------------------------------------------------
 
 function calcFixedSaleCosts(sales: SalesInput, unitCost: number): number {
-  return unitCost + sales.packagingCost + (sales.otherCosts ?? 0)
-    + sales.shippingFee + (sales.marketplaceShippingCost ?? 0)
+  return unitCost + sales.packagingCost + sales.shippingFee + (sales.otherCosts ?? 0)
 }
 
 export function calcSuggestedSalePrice(sales: SalesInput, unitCost: number): number | null {

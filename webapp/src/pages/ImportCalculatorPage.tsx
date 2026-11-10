@@ -138,7 +138,8 @@ const ImportCalculatorPage = () => {
             setCurrency(saved.currency ?? "USD")
             setDomesticPurchase(saved.domesticPurchase ?? { unitPrice: 0, shippingCost: 0 })
             setProduct(saved.product)
-            setSales(saved.sales)
+            const { marketplaceShippingCost: _legacyShippingCost, ...savedSales } = saved.sales
+            setSales(savedSales)
             setDollarRate(saved.dollarRate)
             setProductMode(saved.productMode)
             setIsKit(saved.isKit)
@@ -691,8 +692,6 @@ const ImportCalculatorPage = () => {
                   onChange={salesTax => setSales(prev => ({ ...prev, salesTax }))} />
                 <SaleField label="Frete pago pelo vendedor" value={sales.shippingFee}
                   onChange={shippingFee => setSales(prev => ({ ...prev, shippingFee }))} />
-                <SaleField label="Custo do envio Mercado Livre (manual)" value={sales.marketplaceShippingCost ?? 0}
-                  onChange={marketplaceShippingCost => setSales(prev => ({ ...prev, marketplaceShippingCost }))} />
                 <SaleField label="Custo de embalagem" value={sales.packagingCost}
                   onChange={packagingCost => setSales(prev => ({ ...prev, packagingCost }))} />
                 <SaleField label="Outros custos por venda" value={sales.otherCosts ?? 0}
@@ -773,10 +772,6 @@ const ImportCalculatorPage = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-400">Custo {isKit ? "do kit" : "do produto"}</span>
                         <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.productCost)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Custo do envio Mercado Livre</span>
-                        <span className="font-medium text-gray-200">R$ {formatBRL(sales.marketplaceShippingCost ?? 0)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Outros custos</span>

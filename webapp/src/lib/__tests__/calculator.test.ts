@@ -189,8 +189,8 @@ describe("calcSales (Etapa 2)", () => {
 
 describe("Precificação no Mercado Livre", () => {
   const spreadsheet: SalesInput = {
-    isKit: false, salesTax: 7, salePrice: 47.9, shippingFee: 0,
-    adFee: 0.13, packagingCost: 0, marketplaceShippingCost: 12.95, targetMargin: 5,
+    isKit: false, salesTax: 7, salePrice: 47.9, shippingFee: 12.95,
+    adFee: 0.13, packagingCost: 0, targetMargin: 5,
   }
 
   it("reproduz a aba por preço de venda e interpreta 0,13 como 0,13%", () => {
@@ -212,8 +212,8 @@ describe("Precificação no Mercado Livre", () => {
 
   it("inclui todos os custos por venda no preço sugerido e no retorno do lote", () => {
     const sales = {
-      ...spreadsheet, adFee: 13, shippingFee: 3, packagingCost: 1,
-      otherCosts: 2, marketplaceShippingCost: 4, targetMargin: 10,
+      ...spreadsheet, adFee: 13, shippingFee: 7, packagingCost: 1,
+      otherCosts: 2, targetMargin: 10,
     }
     const kitCost = 25
     const price = calcSuggestedSalePrice(sales, kitCost)

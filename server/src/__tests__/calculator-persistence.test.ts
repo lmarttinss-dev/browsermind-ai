@@ -46,17 +46,16 @@ describe("Product calculator persistence", () => {
     const path = `/api/pipeline/${product._id}`
     const sales = {
       ...state.sales, pricingMode: "margin", targetMargin: 5,
-      marketplaceShippingCost: 12.95, otherCosts: 2,
+      otherCosts: 2,
     }
     const payload = { ...results, salePrice: 45.53 }
     await request(app).patch(`${path}/calculator`)
-      .send({ ...payload, calculatorState: { ...state, sales } }).expect(200)
+      .send({ ...payload, calculatorState: { ...state, sales: { ...sales, marketplaceShippingCost: 12.95 } } }).expect(200)
 
     for (const invalid of [
       { ...sales, pricingMode: "unknown" },
       { ...sales, targetMargin: undefined },
       { ...sales, targetMargin: 80 },
-      { ...sales, marketplaceShippingCost: -1 },
       { ...sales, otherCosts: -1 },
     ]) {
       await request(app).patch(`${path}/calculator`)
