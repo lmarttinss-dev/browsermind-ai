@@ -1,3 +1,4 @@
+import { MarketAnalysisPage } from "@/pages/MarketAnalysisPage";
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useStore } from "@/store/useStore";
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/categories/:id" element={<CategoryDashboardPage />} />
+        <Route path="/market-analysis" element={<MarketAnalysisPage />} />
         <Route path="/calculator" element={<ImportCalculatorPage />} />
       </Routes>
 

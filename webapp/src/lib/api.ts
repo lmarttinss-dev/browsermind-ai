@@ -1,3 +1,4 @@
+import type { AccountProfile, MarketSnapshot, MarketAnalysis } from "./market-analysis";
 import type { CalculatorState } from "./calculator";
 
 const API_BASE = "";
@@ -39,6 +40,18 @@ export const api = {
   getKeys: () => request<{ configured: string[] }>("/api/keys"),
   analyze: (params: { prompt: string; model: string; pageContent?: string; screenshot?: string; templateId?: string; qnaContent?: string }) =>
     request<{ success: boolean; response: string; actions?: BrowserAction[]; pipelineProductId?: string }>("/api/analyze", { method: "POST", body: JSON.stringify(params) }),
+
+  exportMarketReportPdf: async (analysis: MarketAnalysis): Promise<Blob> => {
+    const response = await fetch("/api/market-analysis/export-pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ analysis }) })
+    if (!response.ok) { const error = await response.json().catch(() => ({})); throw new Error(error.error || "Não foi possível gerar o PDF.") }
+    return response.blob()
+  },
+  getSavedMarketListings: () => request<{ success: boolean; snapshot: MarketSnapshot }>("/api/market-analysis/listings"),
+  updateMarketListingAds: (id: string, adsStatus: "yes" | "no" | "unknown") => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}/ads`, { method: "PATCH", body: JSON.stringify({ adsStatus }) }),
+  removeSavedMarketListing: (id: string) => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  captureMarketListings: () => request<{ success: boolean; snapshot: MarketSnapshot; savedId: string; warning?: string }>("/api/market-analysis/save-current", { method: "POST" }),
+  analyzeMarketSelection: (snapshotId: string, selectedIds: string[], profile: AccountProfile, model: string) =>
+    request<{ success: boolean; analysis: MarketAnalysis }>("/api/market-analysis/analyze", { method: "POST", body: JSON.stringify({ savedListingIds: selectedIds, profile, model }) }),
 
   // AvantPro
   avantproAuth: (email: string) =>

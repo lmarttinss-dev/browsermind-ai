@@ -14,6 +14,7 @@ import {
   Building2,
   Calculator,
   Tag,
+  BarChart3,
 } from "lucide-react";
 
 export function NavigationBar() {
@@ -63,7 +64,7 @@ export function NavigationBar() {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 border-b border-gray-700">
+    <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 border-b border-gray-700 overflow-x-auto shrink-0">
       {/* Browser control */}
       {!browserActive ? (
         <button
@@ -112,6 +113,11 @@ export function NavigationBar() {
         </>
       )}
 
+      <button onClick={() => navigate(location.pathname === "/market-analysis" ? "/" : "/market-analysis")}
+        className="flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 shrink-0"
+        aria-current={location.pathname === "/market-analysis" ? "page" : undefined}>
+        <BarChart3 className="w-3.5 h-3.5" /> Panorama AvantPro
+      </button>
       {/* Separador + Nav toggle */}
       <div className="w-px h-6 bg-gray-700 mx-1" />
       <button
