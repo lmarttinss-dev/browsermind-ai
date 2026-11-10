@@ -110,8 +110,42 @@ try {
   assert.equal(await page.locator('input[value="9"]').count() >= 1, true);
   assert.equal(await page.locator('input[value="120"]').count(), 1);
   assert.equal(rateRequests, 6);
+  // Reproduce the workbook's scenarios using the national purchase cost.
+  await page.locator('label[for="purchase-currency-BRL"]').click();
+  await page.getByRole('button', { name: 'Não', exact: true }).click();
+  await page.getByLabel('Preço unitário (em reais)', { exact: true }).fill('27.05');
+  await page.getByLabel('Preço de venda (R$)', { exact: true }).fill('47.90');
+  await page.getByLabel('Comissão do Mercado Livre (%)', { exact: true }).fill('0.13');
+  await page.getByLabel('Frete pago pelo vendedor (R$)', { exact: true }).fill('0');
+  await page.getByLabel('Custo de embalagem (R$)', { exact: true }).fill('0');
+  await page.getByLabel('Custo do envio Mercado Livre (manual) (R$)', { exact: true }).fill('12.95');
+  await page.getByText('R$ 4,48', { exact: true }).waitFor();
+  await page.getByText('9,4%', { exact: true }).waitFor();
+
+  const marginMode = page.getByRole('button', { name: 'Por margem desejada', exact: true });
+  await marginMode.click();
+  await page.getByText('R$ 45,53', { exact: true }).waitFor();
+  const marginField = page.getByLabel('Margem de lucro desejada (%)', { exact: true });
+  await marginField.fill('93');
+  await page.getByText('A soma da comissão, do imposto e da margem desejada deve ser menor que 100%.').waitFor();
+  assert(await save.isDisabled());
+  await marginField.fill('5');
+  await page.getByLabel('Outros custos por venda (R$)', { exact: true }).fill('2');
+  await page.getByText('R$ 47,80', { exact: true }).waitFor();
+  await save.click();
+  await page.getByText('Cálculo completo salvo no produto!', { exact: true }).waitFor();
+  assert.equal(lastSave.salePrice, 47.80);
+  assert.equal(lastSave.calculatorState.sales.salePrice, 47.90);
+  await page.reload();
+  await page.getByText('R$ 47,80', { exact: true }).waitFor();
+  assert.equal(await marginMode.getAttribute('aria-pressed'), 'true');
+  assert.equal(await marginField.inputValue(), '5');
+  assert.equal(await page.getByLabel('Outros custos por venda (R$)', { exact: true }).inputValue(), '2');
+  await page.getByRole('button', { name: 'Por preço de venda', exact: true }).click();
+  assert.equal(await page.getByLabel('Preço de venda (R$)', { exact: true }).inputValue(), '47.9');
+
   assert.deepEqual(errors, []);
-  console.log('PASS: saved links in detail/card, all inputs, kit/mode/source, current rate on reopen/reload, saved-rate fallback, error retry, save/edit/reload, new quote');
+  console.log('PASS: saved links in detail/card, all inputs, kit/mode/source, current rate on reopen/reload, saved-rate fallback, error retry, save/edit/reload, new quote, and both Mercado Livre pricing modes');
 } finally {
   await browser.close();
 }

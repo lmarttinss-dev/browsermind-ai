@@ -8,6 +8,8 @@ import {
   type Currency,
   type DomesticPurchaseInput,
   calcSales,
+  calcSuggestedSalePrice,
+  DEFAULT_TARGET_MARGIN,
   calcInvestment,
   COURIER_RATE,
   type CalculatorState,
@@ -17,6 +19,28 @@ import {
 import { parseReportMetrics } from "@/lib/utils"
 
 type ProductMode = "single" | "multiple"
+
+function SaleField({ label, value, unit = "R$", onChange }: {
+  label: string
+  value: number
+  unit?: "R$" | "%"
+  onChange: (value: number) => void
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs text-gray-400 mb-1 block">{label} ({unit})</span>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        min={0}
+        max={unit === "%" ? 100 : undefined}
+        step="0.01"
+        className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+      />
+    </label>
+  )
+}
 
 const ImportCalculatorPage = () => {
   const { search } = useLocation()
@@ -206,27 +230,16 @@ const ImportCalculatorPage = () => {
     ? Math.floor(product.quantity / kitQuantity)
     : product.quantity
 
-  // Etapa 2 - Cálculos de viabilidade de venda
-  const salesCalc = useMemo(
-    () => calcSales(sales, effectiveUnitCost),
-    [sales, effectiveUnitCost],
-  )
-
-  // Etapa 3 - Montinho ao Montão
-  const investmentCalc = useMemo(
-    () =>
-      calcInvestment(
-        purchaseCalc.totalCost,
-        effectiveUnitCost,
-        sales.salePrice,
-        saleableQuantity,
-        salesCalc.totalExpenses,
-      ),
-    [purchaseCalc.totalCost, salesCalc, sales.salePrice, saleableQuantity, effectiveUnitCost],
-  )
+  const isMarginMode = sales.pricingMode === "margin"
+  const targetMargin = sales.targetMargin ?? DEFAULT_TARGET_MARGIN
+  const salePrice = isMarginMode ? calcSuggestedSalePrice(sales, effectiveUnitCost) : sales.salePrice
+  const salesCalc = salePrice === null ? null : calcSales({ ...sales, salePrice }, effectiveUnitCost)
+  const investmentCalc = salesCalc && salePrice !== null
+    ? calcInvestment(purchaseCalc.totalCost, effectiveUnitCost, salePrice, saleableQuantity, salesCalc.totalExpenses)
+    : null
 
   const handleSaveCalculator = async () => {
-    if (!productId || isLoadingProduct || loadError) return
+    if (!productId || isLoadingProduct || loadError || salePrice === null || !salesCalc || !investmentCalc) return
     setSaveError("")
     setIsSaving(true)
     try {
@@ -237,7 +250,7 @@ const ImportCalculatorPage = () => {
         contributionMargin: salesCalc.contributionMargin,
         profitPerUnit: salesCalc.profitPerUnit,
         multiplier: investmentCalc.multiplier,
-        salePrice: sales.salePrice,
+        salePrice,
         quantity: product.quantity,
       })
       setSavedFingerprint(fingerprint)
@@ -290,7 +303,7 @@ const ImportCalculatorPage = () => {
                 )}
                 <button
                   onClick={handleSaveCalculator}
-                  disabled={isSaving || !!loadError || savedSuccess}
+                  disabled={isSaving || !!loadError || savedSuccess || salePrice === null}
                   className="text-xs bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg px-3 py-1.5"
                 >
                   {isSaving ? "Salvando..." : savedSuccess ? "Cálculo salvo" : "Salvar cálculo no produto"}
@@ -575,25 +588,12 @@ const ImportCalculatorPage = () => {
             </span>
 
             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-emerald-400" />
-                  <h2 className="text-lg font-bold text-gray-100">Seu Produto Vale a Pena?</h2>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-1.5">
-                  <span className="text-sm text-gray-400">Imposto de Venda</span>
-                  <input
-                    type="number"
-                    value={sales.salesTax}
-                    onChange={(e) => setSales({ ...sales, salesTax: Number(e.target.value) })}
-                    className="w-10 text-sm font-semibold bg-transparent border-none focus:outline-none text-center text-gray-200"
-                  />
-                  <span className="text-sm text-gray-500">%</span>
-                  <HelpCircle className="w-3.5 h-3.5 text-gray-500" />
-                </div>
+              <div className="flex items-center gap-2 mb-2">
+                <Package className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-bold text-gray-100">Precificação no Mercado Livre</h2>
               </div>
               <p className="text-sm text-gray-500 mb-6">
-                Faça a análise de viabilidade e descubra quanto você vai lucrar.
+                Simule um preço de venda ou calcule quanto cobrar para atingir a margem desejada.
               </p>
 
               {/* Toggle Kit */}
@@ -647,206 +647,217 @@ const ImportCalculatorPage = () => {
                 </div>
               )}
 
-              {/* Inputs Etapa 2 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Valor da Venda</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                    <input
-                      type="number"
-                      value={sales.salePrice}
-                      onChange={(e) => setSales({ ...sales, salePrice: Number(e.target.value) })}
-                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">
-                    Custo do {isKit ? `kit (Etapa 1 × ${kitQuantity})` : "produto (Etapa 1)"}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                    <input
-                      type="number"
-                      value={Number(effectiveUnitCost.toFixed(2))}
-                      readOnly
-                      className="w-full border border-gray-600 bg-gray-700/50 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-300 font-semibold"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block flex items-center gap-1">
-                    Taxa de frete <HelpCircle className="w-3 h-3 text-gray-500" />
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                    <input
-                      type="number"
-                      value={sales.shippingFee}
-                      onChange={(e) => setSales({ ...sales, shippingFee: Number(e.target.value) })}
-                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block flex items-center gap-1">
-                    Tarifa do anúncio <HelpCircle className="w-3 h-3 text-gray-500" />
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={sales.adFee}
-                      onChange={(e) => setSales({ ...sales, adFee: Number(e.target.value) })}
-                      className="w-full border border-gray-600 bg-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-gray-400 mb-1 block">Custo de embalagem</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
-                    <input
-                      type="number"
-                      value={sales.packagingCost}
-                      onChange={(e) => setSales({ ...sales, packagingCost: Number(e.target.value) })}
-                      className="w-full border border-gray-600 bg-gray-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
+              <div className="grid grid-cols-2 gap-2 mb-4" role="group" aria-label="Modo de precificação">
+                <button
+                  type="button"
+                  aria-pressed={!isMarginMode}
+                  onClick={() => setSales(prev => ({ ...prev, pricingMode: "price" }))}
+                  className={`px-3 py-2 text-sm rounded-lg ${!isMarginMode ? "bg-emerald-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
+                >
+                  Por preço de venda
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={isMarginMode}
+                  onClick={() => setSales(prev => ({ ...prev, pricingMode: "margin", targetMargin }))}
+                  className={`px-3 py-2 text-sm rounded-lg ${isMarginMode ? "bg-emerald-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
+                >
+                  Por margem desejada
+                </button>
               </div>
 
-              {/* Resultado Etapa 2 */}
-              <div className="mt-6 bg-gray-700/50 rounded-xl p-5">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Resultado da Venda</p>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                    <p className="text-xs text-gray-500">Lucro por unidade</p>
-                    <p className={`text-lg font-bold ${salesCalc.profitPerUnit >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                      R$ {formatBRL(salesCalc.profitPerUnit)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {isMarginMode ? (
+                  <SaleField label="Margem de lucro desejada" unit="%" value={targetMargin}
+                    onChange={targetMargin => setSales(prev => ({ ...prev, targetMargin }))} />
+                ) : (
+                  <SaleField label="Preço de venda" value={sales.salePrice}
+                    onChange={salePrice => setSales(prev => ({ ...prev, salePrice }))} />
+                )}
+                <label className="block">
+                  <span className="text-xs text-gray-400 mb-1 block">
+                    Custo {isKit ? "do kit" : "do produto"} da Etapa 1 (R$)
+                  </span>
+                  <input
+                    type="number"
+                    value={Number(effectiveUnitCost.toFixed(2))}
+                    readOnly
+                    className="w-full border border-gray-600 bg-gray-700/50 rounded-lg px-3 py-2.5 text-sm text-gray-300 font-semibold"
+                  />
+                </label>
+                <SaleField label="Comissão do Mercado Livre" unit="%" value={sales.adFee}
+                  onChange={adFee => setSales(prev => ({ ...prev, adFee }))} />
+                <SaleField label="Imposto sobre a venda" unit="%" value={sales.salesTax}
+                  onChange={salesTax => setSales(prev => ({ ...prev, salesTax }))} />
+                <SaleField label="Frete pago pelo vendedor" value={sales.shippingFee}
+                  onChange={shippingFee => setSales(prev => ({ ...prev, shippingFee }))} />
+                <SaleField label="Custo do envio Mercado Livre (manual)" value={sales.marketplaceShippingCost ?? 0}
+                  onChange={marketplaceShippingCost => setSales(prev => ({ ...prev, marketplaceShippingCost }))} />
+                <SaleField label="Custo de embalagem" value={sales.packagingCost}
+                  onChange={packagingCost => setSales(prev => ({ ...prev, packagingCost }))} />
+                <SaleField label="Outros custos por venda" value={sales.otherCosts ?? 0}
+                  onChange={otherCosts => setSales(prev => ({ ...prev, otherCosts }))} />
+              </div>
+
+              {isMarginMode && (
+                <div className="mt-4 rounded-lg bg-gray-700/50 p-3" aria-live="polite">
+                  {salePrice === null ? (
+                    <p className="text-sm text-amber-300">
+                      A soma da comissão, do imposto e da margem desejada deve ser menor que 100%.
                     </p>
-                    <p className="text-xs text-gray-500">Por venda realizada</p>
-                  </div>
-                  <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                    <p className="text-xs text-gray-500">Margem de Contribuição</p>
-                    <p className="text-lg font-bold text-gray-100">
-                      {salesCalc.contributionMargin.toFixed(1)}%
-                    </p>
-                    <p className="text-xs text-gray-500">% sobre a venda</p>
-                  </div>
-                  <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                    <p className="text-xs text-gray-500">ROI (Retorno sobre o Investimento)</p>
-                    <p className={`text-lg font-bold ${salesCalc.roi >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                      {salesCalc.roi.toFixed(0)}%
-                    </p>
-                    <div className="mt-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full transition-all"
-                        style={{ width: `${Math.min(Math.max(salesCalc.roi, 0), 100)}%` }}
-                      />
+                  ) : (
+                    <>
+                      <p className="text-xs text-gray-400">Preço de venda sugerido</p>
+                      <p className="text-lg font-bold text-emerald-400">R$ {formatBRL(salePrice)}</p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {salesCalc && (
+                <>
+                  {/* Resultado Etapa 2 */}
+                  <div className="mt-6 bg-gray-700/50 rounded-xl p-5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Resultado da Venda</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <p className="text-xs text-gray-500">Lucro líquido por venda</p>
+                        <p className={`text-lg font-bold ${salesCalc.profitPerUnit >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          R$ {formatBRL(salesCalc.profitPerUnit)}
+                        </p>
+                      </div>
+                      <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <p className="text-xs text-gray-500">Margem líquida</p>
+                        <p className="text-lg font-bold text-gray-100">
+                          {salesCalc.contributionMargin.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+                        </p>
+                        <p className="text-xs text-gray-500">% sobre a venda</p>
+                      </div>
+                      <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <p className="text-xs text-gray-500">ROI (Retorno sobre o Investimento)</p>
+                        <p className={`text-lg font-bold ${salesCalc.roi >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          {salesCalc.roi.toFixed(0)}%
+                        </p>
+                        <div className="mt-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full transition-all"
+                            style={{ width: `${Math.min(Math.max(salesCalc.roi, 0), 100)}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Detalhamento de custos por venda */}
-              <details className="mt-4">
-                <summary className="text-xs font-bold text-gray-400 uppercase tracking-wide cursor-pointer hover:text-gray-200">
-                  Ver detalhamento de custos por venda
-                </summary>
-                <div className="mt-3 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Imposto sobre venda ({sales.salesTax}%)</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.salesTaxValue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Tarifa do anúncio ({sales.adFee}%)</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.adFeeValue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Taxa de frete</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(sales.shippingFee)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Custo de embalagem</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(sales.packagingCost)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Custo do produto</span>
-                    <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.productCost)}</span>
-                  </div>
-                  <div className="flex justify-between border-t border-gray-700 pt-2 font-semibold">
-                    <span className="text-gray-200">Total de despesas</span>
-                    <span className="text-gray-200">R$ {formatBRL(salesCalc.totalExpenses)}</span>
-                  </div>
-                </div>
-              </details>
+                  {/* Detalhamento de custos por venda */}
+                  <details className="mt-4">
+                    <summary className="text-xs font-bold text-gray-400 uppercase tracking-wide cursor-pointer hover:text-gray-200">
+                      Ver detalhamento de custos por venda
+                    </summary>
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Imposto sobre venda ({sales.salesTax}%)</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.salesTaxValue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Comissão do Mercado Livre ({sales.adFee}%)</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.adFeeValue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Frete pago pelo vendedor</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(sales.shippingFee)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Custo de embalagem</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(sales.packagingCost)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Custo {isKit ? "do kit" : "do produto"}</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(salesCalc.productCost)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Custo do envio Mercado Livre</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(sales.marketplaceShippingCost ?? 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Outros custos</span>
+                        <span className="font-medium text-gray-200">R$ {formatBRL(sales.otherCosts ?? 0)}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-gray-700 pt-2 font-semibold">
+                        <span className="text-gray-200">Subtotal antes de comissão e imposto</span>
+                        <span className="text-gray-200">R$ {formatBRL(salesCalc.fixedCosts)}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-gray-700 pt-2 font-semibold">
+                        <span className="text-gray-200">Total de despesas</span>
+                        <span className="text-gray-200">R$ {formatBRL(salesCalc.totalExpenses)}</span>
+                      </div>
+                    </div>
+                  </details>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         {/* ETAPA 3 */}
-        <div>
-          <span className="inline-block bg-blue-900/30 text-blue-400 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-            Etapa 3
-          </span>
+        {investmentCalc && (
+          <div>
+            <span className="inline-block bg-blue-900/30 text-blue-400 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
+              Etapa 3
+            </span>
 
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="w-5 h-5 text-blue-400" />
-              <h2 className="text-lg font-bold text-gray-100">Do Montinho ao Montão</h2>
-            </div>
-            <p className="text-sm text-gray-500 mb-6">
-              Descubra quanto seu investimento inicial pode se multiplicar.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
-              {/* Montinho */}
-              <div className="bg-gray-700/50 rounded-xl p-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Package className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Montinho</span>
-                </div>
-                <p className="text-xs text-gray-500 mb-1">O que você investiu</p>
-                <p className="text-3xl font-bold text-gray-100">
-                  R$ {formatBRL(investmentCalc.totalInvestment)}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {product.quantity} un × R$ {formatBRL(purchaseCalc.unitCost)}
-                </p>
+            <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                <h2 className="text-lg font-bold text-gray-100">Do Montinho ao Montão</h2>
               </div>
+              <p className="text-sm text-gray-500 mb-6">
+                Descubra quanto seu investimento inicial pode se multiplicar.
+              </p>
 
-              {/* Multiplicador */}
-              <div className="flex flex-col items-center gap-2">
-                <ArrowRight className="w-5 h-5 text-orange-400" />
-                <div className="bg-orange-500 text-white rounded-full w-20 h-20 flex flex-col items-center justify-center">
-                  <span className="text-[10px] uppercase font-bold">Multiplica</span>
-                  <span className="text-xl font-bold">{investmentCalc.multiplier.toFixed(2)}x</span>
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
+                {/* Montinho */}
+                <div className="bg-gray-700/50 rounded-xl p-6 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Package className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Montinho</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-1">O que você investiu</p>
+                  <p className="text-3xl font-bold text-gray-100">
+                    R$ {formatBRL(investmentCalc.totalInvestment)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {product.quantity} un × R$ {formatBRL(purchaseCalc.unitCost)}
+                  </p>
                 </div>
-                <ArrowRight className="w-5 h-5 text-emerald-400" />
-              </div>
 
-              {/* Montão */}
-              <div className="bg-emerald-900/20 rounded-xl p-6 text-center border border-emerald-800/30">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wide">Montão</span>
+                {/* Multiplicador */}
+                <div className="flex flex-col items-center gap-2">
+                  <ArrowRight className="w-5 h-5 text-orange-400" />
+                  <div className="bg-orange-500 text-white rounded-full w-20 h-20 flex flex-col items-center justify-center">
+                    <span className="text-[10px] uppercase font-bold">Multiplica</span>
+                    <span className="text-xl font-bold">{investmentCalc.multiplier.toFixed(2)}x</span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-emerald-400" />
                 </div>
-                <p className="text-xs text-gray-500 mb-1">O que volta pro seu bolso após vender tudo</p>
-                <p className="text-3xl font-bold text-emerald-400">
-                  R$ {formatBRL(investmentCalc.totalReturn)}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Receita R$ {formatBRL(investmentCalc.totalRevenue)} – taxas
-                </p>
+
+                {/* Montão */}
+                <div className="bg-emerald-900/20 rounded-xl p-6 text-center border border-emerald-800/30">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wide">Montão</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-1">O que volta pro seu bolso após vender tudo</p>
+                  <p className="text-3xl font-bold text-emerald-400">
+                    R$ {formatBRL(investmentCalc.totalReturn)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Receita R$ {formatBRL(investmentCalc.totalRevenue)} – taxas
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-gray-600">
@@ -858,7 +869,7 @@ const ImportCalculatorPage = () => {
           <div className="flex justify-center pb-8">
             <button
               onClick={handleSaveCalculator}
-              disabled={isSaving || isLoadingProduct || !!loadError}
+              disabled={isSaving || isLoadingProduct || !!loadError || salePrice === null}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors"
             >
               {isSaving ? (

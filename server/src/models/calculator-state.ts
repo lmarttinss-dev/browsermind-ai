@@ -22,6 +22,20 @@ export const calculatorStateSchema = new Schema({
     isKit: { type: Boolean, required: true },
     salesTax: number(0, 100), salePrice: number(), shippingFee: number(),
     adFee: number(0, 100), packagingCost: number(),
+    otherCosts: { ...number(), required: false },
+    marketplaceShippingCost: { ...number(), required: false },
+    pricingMode: { type: String, enum: ["price", "margin"] },
+    targetMargin: {
+      ...number(0, 100),
+      required: function (this: { pricingMode?: string }) { return this.pricingMode === "margin" },
+      validate: {
+        validator: function (this: { pricingMode?: string; salesTax: number; adFee: number }, margin: number) {
+          return Number.isFinite(margin)
+            && (this.pricingMode !== "margin" || this.salesTax + this.adFee + margin < 100)
+        },
+        message: "A margem e as taxas devem somar menos de 100%",
+      },
+    },
   }, { _id: false }), required: true },
   isKit: { type: Boolean, required: true },
   kitQuantity: number(1),

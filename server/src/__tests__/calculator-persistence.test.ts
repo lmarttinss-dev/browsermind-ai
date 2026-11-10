@@ -41,6 +41,33 @@ describe("Product calculator persistence", () => {
     }
   })
 
+  it("preserves Mercado Livre pricing inputs and rejects an impossible target", async () => {
+    const product = await Product.create({ title: "Mercado Livre", url: "https://example.com/ml" })
+    const path = `/api/pipeline/${product._id}`
+    const sales = {
+      ...state.sales, pricingMode: "margin", targetMargin: 5,
+      marketplaceShippingCost: 12.95, otherCosts: 2,
+    }
+    const payload = { ...results, salePrice: 45.53 }
+    await request(app).patch(`${path}/calculator`)
+      .send({ ...payload, calculatorState: { ...state, sales } }).expect(200)
+
+    for (const invalid of [
+      { ...sales, pricingMode: "unknown" },
+      { ...sales, targetMargin: undefined },
+      { ...sales, targetMargin: 80 },
+      { ...sales, marketplaceShippingCost: -1 },
+      { ...sales, otherCosts: -1 },
+    ]) {
+      await request(app).patch(`${path}/calculator`)
+        .send({ ...payload, calculatorState: { ...state, sales: invalid } }).expect(400)
+    }
+
+    const { body } = await request(app).get(path).expect(200)
+    expect(body.product.calculatorState.sales).toEqual(sales)
+    expect(body.product.price).toBe(45.53)
+  })
+
   it("rejects unknown currencies and incomplete or negative national costs", async () => {
     const product = await Product.create({ title: "Nacional", url: "https://example.com/nacional" })
     const path = `/api/pipeline/${product._id}/calculator`

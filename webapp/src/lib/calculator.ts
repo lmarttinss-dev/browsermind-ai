@@ -11,6 +11,7 @@
 
 /** Taxa courier DHL (~22,79% sobre o valor aduaneiro BRL) */
 export const COURIER_RATE = 0.2279
+export const DEFAULT_TARGET_MARGIN = 5
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -39,6 +40,10 @@ export type SalesInput = {
   shippingFee: number
   adFee: number
   packagingCost: number
+  otherCosts?: number
+  marketplaceShippingCost?: number
+  pricingMode?: "price" | "margin"
+  targetMargin?: number
 }
 
 /** Complete, versioned form state for reopening a product calculation. */
@@ -73,6 +78,7 @@ export type ImportCalcResult = {
 
 export type SalesCalcResult = {
   productCost: number
+  fixedCosts: number
   salesTaxValue: number
   adFeeValue: number
   totalExpenses: number
@@ -162,6 +168,21 @@ export function calcDomesticPurchase(purchase: DomesticPurchaseInput, quantity: 
 // Etapa 2 — Cálculos de viabilidade de venda
 // ---------------------------------------------------------------------------
 
+function calcFixedSaleCosts(sales: SalesInput, unitCost: number): number {
+  return unitCost + sales.packagingCost + (sales.otherCosts ?? 0)
+    + sales.shippingFee + (sales.marketplaceShippingCost ?? 0)
+}
+
+export function calcSuggestedSalePrice(sales: SalesInput, unitCost: number): number | null {
+  const totalRate = sales.salesTax + sales.adFee + (sales.targetMargin ?? DEFAULT_TARGET_MARGIN)
+  if (totalRate >= 100) return null
+
+  const price = calcFixedSaleCosts(sales, unitCost) / (1 - totalRate / 100)
+  // Arredonda para cima para que o preço em centavos cubra a margem desejada.
+  const cents = price * 100
+  return Math.ceil(cents - Number.EPSILON * Math.abs(cents)) / 100
+}
+
 export function calcSales(
   sales: SalesInput,
   unitCost: number,
@@ -169,8 +190,8 @@ export function calcSales(
   const productCost = unitCost
   const salesTaxValue = sales.salePrice * (sales.salesTax / 100)
   const adFeeValue = sales.salePrice * (sales.adFee / 100)
-  const totalExpenses =
-    salesTaxValue + adFeeValue + sales.shippingFee + sales.packagingCost + productCost
+  const fixedCosts = calcFixedSaleCosts(sales, productCost)
+  const totalExpenses = fixedCosts + salesTaxValue + adFeeValue
   const profitPerUnit = sales.salePrice - totalExpenses
   const contributionMargin =
     sales.salePrice > 0 ? (profitPerUnit / sales.salePrice) * 100 : 0
@@ -178,6 +199,7 @@ export function calcSales(
 
   return {
     productCost,
+    fixedCosts,
     salesTaxValue,
     adFeeValue,
     totalExpenses,

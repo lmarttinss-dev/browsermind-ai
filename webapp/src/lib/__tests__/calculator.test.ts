@@ -4,6 +4,7 @@ import {
   calcImport,
   calcDomesticPurchase,
   calcSales,
+  calcSuggestedSalePrice,
   calcInvestment,
   COURIER_RATE,
   type ProductInput,
@@ -183,6 +184,52 @@ describe("calcSales (Etapa 2)", () => {
     expect(r.profitPerUnit).toBeLessThan(0)
     expect(r.contributionMargin).toBeLessThan(0)
     expect(r.roi).toBeLessThan(0)
+  })
+})
+
+describe("Precificação no Mercado Livre", () => {
+  const spreadsheet: SalesInput = {
+    isKit: false, salesTax: 7, salePrice: 47.9, shippingFee: 0,
+    adFee: 0.13, packagingCost: 0, marketplaceShippingCost: 12.95, targetMargin: 5,
+  }
+
+  it("reproduz a aba por preço de venda e interpreta 0,13 como 0,13%", () => {
+    const result = calcSales(spreadsheet, 27.05)
+
+    expect(result.fixedCosts).toBe(40)
+    expect(result.adFeeValue).toBeCloseTo(0.06227, 5)
+    expect(result.salesTaxValue).toBeCloseTo(3.353, 3)
+    expect(result.profitPerUnit).toBeCloseTo(4.48473, 5)
+    expect(result.contributionMargin).toBeCloseTo(9.362693111, 8)
+  })
+
+  it("reproduz a aba por margem desejada com preço em centavos que atinge a meta", () => {
+    const price = calcSuggestedSalePrice(spreadsheet, 27.05)
+    expect(price).toBe(45.53)
+    expect(calcSales({ ...spreadsheet, salePrice: 45.53 }, 27.05).contributionMargin).toBeGreaterThanOrEqual(5)
+    expect(calcSales({ ...spreadsheet, salePrice: 45.52 }, 27.05).contributionMargin).toBeLessThan(5)
+  })
+
+  it("inclui todos os custos por venda no preço sugerido e no retorno do lote", () => {
+    const sales = {
+      ...spreadsheet, adFee: 13, shippingFee: 3, packagingCost: 1,
+      otherCosts: 2, marketplaceShippingCost: 4, targetMargin: 10,
+    }
+    const kitCost = 25
+    const price = calcSuggestedSalePrice(sales, kitCost)
+    expect(price).toBe(50)
+
+    const result = calcSales({ ...sales, salePrice: 50 }, kitCost)
+    expect(result.fixedCosts).toBe(35)
+    expect(result.totalExpenses).toBe(45)
+    expect(result.profitPerUnit).toBe(5)
+    expect(calcInvestment(100, kitCost, 50, 4, result.totalExpenses).totalReturn).toBe(120)
+  })
+
+  it("retorna preço indisponível quando as taxas e a meta atingem ou superam 100%", () => {
+    for (const targetMargin of [80, 90]) {
+      expect(calcSuggestedSalePrice({ ...spreadsheet, adFee: 13, targetMargin }, 27.05)).toBeNull()
+    }
   })
 })
 
