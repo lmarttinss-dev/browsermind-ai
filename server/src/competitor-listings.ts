@@ -3,10 +3,19 @@ export type CompetitorListing = {
   itemId: string | null
   catalogId: string | null
   title: string
+  imageUrl?: string | null
   seller: string | null
   url: string | null
   advertising: boolean
+  adClickId?: string | null
   metrics: string
+  observed?: {
+    price: number | null
+    logistics: "Full" | "Flex" | "Normal" | "Outros" | null
+    freeShipping: boolean | null
+    delivery: string | null
+    sponsored: boolean
+  }
 }
 
 /** Runs in the page: keep self-contained so Playwright can serialize it. */
@@ -43,8 +52,19 @@ export function extractCompetitorListings(): CompetitorListing[] {
     const id = rawItemId ? rawItemId.replace("-", "").toUpperCase() : null
     const catalogId = url?.pathname.match(/\/(?:p|up)\/(MLBU?\d+)/i)?.[1] || null
     const advertising = !!url && (/^click\d*\./i.test(url.hostname) || hash.get("is_advertising") === "true")
-    const metricsElement = card.querySelector(".avantpro-product-container, .avantpro-product-info-container, [data-avantpro]")
-    const metrics = ((metricsElement as HTMLElement | null)?.innerText || metricsElement?.textContent || "").trim()
+    const metricParts: string[] = []
+    // tsx/esbuild wraps named local functions with __name, which is unavailable
+    // when Playwright serializes this function into the browser. Traverse iteratively.
+    const metricRoots: (Element | ShadowRoot)[] = [card]
+    while (metricRoots.length) {
+      const root = metricRoots.pop()!
+      root.querySelectorAll(".avantpro-product-container, .avantpro-product-info-container, [data-avantpro]").forEach(element => {
+        const value = ((element as HTMLElement).innerText || element.textContent || "").trim()
+        if (value && !metricParts.includes(value)) metricParts.push(value)
+      })
+      root.querySelectorAll("*").forEach(element => { if (element.shadowRoot) metricRoots.push(element.shadowRoot) })
+    }
+    const metrics = metricParts.join("\n").slice(0, 12000)
     const lines = metrics.split(/\n/).map(line => line.trim()).filter(Boolean)
     const sellerIndex = lines.findIndex(line => /^(?:Nome do vendedor|Atual ganhador|Vendedor)$/i.test(line))
     const seller = sellerIndex >= 0 ? lines[sellerIndex + 1] || null : null
@@ -67,8 +87,31 @@ export function extractCompetitorListings(): CompetitorListing[] {
       url.hash = hashWid ? "wid=" + encodeURIComponent(hashWid) : ""
     }
 
+    const priceElement = card.querySelector(".poly-price__current .andes-money-amount, .ui-search-price__second-line .andes-money-amount")
+      || Array.from(card.querySelectorAll(".andes-money-amount")).find(element => !element.closest("s, del, .andes-money-amount--previous"))
+    const fraction = priceElement?.querySelector(".andes-money-amount__fraction")?.textContent
+    const cents = priceElement?.querySelector(".andes-money-amount__cents")?.textContent || "00"
+    const price = fraction ? Number(fraction.replace(/\D/g, "") + "." + cents.replace(/\D/g, "").padStart(2, "0")) : null
+    const shipping = card.querySelector(".poly-component__shipping-v2, .poly-component__shipping, .ui-search-item__shipping")
+    const shippingText = (shipping?.textContent || "").trim()
+    const full = !!shipping?.querySelector('svg[aria-label*="FULL"], use[href*="full"], use[href*="FULL"]') || /\bfull\b/i.test(shippingText)
+    const logistics = full ? "Full" : /\bflex\b/i.test(shippingText) ? "Flex" : /envio normal|envio padrão/i.test(shippingText) ? "Normal" : null
+    const picture = card.querySelector<HTMLImageElement>("img.poly-component__picture, img.ui-search-result-image__element, .poly-card__portada img, .ui-search-result-image img")
+      || card.querySelector<HTMLImageElement>("img")
+    let imageUrl: string | null = null
+    // Prefer the lazy source over placeholder src. Keep this self-contained for Playwright.
+    for (const source of [picture?.getAttribute("data-src"), picture?.getAttribute("data-lazy-src"), picture?.currentSrc, picture?.getAttribute("src")]) {
+      if (!source?.trim()) continue
+      try {
+        const candidate = new URL(source, document.baseURI)
+        if (candidate.protocol === "https:" || candidate.protocol === "http:") { imageUrl = candidate.href; break }
+      } catch { /* Missing or invalid cover: leave it unknown. */ }
+    }
     const listing: CompetitorListing = {
-      positions: [index + 1], itemId: id, catalogId, title,
+      positions: [index + 1], itemId: id, catalogId, title, imageUrl,
+      observed: { price: price !== null && Number.isFinite(price) && price > 0 ? price : null,
+        logistics, freeShipping: /frete gr[áa]tis/i.test(shippingText) ? true : /frete R\$|frete pago/i.test(shippingText) ? false : null,
+        delivery: shippingText || null, sponsored: advertising || Array.from(card.querySelectorAll("*")).some(element => /^patrocinado$/i.test((element.textContent || "").trim())) },
       seller, url: url && /^click\d*\./i.test(url.hostname) ? reportUrl : url?.href || null, advertising, metrics,
     }
     // Catalog IDs alone must never merge different sellers' offers.
@@ -81,8 +124,10 @@ export function extractCompetitorListings(): CompetitorListing[] {
       listings.set(key, {
         ...preferred,
         positions: [...previous.positions, index + 1],
+        imageUrl: preferred.imageUrl || previous.imageUrl || imageUrl,
         seller: preferred.seller || previous.seller || seller,
         metrics: preferred.metrics || previous.metrics || metrics,
+        observed: { ...preferred.observed!, sponsored: !!previous.observed?.sponsored || !!listing.observed?.sponsored },
       })
     }
   })

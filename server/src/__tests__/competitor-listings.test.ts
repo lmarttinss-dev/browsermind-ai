@@ -52,6 +52,20 @@ describe("Competitor listing links from the DOM", () => {
     expect(rows[2]).toMatchObject({ title: "Sem link", url: null, itemId: null, seller: "LOJA_C" })
   })
 
+  it("captures lazy cover URLs, ignores inline placeholders and preserves covers on duplicate offers", async () => {
+    const page = await manager.getPage()
+    await page.evaluate(() => {
+      const cards = document.querySelectorAll(".poly-card")
+      cards[0].insertAdjacentHTML("afterbegin", '<img class="poly-component__picture" src="data:image/gif;base64,AAAA" data-src="https://http2.mlstatic.com/cover-a.webp">')
+      cards[2].insertAdjacentHTML("afterbegin", '<img class="poly-component__picture" src="https://http2.mlstatic.com/cover-b.webp">')
+      cards[3].insertAdjacentHTML("afterbegin", '<img src="data:image/gif;base64,AAAA">')
+    })
+    const rows = await page.evaluate(extractCompetitorListings)
+    expect(rows[0].imageUrl).toBe("https://http2.mlstatic.com/cover-a.webp")
+    expect(rows[1].imageUrl).toBe("https://http2.mlstatic.com/cover-b.webp")
+    expect(rows[2].imageUrl).toBeNull()
+  })
+
   it("keeps competitor URLs beyond the generic 100-link limit and preserves generic offer URLs", async () => {
     const extracted = await manager.extractPageContent()
     expect(extracted.links).toHaveLength(100)
@@ -105,6 +119,31 @@ describe("Competitor listing links from the DOM", () => {
     expect((await page.evaluate(extractCompetitorListings))[0]).toMatchObject({
       itemId: "MLB123", seller: "LOJA_D", url: "https://produto.mercadolivre.com.br/MLB-123-adaptador-_JM",
     })
+  })
+
+  it("extracts current prices with cents and keeps Full separate from free shipping and quick delivery", async () => {
+    const page = await manager.getPage()
+    await page.setContent(card("Com Full", organic, "LOJA_A") + card("Só prazo rápido", second, "LOJA_B"))
+    await page.evaluate(() => {
+      const cards = document.querySelectorAll(".poly-card")
+      cards[0].insertAdjacentHTML("beforeend", '<div class="poly-price__current"><span class="andes-money-amount"><span class="andes-money-amount__fraction">1.234</span><span class="andes-money-amount__cents">56</span></span></div><div class="poly-component__shipping-v2">Frete grátis <svg aria-label="Enviado pelo FULL"></svg></div>')
+      cards[1].insertAdjacentHTML("beforeend", '<div class="poly-component__shipping-v2">Chegará amanhã</div>')
+    })
+    const rows = await page.evaluate(extractCompetitorListings)
+    expect(rows[0].observed).toMatchObject({ price: 1234.56, logistics: "Full", freeShipping: true })
+    expect(rows[1].observed).toMatchObject({ price: null, logistics: null, freeShipping: null })
+  })
+
+  it("keeps sponsored evidence after deduplication and reads metrics in card shadow roots", async () => {
+    const page = await manager.getPage()
+    expect((await page.evaluate(extractCompetitorListings))[0].observed?.sponsored).toBe(true)
+    await page.setContent(card("Shadow", organic, "LOJA_A", ""))
+    await page.evaluate(() => {
+      const host = document.createElement("div")
+      document.querySelector(".poly-card")!.append(host)
+      host.attachShadow({ mode: "open" }).innerHTML = '<div data-avantpro>Vendas (30 dias)<br>42</div>'
+    })
+    expect((await page.evaluate(extractCompetitorListings))[0].metrics).toContain("42")
   })
 
   it("places all identities/links before bounded metrics in model context", async () => {

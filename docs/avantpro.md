@@ -120,3 +120,7 @@ const AVANTPRO_CONFIG = {
   productCode: "avantpro-ml",
 };
 ```
+
+## Fichas individuais e comparação por IA
+
+Em `/market-analysis`, capture o anúncio individual aberto no Browser. Repita para outros concorrentes equivalentes e selecione as fichas salvas no MongoDB para análise pelo modelo escolhido. Vendas estimadas, Ritmo atual e Vendas mensais permanecem separados, com escopo/período desconhecidos quando não confirmados. A interpretação exige a chave do provedor nas configurações. Veja o [plano atualizado](./plano-panorama-avantpro.md).
