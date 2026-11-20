@@ -9,6 +9,7 @@ export type CompetitorListing = {
   advertising: boolean
   adClickId?: string | null
   metrics: string
+  avantproShipping?: { amount: number | null; text: string; source: "AvantPro" }
   observed?: {
     price: number | null
     logistics: "Full" | "Flex" | "Normal" | "Outros" | null
@@ -55,9 +56,19 @@ export function extractCompetitorListings(): CompetitorListing[] {
     const metricParts: string[] = []
     // tsx/esbuild wraps named local functions with __name, which is unavailable
     // when Playwright serializes this function into the browser. Traverse iteratively.
+    let freightText = ""
     const metricRoots: (Element | ShadowRoot)[] = [card]
     while (metricRoots.length) {
       const root = metricRoots.pop()!
+      root.querySelectorAll(".avantpro-product-info-row").forEach(row => {
+        // The tooltip is nested inside the label; only its direct text names the field.
+        const label = Array.from(row.querySelector(".avantpro-product-info-row-label")?.childNodes || []).filter(node => node.nodeType === 3).map(node => node.textContent || "").join("").trim()
+        if (label !== "Frete") return
+        const value = row.querySelector(".avantpro-product-info-row-value")
+        if (value?.querySelector('[role="status"], .avantpro-product-info-field-spinner')) return
+        const text = (value?.textContent || "").trim()
+        if (text && !freightText) freightText = text
+      })
       root.querySelectorAll(".avantpro-product-container, .avantpro-product-info-container, [data-avantpro]").forEach(element => {
         const value = ((element as HTMLElement).innerText || element.textContent || "").trim()
         if (value && !metricParts.includes(value)) metricParts.push(value)
@@ -112,6 +123,9 @@ export function extractCompetitorListings(): CompetitorListing[] {
       observed: { price: price !== null && Number.isFinite(price) && price > 0 ? price : null,
         logistics, freeShipping: /frete gr[áa]tis/i.test(shippingText) ? true : /frete R\$|frete pago/i.test(shippingText) ? false : null,
         delivery: shippingText || null, sponsored: advertising || Array.from(card.querySelectorAll("*")).some(element => /^patrocinado$/i.test((element.textContent || "").trim())) },
+      avantproShipping: { source: "AvantPro", text: freightText,
+        amount: /R\$\s*[\d.]+,\d{2}/.test(freightText)
+          ? Number(freightText.match(/R\$\s*([\d.]+,\d{2})/)![1].replace(/\./g, "").replace(",", ".")) : null },
       seller, url: url && /^click\d*\./i.test(url.hostname) ? reportUrl : url?.href || null, advertising, metrics,
     }
     // Catalog IDs alone must never merge different sellers' offers.
@@ -127,6 +141,7 @@ export function extractCompetitorListings(): CompetitorListing[] {
         imageUrl: preferred.imageUrl || previous.imageUrl || imageUrl,
         seller: preferred.seller || previous.seller || seller,
         metrics: preferred.metrics || previous.metrics || metrics,
+        avantproShipping: [preferred.avantproShipping, previous.avantproShipping, listing.avantproShipping].find(value => value?.amount != null) || preferred.avantproShipping,
         observed: { ...preferred.observed!, sponsored: !!previous.observed?.sponsored || !!listing.observed?.sponsored },
       })
     }

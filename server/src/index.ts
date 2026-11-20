@@ -1,3 +1,6 @@
+import { buildFullMarketEvidence, generateFullMarketReport, fullMarketDocumentText } from "./full-market-report.js";
+import { fullMarketReportHtml } from "./full-market-report-html.js";
+import { formatAvantproShipping } from "./avantpro-shipping.js";
 import { extractIndividualListing } from "./individual-listing.js";
 import { savedListingRepository } from "./models/saved-market-listing.js";
 import { generateText } from "./ai-text.js";
@@ -76,8 +79,6 @@ if (process.env.DEEPSEEK_API_KEY) apiKeys.deepseek = process.env.DEEPSEEK_API_KE
 // AvantPro configuration
 const AVANTPRO_CONFIG = {
   extensionId: "jdefnfmbnchmnjkcknaadaddgjbgephh",
-  apiBase: "https://prod-ml.avantprocloud.com.br",
-  productCode: "avantpro-ml",
 };
 
 app.use(cors({ origin: "*" }));
@@ -236,69 +237,20 @@ app.post("/extension/eval", async (req, res) => {
   }
 });
 
-// AvantPro: authenticate and inject token into extension
-app.post("/avantpro/auth", async (req, res) => {
+// The extension owns login and session renewal.
+app.post("/avantpro/auth", async (_req, res) => {
   try {
-    const { email } = req.body as { email: string };
-    if (!email || typeof email !== "string") {
-      res.status(400).json({ success: false, error: "Email é obrigatório" });
-      return;
-    }
-
-    // Call AvantPro login API
-    const loginRes = await axios.post(`${AVANTPRO_CONFIG.apiBase}/auth/login`, { email });
-    const { token, user } = loginRes.data as {
-      token: string;
-      user: { planCode: string; productCode: string; email: string; globalUserId: string };
-    };
-
-    if (!token) {
-      res.status(401).json({ success: false, error: "Email não encontrado no AvantPro" });
-      return;
-    }
-
-    // Inject token into extension's chrome.storage.local via service worker
-    const authData = JSON.stringify({
-      version: 2,
-      accessToken: token,
-      loginAt: Date.now(),
-      productCode: user.productCode || AVANTPRO_CONFIG.productCode,
-      plan: user.planCode,
-      email: user.email,
-      globalUserId: user.globalUserId,
-    });
-
-    await playwrightManager.evaluateInServiceWorker(
-      AVANTPRO_CONFIG.extensionId,
-      `chrome.storage.local.set({ avantpro_auth: ${authData} }).then(() => "ok")`
-    );
-
-    res.json({
-      success: true,
-      user: { email: user.email, plan: user.planCode },
-      message: `Autenticado como ${user.email} (plano: ${user.planCode})`,
-    });
+    await playwrightManager.openAvantproLogin(AVANTPRO_CONFIG.extensionId);
+    res.json({ success: true, message: "Conclua o login na aba oficial do AvantPro." });
   } catch (error) {
-    const msg = axios.isAxiosError(error)
-      ? error.response?.data?.message || error.message
-      : String(error);
-    res.status(500).json({ success: false, error: msg });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
   }
 });
 
-// AvantPro: check current auth status
 app.get("/avantpro/status", async (_req, res) => {
   try {
-    const result = await playwrightManager.evaluateInServiceWorker(
-      AVANTPRO_CONFIG.extensionId,
-      `chrome.storage.local.get("avantpro_auth").then(d => JSON.stringify(d.avantpro_auth || null))`
-    );
-    const auth = JSON.parse(result);
-    if (auth?.accessToken) {
-      res.json({ success: true, authenticated: true, email: auth.email, plan: auth.plan });
-    } else {
-      res.json({ success: true, authenticated: false });
-    }
+    const status = await playwrightManager.getAvantproAuthStatus(AVANTPRO_CONFIG.extensionId);
+    res.json({ success: true, ...status });
   } catch {
     res.json({ success: true, authenticated: false, error: "Extension not available" });
   }
@@ -379,83 +331,22 @@ app.post("/api/analyze", async (req, res) => {
     // Auto-extract from Playwright if no content provided
     let content = pageContent || "";
     let competitorListings: CompetitorListing[] = [];
+    let marketCapture: { title: string; url: string; avantproMetrics: string; categoryFields?: { label: string; value: string }[] } | null = null;
     if (!content) {
       try {
         const status = await playwrightManager.getStatus();
         if (status.active) {
           // Aguarda dados do AvantPro carregarem (se extensão presente)
-          let avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
+          const avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
 
-          // Se extensão não está autenticada, tenta re-autenticar automaticamente
           if (avantproResult === "not_authenticated") {
-            console.log("🔄 AvantPro: tentando re-autenticação automática...")
-            try {
-              // Busca email salvo no chrome.storage da extensão
-              const storedAuth = await playwrightManager.evaluateInServiceWorker(
-                AVANTPRO_CONFIG.extensionId,
-                `chrome.storage.local.get("avantpro_auth").then(d => JSON.stringify(d.avantpro_auth || null))`
-              )
-              const authData = JSON.parse(storedAuth)
-              const email = authData?.email
-
-              if (email) {
-                // Re-autentica com o email salvo
-                const loginRes = await axios.post(`${AVANTPRO_CONFIG.apiBase}/auth/login`, { email })
-                const { token, user } = loginRes.data as {
-                  token: string
-                  user: { planCode: string; productCode: string; email: string; globalUserId: string }
-                }
-
-                if (token) {
-                  const newAuthData = JSON.stringify({
-                    version: 2,
-                    accessToken: token,
-                    loginAt: Date.now(),
-                    productCode: user.productCode || AVANTPRO_CONFIG.productCode,
-                    plan: user.planCode,
-                    email: user.email,
-                    globalUserId: user.globalUserId,
-                  })
-
-                  await playwrightManager.evaluateInServiceWorker(
-                    AVANTPRO_CONFIG.extensionId,
-                    `chrome.storage.local.set({ avantpro_auth: ${newAuthData} }).then(() => "ok")`
-                  )
-
-                  console.log(`✅ AvantPro: re-autenticado como ${user.email}`)
-
-                  // Recarrega a página para a extensão buscar dados com o novo token
-                  const page = await playwrightManager.getPage()
-                  await page.reload({ waitUntil: "domcontentloaded", timeout: 15000 })
-
-                  // Tenta novamente aguardar os dados
-                  avantproResult = await playwrightManager.waitForAvantproData({ timeout: 20000 })
-                }
-              }
-            } catch (authErr) {
-              console.log("⚠️ AvantPro: falha na re-autenticação:", authErr instanceof Error ? authErr.message : authErr)
-            }
+            throw new Error("Faça login no AvantPro em Configurações → AvantPro ML → Abrir login e tente novamente.");
           }
 
           const extracted = await playwrightManager.extractPageContent();
-          if (marketAnalysis) competitorListings = extracted.competitorListings;
+          if (marketAnalysis) { competitorListings = extracted.competitorListings; marketCapture = extracted; }
           const competitorSection = marketAnalysis ? formatCompetitorListings(competitorListings) : "";
-          const shipping = extracted.shippingSummary;
-          const shippingSection = shipping && shipping.totalCards > 0
-            ? [
-                `\nFrete dos anúncios (elemento poly-component__shipping-v2):`,
-                `- Total de cards analisados: ${shipping.totalCards}`,
-                `- Com pill "Frete grátis": ${shipping.freeShippingCount}`,
-                `- Com selo "Enviado pelo FULL": ${shipping.fullCount}`,
-                `- Com "Frete grátis" + FULL: ${shipping.freeShippingAndFullCount}`,
-                `- Com prazo rápido (amanhã/hoje): ${shipping.fastDeliveryCount}`,
-                shipping.deliveryPromises.length > 0
-                  ? `- Prazos de entrega encontrados: ${shipping.deliveryPromises.join(" | ")}`
-                  : "",
-                `\nDetalhe por card (amostra):`,
-                ...shipping.samples.map((s, i) => `  ${i + 1}. Frete grátis: ${s.freeShipping ? "Sim" : "Não"} | FULL: ${s.isFull ? "Sim" : "Não"} | Prazo: ${s.promise || "(não informado)"}`),
-              ].filter(Boolean).join("\n")
-            : "";
+          const shippingSection = formatAvantproShipping(extracted.shippingSummary);
           // Métricas do AvantPro extraídas de forma estruturada do DOM da extensão.
           // Colocadas no TOPO do conteúdo para que a IA sempre as encontre,
           // independentemente da posição em que a extensão as injeta na página.
@@ -467,6 +358,7 @@ app.post("/api/analyze", async (req, res) => {
             `URL: ${extracted.url}`,
             `Title: ${extracted.title}`,
             competitorSection,
+            shippingSection,
             avantproSection,
             `\nHeadings:\n${extracted.headings.join("\n")}`,
             Object.keys(extracted.metaTags).length > 0
@@ -476,10 +368,17 @@ app.post("/api/analyze", async (req, res) => {
               ? `\nLinks:\n${extracted.links.map(l => `[${l.text}](${l.href})`).join("\n")}`
               : "",
             `\nContent:\n${extracted.visibleText}`,
-            shippingSection,
           ].filter(Boolean).join("\n");
         }
-      } catch { /* ignore */ }
+      } catch (error) { if (marketAnalysis) throw error; }
+    }
+
+    if (marketAnalysis) {
+      if (!marketCapture) throw new Error("Inicie o Browser e capture uma listagem com dados AvantPro antes de gerar a análise.");
+      const evidence = buildFullMarketEvidence({ ...marketCapture, listings: competitorListings });
+      const marketDocument = await generateFullMarketReport(evidence, (message, system) => generateText(model, message, { keys: apiKeys, system, marketAnalysis: true, temperature: 0.2 }), [prompt.slice(0, 4000), qnaContent || ""].join("\n\n"));
+      res.json({ success: true, response: fullMarketDocumentText(marketDocument), marketDocument, marketHtml: fullMarketReportHtml(marketDocument), actions: null });
+      return;
     }
 
     // Injeta Q&A do usuário DENTRO do content como se fosse parte da página
@@ -488,36 +387,16 @@ app.post("/api/analyze", async (req, res) => {
       content = `========================== PERGUNTAS E RESPOSTAS / OPINIÕES DOS CLIENTES (COPIADO PELO USUÁRIO) ==========================\n${qnaContent.slice(0, 15000)}\n========================== FIM DAS PERGUNTAS E RESPOSTAS ==========================\n\n${content}`
     }
 
-    // Injeta a data de hoje para templates que precisam (ex: análise de mercado)
-    const hoje = new Date()
-    const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-    const dataHoje = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
-    const dateHint = templateId === "analise-oferta-demanda-concorrencia"
-      ? `\n\n⚠️ DATA CORRETA: Hoje é ${dataHoje}. Use EXATAMENTE esta data no campo "**Data da análise:**" do relatório.`
-      : ""
-
     const userMessage = content
-      ? `Conteúdo da página:\n${content.slice(0, 120000)}\n\nPrompt: ${prompt}${dateHint}`
-      : prompt + dateHint
-
-    let aiResponse = await generateText(model, userMessage, { keys: apiKeys, system: SYSTEM_PROMPT, screenshot, marketAnalysis });
-    if (marketAnalysis) aiResponse = restoreCompetitorReportLinks(aiResponse, competitorListings);
-
-    // Corrige a data da análise no relatório (pós-processamento, bypass do cutoff da IA)
-    if (templateId === "analise-oferta-demanda-concorrencia") {
-      const hoje = new Date()
-      const mesesPt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-      const dataCorreta = `${hoje.getDate()} de ${mesesPt[hoje.getMonth()]} de ${hoje.getFullYear()}`
-      aiResponse = aiResponse.replace(
-        /\*\*Data da análise:\*\*\s*\d{1,2} de [A-Z][a-zç]+ de \d{4}/,
-        `**Data da análise:** ${dataCorreta}`
-      )
-    }
+      ? `Conteúdo da página:\n${content.slice(0, 120000)}\n\nPrompt: ${prompt}`
+      : prompt;
+    let aiResponse = await generateText(model, userMessage, { keys: apiKeys, system: SYSTEM_PROMPT, screenshot });
 
     // Remove títulos de instrução interna do template (ex: "SE FOR ...",
     // "Template — ...", "PASSO N — ...") que a IA às vezes repete no corpo do
     // relatório final. O prefixo "PASSO N —" é removido, mantendo o título da seção.
     aiResponse = aiResponse
+      .replace(/^```mermaid[^\n]*\n(?:(?!```)[\s\S])*?```mermaid[^\n]*\n/gm, "```mermaid\n")
       .split("\n")
       .map((line) => line.replace(/^(#{1,6}\s*.*?)PASSO\s*\d+\s*[—–-]\s*/i, "$1"))
       .filter((line) => !/^\s*#{1,6}\s*(SE FOR\s|Template\b)/i.test(line))

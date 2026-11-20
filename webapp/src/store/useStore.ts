@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { api, type BrowserAction, type ModelId, type ActionResult } from "@/lib/api";
+import { api, type BrowserAction, type ModelId, type ActionResult, type StructuredMarketDocument } from "@/lib/api";
 
 export interface ActionLog {
   id: string;
@@ -17,6 +17,8 @@ export interface HistoryEntry {
   model: ModelId;
   url: string;
   response: string;
+  marketDocument?: StructuredMarketDocument;
+  marketHtml?: string;
 }
 
 interface AppState {
@@ -25,6 +27,8 @@ interface AppState {
   qnaContent: string;
   selectedModel: ModelId;
   response: string;
+  marketDocument: StructuredMarketDocument | null;
+  marketHtml: string;
   isLoading: boolean;
   error: string | null;
   showSettings: boolean;
@@ -84,6 +88,8 @@ export const useStore = create<AppState>((set, get) => ({
   qnaContent: "",
   selectedModel: "gemini-flash-2.5",
   response: "",
+  marketDocument: null,
+  marketHtml: "",
   isLoading: false,
   error: null,
   showSettings: false,
@@ -194,7 +200,7 @@ export const useStore = create<AppState>((set, get) => ({
       return;
     }
 
-    set({ isLoading: true, error: null, response: "", pendingActions: [] });
+    set({ isLoading: true, error: null, response: "", marketDocument: null, marketHtml: "", pendingActions: [] });
 
     try {
       const res = await api.analyze({ prompt, model: selectedModel, templateId, qnaContent: qnaContent || undefined });
@@ -207,10 +213,12 @@ export const useStore = create<AppState>((set, get) => ({
           model: selectedModel,
           url: get().browserUrl || "",
           response: res.response,
+          marketDocument: res.marketDocument, marketHtml: res.marketHtml,
         };
 
         set((s) => ({
           response: res.response,
+          marketDocument: res.marketDocument || null, marketHtml: res.marketHtml || "",
           pendingActions: res.actions || [],
           history: [entry, ...s.history].slice(0, 50),
         }));
@@ -288,29 +296,16 @@ export const useStore = create<AppState>((set, get) => ({
   clearActionLogs: () => set({ actionLogs: [] }),
 
   restoreEntry: (entry) => {
-    set({ prompt: entry.prompt, response: entry.response, selectedModel: entry.model });
+    set({ prompt: entry.prompt, response: entry.response, selectedModel: entry.model, marketDocument: entry.marketDocument || null, marketHtml: entry.marketHtml || "" });
   },
 
   setAvantproEmail: (avantproEmail) => set({ avantproEmail }),
 
   authenticateAvantpro: async () => {
-    const { avantproEmail } = get();
-    if (!avantproEmail.trim()) {
-      set({ error: "Digite o email do AvantPro" });
-      return;
-    }
     set({ avantproLoading: true, error: null });
     try {
-      const res = await api.avantproAuth(avantproEmail.trim());
-      if (res.success && res.user) {
-        set({
-          avantproAuthenticated: true,
-          avantproPlan: res.user.plan,
-          avantproEmail: res.user.email,
-        });
-      } else {
-        set({ error: res.error || "Falha na autenticação AvantPro" });
-      }
+      const res = await api.avantproAuth();
+      if (!res.success) set({ error: res.error || "Não foi possível abrir o login AvantPro" });
     } catch (err) {
       set({ error: err instanceof Error ? err.message : "Erro ao autenticar AvantPro" });
     } finally {

@@ -1,3 +1,4 @@
+import { HtmlMarketReport } from "@/components/HtmlMarketReport"
 import { useEffect, useState, useMemo } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, ExternalLink, Trash2, Calendar, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
@@ -431,19 +432,7 @@ export const ProductDetailPage = () => {
           <div className="p-5">
             {product.marketReport ? (
               <>
-                <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Relatório de Mercado
-                </h3>
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeSectionIds]}
-                    components={markdownComponents}
-                  >
-                    {injectReportSummary(product.marketReport)}
-                  </ReactMarkdown>
-                </div>
+                <HtmlMarketReport productId={product._id} src={'/api/pipeline/' + product._id + '/market-report/html?v=' + encodeURIComponent(product.updatedAt)} />
               </>
             ) : (
               <div className="text-center py-16">

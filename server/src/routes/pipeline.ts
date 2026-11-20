@@ -1,9 +1,42 @@
+import { validateFullMarketDocument, fullMarketDocumentText } from "../full-market-report.js"
+import { savedMarketReportHtml, fullMarketReportHtml, createFullMarketReportPdf } from "../full-market-report-html.js"
 import { Router } from "express"
 import { Category } from "../models/category.js"
 import { Product, PIPELINE_STAGES } from "../models/product.js"
 
 export const router = Router()
 export default router
+
+// A fixed, server-rendered HTML document is the source for both screen and PDF.
+router.post("/market-report/export-pdf", async (req, res) => {
+  let document
+  try { document = validateFullMarketDocument(req.body?.document) }
+  catch { return res.status(400).json({ error: "Documento de análise inválido para exportar." }) }
+  try {
+    const pdf = await createFullMarketReportPdf(fullMarketReportHtml(document))
+    res.type("application/pdf").setHeader("Content-Disposition", 'attachment; filename="analise-de-mercado.pdf"')
+    res.send(pdf)
+  } catch { res.status(500).json({ error: "Não foi possível gerar o PDF. Tente novamente." }) }
+})
+router.get("/:id/market-report/html", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).select("+marketDocument")
+    if (!product) return res.status(404).send("Produto não encontrado.")
+    if (!product.marketReport && !product.marketDocument) return res.status(404).send("Relatório não encontrado.")
+    res.setHeader("Cache-Control", "no-store")
+    res.type("html").send(savedMarketReportHtml(product))
+  } catch { res.status(500).send("Não foi possível carregar o relatório.") }
+})
+router.get("/:id/market-report/pdf", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).select("+marketDocument")
+    if (!product) return res.status(404).json({ error: "Produto não encontrado." })
+    if (!product.marketReport && !product.marketDocument) return res.status(404).json({ error: "Relatório não encontrado." })
+    const pdf = await createFullMarketReportPdf(savedMarketReportHtml(product))
+    res.type("application/pdf").setHeader("Content-Disposition", 'attachment; filename="analise-de-mercado.pdf"')
+    res.send(pdf)
+  } catch { res.status(500).json({ error: "Não foi possível exportar o relatório em PDF." }) }
+})
 
 // Listar todos os produtos agrupados por stage (sem relatório para performance)
 router.get("/", async (_req, res) => {
@@ -45,7 +78,10 @@ router.get("/:id", async (req, res) => {
 // Atualizar produto
 router.patch("/:id", async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    const update = { ...req.body }
+    if (update.marketDocument != null) update.marketDocument = validateFullMarketDocument(update.marketDocument)
+    else if (typeof update.marketReport === "string") update.marketDocument = null
+    const product = await Product.findByIdAndUpdate(req.params.id, update, { new: true })
     if (!product) return res.status(404).json({ error: "Produto não encontrado" })
     res.json({ success: true, product })
   } catch (error) {
@@ -175,7 +211,10 @@ router.patch("/:id/calculator", async (req, res) => {
 // Salvar relatório de análise de mercado no produto
 router.patch("/:id/market-report", async (req, res) => {
   try {
-    const { report } = req.body
+    const { report, document } = req.body
+    let validatedDocument
+    try { if (document != null) validatedDocument = validateFullMarketDocument(document) }
+    catch { return res.status(400).json({ error: "Documento de análise inválido." }) }
 
     if (!report || typeof report !== "string") {
       return res.status(400).json({ error: "Relatório é obrigatório" })
@@ -183,7 +222,7 @@ router.patch("/:id/market-report", async (req, res) => {
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { $set: { marketReport: report } },
+      { $set: { marketReport: validatedDocument ? fullMarketDocumentText(validatedDocument) : report, marketDocument: validatedDocument || null } },
       { new: true }
     )
 
