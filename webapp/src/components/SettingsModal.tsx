@@ -23,7 +23,7 @@ const KEY_LABELS: Record<string, string> = {
 };
 
 export function SettingsModal() {
-  const { showSettings, setShowSettings, saveApiKeys, loadConfiguredKeys, configuredKeys, extensionPaths, setExtensionPaths, userDataDir, setUserDataDir, avantproEmail, setAvantproEmail, avantproAuthenticated, avantproPlan, avantproLoading, authenticateAvantpro, checkAvantproStatus, browserActive } = useStore();
+  const { showSettings, setShowSettings, saveApiKeys, loadConfiguredKeys, configuredKeys, extensionPaths, setExtensionPaths, userDataDir, setUserDataDir, avantproEmail, avantproAuthenticated, avantproPlan, avantproLoading, authenticateAvantpro, checkAvantproStatus, browserActive } = useStore();
   const [keys, setKeys] = useState<Record<string, string>>({
     gemini: "",
     openai: "",
@@ -212,7 +212,7 @@ export function SettingsModal() {
               )}
             </div>
             <p className="text-xs text-gray-400 mb-3">
-              Autentique com seu email do AvantPro para acessar métricas de produtos do Mercado Livre.
+              Abra o formulário oficial do AvantPro, conclua o login e clique em Verificar login.
             </p>
 
             {avantproAuthenticated ? (
@@ -220,29 +220,25 @@ export function SettingsModal() {
                 <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-emerald-800">{avantproEmail}</p>
-                  <p className="text-[10px] text-emerald-600">Plano: {avantproPlan} — Token injetado na extensão</p>
+                  <p className="text-[10px] text-emerald-600">Plano: {avantproPlan}</p>
                 </div>
               </div>
             ) : (
               <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={avantproEmail}
-                  onChange={(e) => setAvantproEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && authenticateAvantpro()}
-                  placeholder="seu@email.com"
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
                 <button
                   onClick={authenticateAvantpro}
-                  disabled={avantproLoading || !avantproEmail.trim() || !browserActive}
+                  disabled={avantproLoading || !browserActive}
                   className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
                   {avantproLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                  Autenticar
+                  Abrir login
                 </button>
               </div>
             )}
+            <button onClick={checkAvantproStatus} disabled={!browserActive || avantproLoading}
+              className="mt-2 text-sm text-indigo-600 disabled:text-gray-400">
+              Verificar login
+            </button>
             {!browserActive && !avantproAuthenticated && (
               <p className="text-[10px] text-amber-600 mt-1.5">
                 ⚠ Inicie o browser com a extensão AvantPro carregada primeiro.

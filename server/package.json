@@ -15,6 +15,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.1",
+    "marked": "^15.0.12",
     "mongoose": "^9.6.2",
     "playwright": "^1.49.1"
   },

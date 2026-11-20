@@ -1,3 +1,4 @@
+import { HtmlMarketReport } from "./HtmlMarketReport";
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useStore } from "@/store/useStore";
 import { api, MODELS, type PipelineProduct } from "@/lib/api";
@@ -27,7 +28,7 @@ export function ChatPanel() {
     prompt, setPrompt,
     qnaContent, setQnaContent,
     selectedModel, setSelectedModel,
-    response, isLoading, error,
+    response, marketDocument, marketHtml, isLoading, error,
     pendingActions, analyzePage, executeActions,
     history, restoreEntry, clearHistory,
     setShowSettings,
@@ -63,7 +64,7 @@ export function ChatPanel() {
     if (wasLoading && !isLoading && response && activeTemplate === MARKET_TEMPLATE_ID && selectedProductId) {
       setIsSavingReport(true)
       const normalizedReport = normalizeMarketReportHeader(response)
-      api.updateMarketReport(selectedProductId, normalizedReport)
+      api.updateMarketReport(selectedProductId, normalizedReport, marketDocument || undefined)
         .then(() => {
           const product = pipelineProducts.find(p => p._id === selectedProductId)
           setSaveSuccess(`Relatório salvo em "${product?.title}"`)
@@ -73,7 +74,7 @@ export function ChatPanel() {
         })
         .finally(() => setIsSavingReport(false))
     }
-  }, [isLoading, response, activeTemplate, selectedProductId, pipelineProducts])
+  }, [isLoading, response, marketDocument, activeTemplate, selectedProductId, pipelineProducts])
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
@@ -413,7 +414,7 @@ export function ChatPanel() {
           </div>
         )}
 
-        {response && (
+        {response && (marketHtml && marketDocument ? <div className="p-3"><HtmlMarketReport html={marketHtml} document={marketDocument} /></div> : (
           <div className="p-3">
             <div className="flex justify-end mb-2">
               <button
@@ -443,7 +444,7 @@ export function ChatPanel() {
               </ReactMarkdown>
             </div>
           </div>
-        )}
+        ))}
 
         {!response && !isLoading && !error && (
           <div className="flex flex-col items-center justify-center gap-2 p-8 text-gray-300">

@@ -1,3 +1,5 @@
+import { extractAvantproCategoryFields } from "./avantpro-category.js";
+import { summarizeAvantproShipping } from "./avantpro-shipping.js";
 import { extractCompetitorListings, type CompetitorListing } from "./competitor-listings.js";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import fs from "fs";
@@ -164,6 +166,53 @@ export class PlaywrightManager {
     if (index < 0 || index >= pages.length) throw new Error(`Invalid page index: ${index}`);
     this.page = pages[index];
     await this.page.bringToFront();
+  }
+
+  async openAvantproLogin(extensionId: string): Promise<void> {
+    if (!this.context) throw new Error("Inicie o browser com a extensão AvantPro carregada.");
+    const url = `chrome-extension://${extensionId}/login-panel.html`;
+    const existing = this.context.pages().find(page => page.url() === url);
+    const loginPage = existing || await this.context.newPage();
+    try {
+      if (!existing) await loginPage.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
+      await loginPage.evaluate(async () => {
+        const runtime = (globalThis as any).chrome.runtime;
+        const response = await runtime.sendMessage({ action: "AUTH_HYDRA_RETRY" });
+        if (!response?.success || !response?.data?.started) {
+          throw new Error("Não foi possível iniciar o login oficial do AvantPro: " + JSON.stringify(response));
+        }
+      });
+      await loginPage.bringToFront();
+    } catch (error) {
+      if (!existing) await loginPage.close().catch(() => {});
+      if (error instanceof Error && /Ação não suportada: AUTH_/.test(error.message)) {
+        throw new Error("A extensão AvantPro carregada está desatualizada nesta sessão. Feche e inicie o Browser no webapp para recarregá-la e clique em Abrir login novamente.");
+      }
+      throw error;
+    }
+  }
+
+  async getAvantproAuthStatus(extensionId: string): Promise<{ authenticated: boolean; email?: string; plan?: string }> {
+    if (!this.context) return { authenticated: false };
+    const url = `chrome-extension://${extensionId}/login-panel.html`;
+    const existing = this.context.pages().find(page => page.url() === url);
+    const extensionPage = existing || await this.context.newPage();
+    try {
+      if (!existing) await extensionPage.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
+      // Send from an extension page: a worker cannot message its own listener.
+      return await extensionPage.evaluate(async () => {
+        const chromeApi = (globalThis as any).chrome;
+        const response = await chromeApi.runtime.sendMessage({ action: "AUTH_STATUS" });
+        const { avantpro_auth: auth } = await chromeApi.storage.local.get("avantpro_auth");
+        return {
+          authenticated: response?.success === true && response?.data?.authenticated === true,
+          email: auth?.email,
+          plan: auth?.plan,
+        };
+      });
+    } finally {
+      if (!existing) await extensionPage.close().catch(() => {});
+    }
   }
 
   async evaluateInServiceWorker(extensionId: string, expression: string): Promise<string> {
@@ -397,22 +446,16 @@ export class PlaywrightManager {
     metaTags: Record<string, string>;
     links: { text: string; href: string }[];
     competitorListings: CompetitorListing[];
+    categoryFields: { label: string; value: string }[];
     rangePrice: string;
     moq: string;
     tradeAssurance: boolean;
-    shippingSummary: {
-      totalCards: number;
-      freeShippingCount: number;
-      fullCount: number;
-      freeShippingAndFullCount: number;
-      fastDeliveryCount: number;
-      deliveryPromises: string[];
-      samples: { freeShipping: boolean; isFull: boolean; promise: string }[];
-    };
+    shippingSummary: ReturnType<typeof summarizeAvantproShipping>;
   }> {
     const page = await this.getPage();
 
     const competitorListings = await page.evaluate(extractCompetitorListings);
+    const categoryFields = await page.evaluate(extractAvantproCategoryFields);
 
     const extractionScript = `
       (() => {
@@ -606,41 +649,6 @@ export class PlaywrightManager {
         // Trade Assurance: presença do módulo module_ta_plus_footer na página
         const tradeAssurance = !!document.querySelector('[data-module-name="module_ta_plus_footer"], .module_ta_plus_footer');
 
-        // Frete dos anúncios: extrai os sinais do elemento poly-component__shipping-v2 de cada card da listagem (Mercado Livre)
-        const shippingSummary = (() => {
-          const cards = Array.from(document.querySelectorAll(".poly-component__shipping-v2"));
-          let freeShippingCount = 0;
-          let fullCount = 0;
-          let freeShippingAndFullCount = 0;
-          let fastDeliveryCount = 0;
-          const promises = new Set();
-          const samples = [];
-
-          cards.forEach((card) => {
-            const pill = card.querySelector(".polylabel-pill");
-            const hasFreeShipping = pill ? /frete\\s*gr[áa]tis/i.test(pill.textContent || "") : false;
-            const isFull = !!card.querySelector('svg[aria-label*="FULL"], use[href*="full"], use[href*="FULL"]');
-            const promiseEl = card.querySelector(".polylabel-fw-regular");
-            const promise = (promiseEl ? (promiseEl.textContent || "").trim() : "").replace(/\\s+/g, " ");
-
-            if (hasFreeShipping) freeShippingCount++;
-            if (isFull) fullCount++;
-            if (hasFreeShipping && isFull) freeShippingAndFullCount++;
-            if (/amanh[ãa]|hoje|r[áa]pido/i.test(promise + " " + (card.textContent || ""))) fastDeliveryCount++;
-            if (promise) promises.add(promise);
-            if (samples.length < 10) samples.push({ freeShipping: hasFreeShipping, isFull, promise });
-          });
-
-          return {
-            totalCards: cards.length,
-            freeShippingCount,
-            fullCount,
-            freeShippingAndFullCount,
-            fastDeliveryCount,
-            deliveryPromises: Array.from(promises).slice(0, 20),
-            samples,
-          };
-        })();
 
         return {
           url: window.location.href,
@@ -659,7 +667,6 @@ export class PlaywrightManager {
           rangePrice,
           moq,
           tradeAssurance,
-          shippingSummary,
           links: (() => {
             const seen = new Set();
             const result = [];
@@ -691,7 +698,7 @@ export class PlaywrightManager {
       })()
     `;
 
-    return page.evaluate(extractionScript).then(data => ({ ...data, competitorListings })) as Promise<{
+    return page.evaluate(extractionScript).then(data => ({ ...(data as Record<string, unknown>), competitorListings, categoryFields, shippingSummary: summarizeAvantproShipping(competitorListings) })) as Promise<{
       url: string;
       title: string;
       visibleText: string;
@@ -700,18 +707,11 @@ export class PlaywrightManager {
       metaTags: Record<string, string>;
       links: { text: string; href: string }[];
       competitorListings: CompetitorListing[];
+      categoryFields: { label: string; value: string }[];
       rangePrice: string;
       moq: string;
       tradeAssurance: boolean;
-      shippingSummary: {
-        totalCards: number;
-        freeShippingCount: number;
-        fullCount: number;
-        freeShippingAndFullCount: number;
-        fastDeliveryCount: number;
-        deliveryPromises: string[];
-        samples: { freeShipping: boolean; isFull: boolean; promise: string }[];
-      };
+      shippingSummary: ReturnType<typeof summarizeAvantproShipping>;
     }>;
   }
 

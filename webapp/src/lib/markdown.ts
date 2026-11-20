@@ -132,11 +132,16 @@ function stripInstructionHeadings(markdown: string): string {
  * vir truncado ou malformado). Retorna o markdown original se nenhuma seção
  * conhecida for encontrada.
  */
+/** Keep the complete diagram when generation repeats a Mermaid fence inside a truncated block. */
+export function repairMermaidFences(markdown: string): string {
+  return markdown.replace(/^```mermaid[^\n]*\n(?:(?!```)[\s\S])*?```mermaid[^\n]*\n/gm, "```mermaid\n")
+}
+
 export function injectReportSummary(markdown: string): string {
   if (!markdown) return markdown
 
   // Remove títulos de instrução interna do template antes de processar o Sumário
-  const cleanMarkdown = stripInstructionHeadings(markdown)
+  const cleanMarkdown = stripInstructionHeadings(repairMermaidFences(markdown))
 
   // Normaliza os níveis de título das seções conhecidas para a hierarquia canônica
   const normalized = normalizeReportHeadings(cleanMarkdown)

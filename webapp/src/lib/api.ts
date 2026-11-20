@@ -1,3 +1,4 @@
+export type StructuredMarketDocument = { version: 1; [key: string]: unknown };
 import type { AccountProfile, MarketSnapshot, MarketAnalysis } from "./market-analysis";
 import type { CalculatorState } from "./calculator";
 
@@ -39,7 +40,7 @@ export const api = {
   setKeys: (keys: Record<string, string>) => request<{ success: boolean; configured: string[] }>("/api/keys", { method: "POST", body: JSON.stringify({ keys }) }),
   getKeys: () => request<{ configured: string[] }>("/api/keys"),
   analyze: (params: { prompt: string; model: string; pageContent?: string; screenshot?: string; templateId?: string; qnaContent?: string }) =>
-    request<{ success: boolean; response: string; actions?: BrowserAction[]; pipelineProductId?: string }>("/api/analyze", { method: "POST", body: JSON.stringify(params) }),
+    request<{ success: boolean; response: string; marketDocument?: StructuredMarketDocument; marketHtml?: string; actions?: BrowserAction[]; pipelineProductId?: string }>("/api/analyze", { method: "POST", body: JSON.stringify(params) }),
 
   exportMarketReportPdf: async (analysis: MarketAnalysis): Promise<Blob> => {
     const response = await fetch("/api/market-analysis/export-pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ analysis }) })
@@ -54,10 +55,21 @@ export const api = {
     request<{ success: boolean; analysis: MarketAnalysis }>("/api/market-analysis/analyze", { method: "POST", body: JSON.stringify({ savedListingIds: selectedIds, profile, model }) }),
 
   // AvantPro
-  avantproAuth: (email: string) =>
-    request<{ success: boolean; user?: { email: string; plan: string }; message?: string; error?: string }>("/avantpro/auth", { method: "POST", body: JSON.stringify({ email }) }),
+  avantproAuth: () =>
+    request<{ success: boolean; message?: string; error?: string }>("/avantpro/auth", { method: "POST", body: JSON.stringify({}) }),
   avantproStatus: () =>
     request<{ success: boolean; authenticated: boolean; email?: string; plan?: string }>("/avantpro/status"),
+
+  exportFullMarketPdf: async (document: StructuredMarketDocument): Promise<Blob> => {
+    const response = await fetch("/api/pipeline/market-report/export-pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ document }) })
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Não foi possível gerar o PDF.")
+    return response.blob()
+  },
+  exportSavedFullMarketPdf: async (id: string): Promise<Blob> => {
+    const response = await fetch('/api/pipeline/' + encodeURIComponent(id) + '/market-report/pdf')
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Não foi possível gerar o PDF.")
+    return response.blob()
+  },
 
   // Pipeline
   getPipelineProducts: () =>
@@ -161,10 +173,10 @@ export const api = {
     }),
 
   // Market Report
-  updateMarketReport: (id: string, report: string) =>
+  updateMarketReport: (id: string, report: string, document?: StructuredMarketDocument) =>
     request<{ success: boolean; product: PipelineProduct }>(`/api/pipeline/${id}/market-report`, {
       method: "PATCH",
-      body: JSON.stringify({ report }),
+      body: JSON.stringify({ report, document }),
     }),
 
   // Compare

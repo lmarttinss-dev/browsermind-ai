@@ -1,3 +1,4 @@
+import type { FullMarketDocument } from "../full-market-report.js"
 import mongoose, { Schema, Document } from "mongoose"
 import { calculatorStateSchema, type CalculatorState } from "./calculator-state.js"
 
@@ -66,6 +67,7 @@ export type PipelineProduct = Document & {
   suppliers: Supplier[]
   supplierReport: string
   marketReport: string
+  marketDocument?: FullMarketDocument
   isKit: boolean
   kitItems: KitItem[]
   calculatorState?: CalculatorState
@@ -130,6 +132,7 @@ const productSchema = new Schema<PipelineProduct>(
     suppliers: { type: [supplierSchema], default: [] },
     supplierReport: { type: String, default: "" },
     marketReport: { type: String, default: "" },
+    marketDocument: { type: Schema.Types.Mixed, select: false },
     isKit: { type: Boolean, default: false },
     kitItems: { type: [kitItemSchema], default: [] },
     calculatorState: { type: calculatorStateSchema, default: undefined },
