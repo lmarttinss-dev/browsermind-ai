@@ -1,3 +1,4 @@
+import {generateProductBrief,productBriefText} from './product-brief.js';
 import {compactMarketEvidence} from "./market-model-evidence.js";
 import { persistGeneratedMarketReport } from "./market-report-persistence.js";
 import { buildFullMarketEvidence, generateFullMarketReport, fullMarketDocumentText } from "./full-market-report.js";
@@ -331,6 +332,26 @@ app.post("/api/analyze", async (req, res) => {
     // de tokens de saída maior para evitar que o relatório seja cortado no meio
     const marketAnalysis = templateId === "analise-oferta-demanda-concorrencia"
 
+    const independentListing = templateId === "analise-anuncio-independente";
+    if(independentListing){
+      if(productId!==undefined && (typeof productId!=='string'||!/^[a-f0-9]{24}$/i.test(productId)||!await Product.exists({_id:productId})))return res.status(400).json({error:'Produto inválido.'});
+      const capture=await playwrightManager.captureAvantproListing();
+      if(productId){
+        const target=await Product.findById(productId);
+        const itemKey=(url:string)=>url.match(/MLB-?\d+/i)?.[0].replace('-','').toUpperCase();
+        if(target?.url && itemKey(target.url) && itemKey(capture.url)!==itemKey(target.url))return res.status(400).json({error:'O anúncio aberto não corresponde a este produto.'});
+      }
+      const productBrief=await generateProductBrief({sourceUrl:capture.url,content:capture.visibleText.slice(0,100000),userNotes:(qnaContent||'').slice(0,20000)},(message,system)=>generateText(model,message,{keys:apiKeys,system,jsonOutput:true,temperature:0.2}));
+      const data={productBrief,analyzedAt:new Date(productBrief.generatedAt),analysisEvidence:{source:'public-listing',capturedAt:productBrief.generatedAt,content:capture.visibleText,userNotes:qnaContent||''}};
+      let saved;
+      if(productId)saved=await Product.findByIdAndUpdate(productId,{$set:data},{new:true});
+      else{
+        const last=await Product.findOne({stage:'triagem'}).sort({order:-1});
+        saved=await Product.create({...data,title:capture.title.slice(0,200),url:capture.url,imageUrl:capture.metaTags['og:image']||'',price:capture.competitorListings[0]?.price||0,stage:'triagem',order:last?last.order+1:0});
+      }
+      if(!saved)throw new Error('Produto não encontrado para salvar a ficha.');
+      return res.json({success:true,response:productBriefText(productBrief),productBrief,pipelineProductId:String(saved._id),actions:null});
+    }
     if (marketAnalysis) {
       if (productId !== undefined) {
         if (typeof productId !== "string" || !/^[a-f0-9]{24}$/i.test(productId)) { res.status(400).json({success:false,error:"Selecione um produto válido para salvar a análise."}); return; }
@@ -347,11 +368,18 @@ app.post("/api/analyze", async (req, res) => {
         }});
       }, [prompt.slice(0,4000),qnaContent||""].join("\n\n"), reason=>marketUsage.formatCorrections.push(reason));
       const marketHtml = fullMarketReportHtml(marketDocument);
-      const persistence = await persistGeneratedMarketReport(productId, marketDocument);
-      res.json({ success: true, response: fullMarketDocumentText(marketDocument), marketDocument, marketHtml, marketUsage, actions: null, ...persistence });
+      const persistence=await persistGeneratedMarketReport(productId,marketDocument);
+      res.json({success:true,response:fullMarketDocumentText(marketDocument),marketDocument,marketHtml,marketUsage,actions:null,...persistence});
       return;
     }
 
+    const listingAnalysis = templateId === "analise-anuncio-independente" || templateId === "importacao-simplificada";
+    if (listingAnalysis && (typeof pageContent !== "string" || !pageContent.trim())) {
+      return res.status(400).json({success:false,error:"Forneça os dados do anúncio para analisar. A captura por navegador não é utilizada neste fluxo."});
+    }
+    if (listingAnalysis && productId && (typeof productId !== "string" || !/^[a-f0-9]{24}$/i.test(productId) || !await Product.exists({_id:productId}))) {
+      return res.status(400).json({success:false,error:"Produto inválido para salvar a análise."});
+    }
     // Auto-extract from Playwright if no content provided
     let content = pageContent || "";
     let competitorListings: CompetitorListing[] = [];
@@ -432,7 +460,10 @@ app.post("/api/analyze", async (req, res) => {
     // Auto-inserir produto na esteira para templates de análise de produto
     let pipelineProductId = null;
     try {
-      if ((templateId === "importacao-simplificada" || templateId === "analise-anuncio-independente") && content) {
+      if (listingAnalysis && productId) {
+        await Product.findByIdAndUpdate(productId, {analysisReport: aiResponse, analyzedAt: new Date(), analysisEvidence: {source:"user",capturedAt:new Date().toISOString(),content:pageContent,qna:qnaContent||""}});
+        pipelineProductId = productId;
+      } else if ((templateId === "importacao-simplificada" || templateId === "analise-anuncio-independente") && content) {
         // Normaliza o relatório para parsing: remove marcadores de negrito Markdown (**)
         // para que as regexes casem com os rótulos independentemente de formatação.
         const reportText = aiResponse.replace(/\*\*/g, "")
@@ -483,6 +514,7 @@ app.post("/api/analyze", async (req, res) => {
             competitionLevel: competitionMatch?.[1] || "Média",
             potentialMargin: marginMatch?.[1]?.trim().slice(0, 100) || "",
             recentDemand,
+            analysisEvidence: {source:"user",capturedAt:new Date().toISOString(),content:pageContent,qna:qnaContent||""},
             analysisReport: aiResponse,
             analyzedAt: new Date(),
             order,
@@ -493,6 +525,7 @@ app.post("/api/analyze", async (req, res) => {
         }
       }
     } catch (pipelineErr) {
+      if (listingAnalysis && productId) throw pipelineErr;
       console.log("⚠️ Pipeline: erro ao salvar produto:", pipelineErr instanceof Error ? pipelineErr.message : pipelineErr)
     }
 

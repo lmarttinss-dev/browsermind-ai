@@ -1,9 +1,11 @@
+import { replaceReportEmoji } from '../../../shared/market-report-icons'
 import { useEffect, useRef, useState } from 'react'
+import marketTheme from '../../../shared/market-report-theme.css?raw'
 import { Download, Loader2 } from 'lucide-react'
 import { api, type StructuredMarketDocument } from '@/lib/api'
 
-type Props = { html?: string; src?: string; document?: StructuredMarketDocument; productId?: string }
-export function HtmlMarketReport({ html, src, document, productId }: Props) {
+type Props = { html?: string; src?: string; document?: StructuredMarketDocument; productId?: string; reportKind?: "market" | "listing" }
+export function HtmlMarketReport({ html, src, document, productId, reportKind = "market" }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null)
   const [exporting, setExporting] = useState(false)
   const [error, setError] = useState('')
@@ -26,29 +28,64 @@ export function HtmlMarketReport({ html, src, document, productId }: Props) {
     observer.observe(frame.parentElement)
     return () => observer.disconnect()
   }, [])
+  const onReportLoad = () => {
+    // Also theme previously saved HTML without changing its content.
+    try {
+      const doc = iframe.current?.contentDocument
+      if (doc && !doc.getElementById('workspace-report-theme')) {
+        const style = doc.createElement('style')
+        style.id = 'workspace-report-theme'
+        style.textContent = marketTheme
+        doc.head.appendChild(style)
+        for (const link of doc.querySelectorAll('.contents a')) {
+          if (link.querySelector('.contents-title')) continue
+          const number = link.firstElementChild
+          if (!number || number.tagName !== 'SPAN') continue
+          const title = doc.createElement('span')
+          title.className = 'contents-title'
+          while (number.nextSibling) title.appendChild(number.nextSibling)
+          link.appendChild(title)
+        }
+        const walker = doc.createTreeWalker(doc.body, 4)
+        const nodes: Text[] = []
+        while (walker.nextNode()) nodes.push(walker.currentNode as Text)
+        for (const node of nodes) {
+          if (node.parentElement?.closest('script,style,svg')) continue
+          const text = node.textContent || ''
+          const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          const converted = replaceReportEmoji(escaped)
+          if (converted !== escaped) {
+            const template = doc.createElement('template')
+            template.innerHTML = converted
+            node.replaceWith(template.content)
+          }
+        }
+      }
+    } finally { resize() }
+  }
   const download = async () => {
     if (exporting) return
     setExporting(true); setError('')
     try {
-      const blob = productId ? await api.exportSavedFullMarketPdf(productId) : await api.exportFullMarketPdf(document!)
+      const blob = productId && reportKind === "listing" ? await fetch('/api/pipeline/'+encodeURIComponent(productId)+'/analysis-report/pdf').then(async res => {if(!res.ok)throw new Error('Não foi possível exportar o relatório.');return res.blob()}) : productId ? await api.exportSavedFullMarketPdf(productId) : await api.exportFullMarketPdf(document!)
       const url = URL.createObjectURL(blob)
       const anchor = window.document.createElement('a')
-      anchor.href = url; anchor.download = 'analise-de-mercado.pdf'; anchor.click()
+      anchor.href = url; anchor.download = reportKind === 'listing' ? 'analise-do-anuncio.pdf' : 'analise-de-mercado.pdf'; anchor.click()
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível exportar o PDF.') }
     finally { setExporting(false) }
   }
   return <section aria-label="Relatório HTML de análise de mercado" className="min-w-0">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-xs text-gray-400">Análise de mercado · Relatório completo</p>
+      <p className="text-xs text-gray-400">{reportKind === 'listing' ? 'Análise do anúncio' : 'Análise de mercado'} · Relatório completo</p>
       <button type="button" onClick={download} disabled={exporting || !productId && !document} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
         {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
         {exporting ? 'Gerando PDF…' : 'Exportar PDF'}
       </button>
     </div>
     {error && <p role="alert" className="mb-3 rounded-lg bg-red-950/30 p-3 text-sm text-red-400">{error}</p>}
-    <iframe ref={iframe} title="Análise de mercado" src={src} srcDoc={html} onLoad={resize}
+    <iframe ref={iframe} title="Análise de mercado" src={src} srcDoc={html} onLoad={onReportLoad}
       sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerPolicy="no-referrer"
-      className="block min-h-[600px] w-full rounded-xl border-0 bg-white" />
+      className="block min-h-[600px] w-full rounded-xl border border-gray-700 bg-gray-900" />
   </section>
 }

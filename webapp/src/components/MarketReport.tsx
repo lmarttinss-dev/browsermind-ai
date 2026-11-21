@@ -13,9 +13,9 @@ export function MarketReport({ analysis }: { analysis: MarketAnalysis }) {
     ["Concorrentes com ADS", `${analysis.sponsored}/${analysis.total}`, `${analysis.adsUnknown ? "Pelo menos " : ""}${analysis.adsPercentage ?? Math.round(analysis.sponsored / analysis.total * 100)}% patrocinam`], ["Preço mediano", currency(analysis.pricing.median)],
     ["No Full", `${analysis.logistics.Full}/${analysis.total}`], analysis.sales30d === null ? ["No Flex", `${analysis.logistics.Flex}/${analysis.total}`] : [`Vendas em 30 dias (${analysis.salesCoverage}/${analysis.total})`, String(analysis.sales30d)],
   ]
-  return <section aria-label="Resultado da análise" className="space-y-4">
+  return <section aria-label="Resultado da análise" className="market-report space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400"><span>Panorama dos anúncios selecionados</span><span>{analysis.total} anúncios · {new Date(analysis.analyzedAt).toLocaleString("pt-BR")}</span></div>
-    <article className="rounded-xl border border-gray-700 bg-gray-800/40 p-5 border-l-4 border-l-indigo-500">
+    <article className="market-verdict rounded-xl border border-gray-700 bg-gray-800/40 p-5 border-l-4 border-l-indigo-500">
       <span className="inline-block text-xs rounded-full bg-indigo-500/15 text-indigo-300 px-2.5 py-1 mb-3">{sections?.decision.status || analysis.verdict}</span>
       <h2 className="text-lg font-semibold">{sections?.decision.title || analysis.verdict}</h2>
       <p className="text-sm leading-relaxed text-gray-300 mt-2">{sections?.decision.summary || "Relatório anterior. Gere uma nova análise para obter o diagnóstico no formato simplificado."}</p>

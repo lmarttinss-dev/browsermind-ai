@@ -1,3 +1,7 @@
+import {selectTopCompetitors,type FocusOffer} from './top-competitors.js'
+import { replaceReportEmoji } from '../../shared/market-report-icons.js'
+import { readFileSync } from 'node:fs'
+const MARKET_THEME = readFileSync(new URL('../../shared/market-report-theme.css', import.meta.url), 'utf8')
 import { Marked, Renderer } from 'marked'
 import { chromium } from 'playwright'
 import { FULL_MARKET_SECTIONS, repairStoredMarketCatalog, repairStoredMarketLogistics, validateFullMarketDocument, type FullMarketDocument, type ReportChart, type ReportTable } from './full-market-report.js'
@@ -9,23 +13,82 @@ const REPORT_STYLE = `
 @media(max-width:700px){.report{padding:12px}.cover,.contents,.report-section,.sources{padding:21px;border-radius:12px}h1{font-size:27px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.contents ol{grid-template-columns:1fr}.metric strong{font-size:23px}h2{font-size:20px}th,td{padding:8px}.chart{padding:10px}}
 @media print{@page{size:A4;margin:16mm 14mm 19mm}:root,body{background:white;color:#1b2435;font-size:10.5pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}.report{max-width:none;padding:0;margin:0}.cover,.contents,.report-section,.sources{padding:0;border:0;border-radius:0;margin:0 0 28px}.cover{border-top:4px solid #4f46e5;padding-top:20px;break-after:page}.contents{break-after:page}.report-section{break-before:auto;padding-top:18px}.report-section[id="demand"],.report-section[id="competition"]{break-before:page}.report-section:not(:has(.table-block)):not(:has(.chart)){break-inside:avoid}.sources{break-before:auto}.section-head{break-after:avoid}h1{font-size:28pt}h2{font-size:20pt}h3{font-size:12pt;break-after:avoid}h4{break-after:avoid}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric strong{font-size:23pt}.metric{padding:15px}.lead{font-size:10.5pt}.executive,.metrics,.insights,.chart{break-inside:avoid}.contents ol{display:block;columns:2;column-gap:26px}.contents li{break-inside:avoid;margin:0}.contents a{font-size:10pt;padding:8px 0}.table-scroll{overflow:visible}table{font-size:8pt;table-layout:auto}th{font-size:8pt}th,td{padding:7px 6px}thead{display:table-header-group}tr{break-inside:avoid}.table-block{break-inside:auto}.chart{padding:14px}p,li{orphans:3;widows:3}.footer,.back-to-summary{display:none}a{color:#4f46e5;text-decoration:none}.legacy{font-size:10pt}.legacy h2{break-after:avoid}.legacy table{font-size:8pt}}
 `
-function shell(title:string,body:string){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'"><title>${escapeReportText(title)}</title><style>${REPORT_STYLE}</style></head><body><main class="report">${body}<div class="footer"><span>BrowserMind AI · Inteligência de mercado</span><span>Dados AvantPro · Análise da amostra capturada</span></div></main></body></html>`}
+function shell(title:string,body:string){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'"><title>${escapeReportText(title)}</title><style>${REPORT_STYLE}
+${MARKET_THEME}</style></head><body><main class="report">${replaceReportEmoji(body)}<div class="footer"><span>BrowserMind AI · Inteligência de mercado</span><span>Dados AvantPro · Análise da amostra capturada</span></div></main></body></html>`}
 export function reportChartHtml(chart:ReportChart){
   const items=chart.items.filter(item=>Number.isFinite(item.value)&&item.value>0)
   if(!items.length)return ''
   const max=Math.max(...items.map(item=>item.value));const width=800,height=items.length*29+12
   return `<figure class="chart"><h3>${escapeReportText(chart.title)}</h3><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeReportText(chart.title)}">${items.map((item,i)=>{const y=i*29+6;const length=item.value/max*430;return `<text x="0" y="${y+14}" font-size="11" fill="#5c6780">${escapeReportText(item.label)}</text><rect x="235" y="${y}" width="430" height="19" rx="4" fill="#f0f1f8"/><rect x="235" y="${y}" width="${length}" height="19" rx="4" fill="${i%2?'#8e87ec':'#5548dd'}"/><text x="680" y="${y+14}" font-size="11" fill="#303b54">${escapeReportText(item.value.toLocaleString('pt-BR',{maximumFractionDigits:1})+(item.percentage!=null?' ('+item.percentage.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%)':''))}</text>`}).join('')}</svg><div class="chart-note">Unidade: ${escapeReportText(chart.unit)} · Valores observados na amostra</div>${chart.note?`<div class="chart-note">${escapeReportText(chart.note)}</div>`:''}</figure>`
 }
-function reportTableHtml(table:ReportTable){return `<div class="table-block"><h3>${escapeReportText(table.title)}</h3><div class="table-scroll"><table><thead><tr>${table.columns.map(column=>`<th scope="col">${escapeReportText(column)}</th>`).join('')}</tr></thead><tbody>${table.rows.length?table.rows.map(row=>`<tr>${row.map(cell=>`<td>${cell===null?'<span class="empty">Não informado</span>':escapeReportText(cell)}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${table.columns.length}" class="empty">Não informado na captura.</td></tr>`}</tbody></table></div></div>`}
+function reportTableHtml(table:ReportTable){
+ const renderCell=(cell:string|number|null,column:number,rowIndex:number)=>{
+  if(cell===null)return '<span class="empty">Não informado</span>'
+  const label=escapeReportText(cell)
+  // Existing reports retain item IDs even when the original URL was omitted.
+  const itemId=column===0&&/^(ID|Anúncio)$/i.test(table.columns[0])&&typeof cell==='string'?cell.match(/^MLB-?(\d+)$/i)?.[1]:null
+  const captured=column===0?table.rowLinks?.[rowIndex]:null
+  const url=captured?safeUrl(captured):itemId?'https://produto.mercadolivre.com.br/MLB-'+itemId+'-_JM':null
+  return url?`<a class="competitor-link" title="${table.columns[0]==='Vendedor'?'Abrir anúncio deste vendedor na amostra':'Abrir anúncio'}" href="${escapeReportText(url)}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`:label
+ }
+ return `<div class="table-block"><h3>${escapeReportText(table.title)}</h3><div class="table-scroll"><table><thead><tr>${table.columns.map(column=>`<th scope="col">${escapeReportText(column)}</th>`).join('')}</tr></thead><tbody>${table.rows.length?table.rows.map((row,index)=>`<tr>${row.map((cell,column)=>`<td>${renderCell(cell,column,index)}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${table.columns.length}" class="empty">Não informado na captura.</td></tr>`}</tbody></table></div></div>`
+}
+
 type ContentsEntry = { id: string; title: string; level: number }
 function reportContents(entries: ContentsEntry[]) {
  if (!entries.length) return ''
- return `<nav class="contents" id="report-summary" aria-label="Sumário"><h2>Sumário</h2><ol>${entries.map((entry,i)=>`<li class="${entry.level===3?'subsection':''}"><a href="#${entry.id}"><span>${String(i+1).padStart(2,'0')}</span>${escapeReportText(entry.title)}</a></li>`).join('')}</ol></nav>`
+ return `<nav class="contents" id="report-summary" aria-label="Sumário"><h2>Sumário</h2><ol>${entries.map((entry,i)=>`<li class="${entry.level===3?'subsection':''}"><a href="#${entry.id}"><span>${String(i+1).padStart(2,'0')}</span><span class="contents-title">${escapeReportText(entry.title)}</span></a></li>`).join('')}</ol></nav>`
 }
 const backToSummary = '<a class="back-to-summary" href="#report-summary">Voltar ao sumário ↑</a>'
 function normalizeSectionTitle(title: string) { return title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim() }
+export function withTopCompetitors(value:FullMarketDocument):FullMarketDocument{
+ const doc=structuredClone(value)
+ const section=doc.sections.find(s=>s.id==='competition')
+ if(!section||section.tables.some(t=>t.title==='Até 5 anúncios para estudar'))return doc
+ const offers=section.tables.find(t=>t.title==='Ofertas concorrentes')
+ const demand=doc.sections.find(s=>s.id==='demand')?.tables.find(t=>t.title==='Idade dos anúncios e tração de vendas')
+ if(!offers||!demand)return doc
+ const numeric=(value:unknown)=>{
+  if(typeof value==='number')return Number.isFinite(value)?value:null
+  if(typeof value!=='string'||!/^\d[\d.]*(?:,\d+)?$/.test(value.trim()))return null
+  return Number(value.replace(/\./g,'').replace(',','.'))
+ }
+ const candidates:FocusOffer[]=offers.rows.map((row,index)=>{
+  const match=demand.rows.find(d=>d[0]===row[0]&&d[1]===row[1]&&row[0]!=='Sem ID')
+  return {itemId:typeof row[0]==='string'?row[0]:null,seller:typeof row[1]==='string'&&row[1]!=='Não identificado'?row[1]:null,title:String(row[2]||''),url:offers.rowLinks?.[index]||null,price:null,logistics:typeof row[4]==='string'?row[4]:null,monthlyPace:match?numeric(match[5]):null,ageDays:match?numeric(match[4]):null}
+ })
+ const selected=selectTopCompetitors(candidates)
+ const priceFor=(offer:FocusOffer)=>offers.rows.find(row=>row[0]===offer.itemId&&row[1]===offer.seller)?.[3]??'Não informado'
+ const focus:ReportTable={title:'Até 5 anúncios para estudar',columns:['ID','Vendedor','Produto','Preço observado','Ritmo atual / mês','Idade (dias)','Logística','Motivo da seleção'],rows:selected.map((offer,index)=>[offer.itemId,offer.seller,offer.title,priceFor(offer),offer.monthlyPace,offer.ageDays,offer.logistics,(index+1)+'º maior ritmo mensal entre vendedores distintos com dados comparáveis']),rowLinks:selected.map(o=>o.url)}
+ const method:ReportTable={title:'Critério e cobertura do foco competitivo',columns:['Critério','Leitura'],rows:[
+ ['Seleção',selected.length+' de até 5 vendedores distintos, por maior ritmo atual de vendas mensais positivo informado.'],
+ ['Cobertura',candidates.filter(o=>o.monthlyPace!==null&&o.monthlyPace>0&&o.seller).length+' de '+candidates.length+' anúncios com ritmo positivo e vendedor identificado.'],
+ ['Comparabilidade','Confira produto, kit e variação antes de usar como referência. Estimativas não comprovam vendas do vendedor quando o dado é agregado de catálogo.'],
+ ['Limites','Não usa vendas acumuladas nem vendas estimadas sem período. Desempate por ID do anúncio. Idade e preço são contexto, não critérios adicionais.'],
+ ...(!selected.length?[['Sem seleção','Não há dados mensais comparáveis suficientes. A amostra completa permanece abaixo.']]:[])
+ ]}
+ section.tables=[focus,method,...section.tables]
+ return doc
+}
 export function fullMarketReportHtml(value:FullMarketDocument){
- const doc=repairStoredMarketCatalog(repairStoredMarketLogistics(validateFullMarketDocument(value)));const url=safeUrl(doc.sourceUrl)
+ const doc=withTopCompetitors(repairStoredMarketCatalog(repairStoredMarketLogistics(validateFullMarketDocument(value))));const url=safeUrl(doc.sourceUrl)
+ // Restore seller links in older saved documents from their own competitor rows.
+ const sellers=new Map<string,string>()
+ const normalizeSeller=(name:string)=>name.trim().replace(/\s+/g,' ').toUpperCase()
+ for(const table of doc.sections.find(section=>section.id==='competition')?.tables||[]){
+  const sellerColumn=table.columns.indexOf('Vendedor')
+  const idColumn=table.columns.indexOf('ID')
+  if(sellerColumn<0)continue
+  table.rows.forEach((row,index)=>{
+   const seller=row[sellerColumn]
+   const id=idColumn>=0?String(row[idColumn]||'').match(/^MLB-?(\d+)$/i)?.[1]:null
+   const link=table.rowLinks?.[index]|| (id?'https://produto.mercadolivre.com.br/MLB-'+id+'-_JM':null)
+   if(typeof seller==='string'&&link&&safeUrl(link)&&!sellers.has(normalizeSeller(seller)))sellers.set(normalizeSeller(seller),link)
+  })
+ }
+ const concentration=doc.sections.find(section=>section.id==='concentration')
+ if(concentration)concentration.tables=concentration.tables.map(table=>table.columns[0]==='Vendedor'?{...table,rowLinks:table.rows.map((row,index)=>table.rowLinks?.[index]||sellers.get(normalizeSeller(String(row[0]||'')))||null)}:table)
+
  return shell(doc.title,`<header class="cover"><div class="eyebrow"><span class="logo">B</span> BrowserMind AI · Relatório estratégico</div><h1>${escapeReportText(doc.title)}</h1><p class="subtitle">${escapeReportText(doc.category)}</p><p class="meta">Análise de ${escapeReportText(dateLabel(doc.analyzedAt))} · Horário de Brasília</p>${url?`<p class="meta">Fonte: <a href="${escapeReportText(url)}" target="_blank" rel="noopener noreferrer">Listagem analisada</a></p>`:''}<div class="executive"><span class="badge">${escapeReportText(doc.decision)}</span><p>${escapeReportText(doc.executiveSummary)}</p></div><div class="metrics">${doc.indicators.map(metric=>`<div class="metric"><span>${escapeReportText(metric.label)}</span><strong>${escapeReportText(metric.value)}</strong><small>${escapeReportText(metric.note)}</small></div>`).join('')}</div><p class="note">Dados observados e cálculos da aplicação. Interpretação estratégica produzida por IA.</p></header>
  ${reportContents(doc.sections)}
  ${doc.sections.map((section,i)=>`<section class="report-section" id="${section.id}"><div class="section-head"><span class="section-number">${String(i+1).padStart(2,'0')}</span><div><div class="section-kicker">${section.level===3?'Perfil da categoria':'Análise estratégica'}</div><h2>${escapeReportText(section.title)}</h2></div></div><p class="lead">${escapeReportText(section.summary)}</p>${section.tables.map(reportTableHtml).join('')}${section.charts.map(reportChartHtml).join('')}${section.findings.length?`<div class="insights"><h4>Leitura dos dados</h4><ul>${section.findings.map(item=>`<li>${escapeReportText(item)}</li>`).join('')}</ul></div>`:''}${section.recommendations.length?`<div class="recommendations"><h4>Próximos passos</h4><ul>${section.recommendations.map(item=>`<li>${escapeReportText(item)}</li>`).join('')}</ul></div>`:''}${backToSummary}</section>`).join('')}
@@ -59,7 +122,7 @@ function legacyChart(code:string){
  }
  return '<p class="note">Gráfico anterior indisponível. Consulte os valores nas tabelas desta seção.</p>'
 }
-export function legacyMarketReportHtml(markdown:string,title:string,referencePrice?:number){
+export function legacyMarketReportHtml(markdown:string,title:string,referencePrice?:number, listing=false){
  const entries: ContentsEntry[] = []
  const priceMetrics = new Map<string,string>()
  const usedIds = new Map<string,number>()
@@ -99,15 +162,15 @@ export function legacyMarketReportHtml(markdown:string,title:string,referencePri
  const extraSections:string[]=[]
  const price=(key:string)=>priceMetrics.get(key)||'Não informado na captura salva'
  const ownPrice=typeof referencePrice==='number'&&Number.isFinite(referencePrice)&&referencePrice>0?referencePrice.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}).replace(/\u00a0/g,' '):'Não informado'
- if(!entries.some(entry=>entry.id==='pricing')){
+ if(!listing&&!entries.some(entry=>entry.id==='pricing')){
   entries.push({id:'pricing',title:'Estratégia de Precificação',level:2})
   extraSections.push('<h2 id="pricing">Estratégia de Precificação</h2>'+backToSummary+'<p>O relatório anterior foi salvo incompleto. As referências abaixo usam somente os preços registrados na própria captura e o cadastro do produto; não são uma nova pesquisa de mercado.</p>'+reportTableHtml({title:'Referências de preço disponíveis',columns:['Indicador','Valor','Fonte'],rows:[['Menor preço observado',price('min'),'AvantPro - captura salva'],['Maior preço observado',price('max'),'AvantPro - captura salva'],['Preço mediano',price('median'),'Captura salva; não inferido a partir dos extremos'],['Preço médio',price('mean'),'Captura salva; não inferido a partir dos extremos'],['Preço do produto cadastrado',ownPrice,'Cadastro do produto']]}))
  }
- if(!entries.some(entry=>entry.id==='suggestedPricing')){
+ if(!listing&&!entries.some(entry=>entry.id==='suggestedPricing')){
   entries.push({id:'suggestedPricing',title:'Sugestão de Precificação para Venda',level:2})
   extraSections.push('<h2 id="suggestedPricing">Sugestão de Precificação para Venda</h2>'+backToSummary+reportTableHtml({title:'Referências para definir o posicionamento',columns:['Posicionamento','Referência observada','Condição'],rows:[['Faixa de entrada',price('min'),'Comparar a oferta e validar os custos antes de competir pelo menor preço'],['Posicionamento central',price('median'),'Exige a mediana dos anúncios; não usar o ponto médio entre mínimo e máximo'],['Faixa superior',price('max'),'Exige diferenciação; o maior preço observado não comprova demanda'],['Preço mínimo viável','Não calculável apenas com a listagem','Informar custo do produto, comissão, impostos, embalagem, despesas e frete na calculadora']]} )+'<p class="note">Os valores são referências da concorrência, não preços recomendados com margem garantida. Valide o preço de venda na calculadora do produto antes de definir a oferta.</p>')
  }
- return shell(title,`<header class="cover"><div class="eyebrow"><span class="logo">B</span> BrowserMind AI · Análise de mercado</div><h1>${escapeReportText(title)}</h1><p class="meta">Relatório salvo anteriormente. Conteúdo original preservado.</p></header>${reportContents(entries)}<article class="report-section legacy">${content}${extraSections.join('')}</article>`)
+ return shell(title,`<header class="cover"><div class="eyebrow"><span class="logo">B</span> BrowserMind AI · ${listing ? "Análise do anúncio" : "Análise de mercado"}</div><h1>${escapeReportText(title)}</h1><p class="meta">Relatório salvo anteriormente. Conteúdo original preservado.</p></header>${reportContents(entries)}<article class="report-section legacy">${content}${extraSections.join('')}</article>`)
 }
 export function savedMarketReportHtml(product:{title:string;marketReport?:string;marketDocument?:unknown;price?:number}){
  if(product.marketDocument)return fullMarketReportHtml(validateFullMarketDocument(product.marketDocument))
@@ -122,4 +185,9 @@ export async function createFullMarketReportPdf(html:string):Promise<Buffer>{
   return await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true,displayHeaderFooter:true,
    headerTemplate:'<span></span>',footerTemplate:'<div style="font:9px Arial;color:#8a91a0;width:100%;margin:0 14mm;display:flex;justify-content:space-between;border-top:1px solid #e5e8ef;padding-top:8px"><span>BrowserMind AI · Análise de mercado</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>',margin:{top:'16mm',bottom:'19mm',left:'14mm',right:'14mm'}})
  }finally{await browser.close()}
+}
+
+export function savedListingReportHtml(product:{title:string;analysisReport?:string;price?:number}){
+ if(!product.analysisReport?.trim())throw new Error('Este produto ainda não possui análise do anúncio.')
+ return legacyMarketReportHtml(product.analysisReport,product.title,product.price,true)
 }

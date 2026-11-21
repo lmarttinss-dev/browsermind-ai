@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        gray: { 50: "#f5f7fa", 100: "#e9eef5", 200: "#d7e0ec", 300: "#bdc9d9", 400: "#9aaabd", 500: "#8190a6", 600: "#526176", 700: "#2a3647", 800: "#151e2b", 900: "#0c121c", 950: "#080c12" },
         primary: {
           50: "#eef2ff",
           100: "#e0e7ff",

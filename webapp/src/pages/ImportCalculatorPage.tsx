@@ -259,7 +259,7 @@ const ImportCalculatorPage = () => {
       {/* Header */}
       <div className="py-4">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center">
+          <div className="calculator-heading text-left">
             <h1 className="text-lg font-semibold text-gray-100">
               Calculadora de Custos e Viabilidade
             </h1>

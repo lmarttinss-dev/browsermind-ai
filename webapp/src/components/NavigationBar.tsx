@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import {
   ArrowLeft,
@@ -9,25 +8,12 @@ import {
   Power,
   PowerOff,
   Loader2,
-  Kanban,
-  Monitor,
-  Building2,
-  Calculator,
-  Tag,
-  BarChart3,
 } from "lucide-react";
 
 export function NavigationBar() {
-  const { browserActive, browserUrl, isLoading, launchBrowser, closeBrowser, navigateTo, takeScreenshot, checkStatus, extensionPaths } = useStore();
+  const { browserActive, browserUrl, isLoading, launchBrowser, closeBrowser, navigateTo, takeScreenshot, checkStatus, serverOnline, error } = useStore();
   const [urlInput, setUrlInput] = useState("");
   const [editing, setEditing] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isOnPipeline = location.pathname.startsWith("/pipeline");
-  const isOnSupplierAnalysis = location.pathname === "/supplier-analysis";
-  const isOnCategories = location.pathname.startsWith("/categories");
-  const isOnCalculator = location.pathname === "/calculator";
-
   const displayUrl = editing ? urlInput : (browserUrl || "");
 
   const handleNavigate = () => {
@@ -64,43 +50,45 @@ export function NavigationBar() {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 border-b border-gray-700 overflow-x-auto shrink-0">
+    <>
+    <div className="browser-toolbar">
       {/* Browser control */}
       {!browserActive ? (
         <button
           onClick={() => launchBrowser(true)}
-          disabled={isLoading}
-          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors"
+          disabled={isLoading || !serverOnline}
+          className="browser-start"
         >
           {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Power className="w-3.5 h-3.5" />}
-          Iniciar Browser
+          {isLoading ? "Iniciando..." : "Iniciar navegador"}
         </button>
       ) : (
         <>
           {/* Nav buttons */}
-          <button onClick={handleGoBack} className="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
+          <button aria-label="Voltar" title="Voltar" onClick={handleGoBack} className="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <button onClick={handleGoForward} className="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
+          <button aria-label="Avançar" title="Avançar" onClick={handleGoForward} className="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
             <ArrowRight className="w-4 h-4" />
           </button>
-          <button onClick={() => { takeScreenshot(); checkStatus(); }} className="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
+          <button aria-label="Atualizar prévia" title="Atualizar prévia" onClick={() => { takeScreenshot(); checkStatus(); }} className="p-1.5 text-gray-400 hover:text-white rounded transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
 
           {/* URL bar */}
-          <div className="flex-1 flex items-center bg-gray-700 rounded-md overflow-hidden">
+          <div className="browser-address">
             <Globe className="w-3.5 h-3.5 text-gray-400 ml-2.5 shrink-0" />
             <input
-              type="text"
+              aria-label="Endereço da página" type="text"
               value={displayUrl}
               onChange={(e) => { setEditing(true); setUrlInput(e.target.value); }}
               onFocus={handleFocus}
               onBlur={handleBlur}
               onKeyDown={(e) => e.key === "Enter" && handleNavigate()}
-              placeholder="Digite uma URL e pressione Enter..."
-              className="flex-1 bg-transparent text-sm text-gray-200 placeholder:text-gray-500 px-2 py-1.5 focus:outline-none"
+              placeholder="Digite o endereço de um site..."
+              className="min-w-0 flex-1 bg-transparent text-sm text-gray-200 placeholder:text-gray-500 px-2 py-1.5 focus:outline-none"
             />
+            <button aria-label="Abrir endereço" title="Abrir endereço" onMouseDown={e => e.preventDefault()} onClick={handleNavigate}><ArrowRight size={16}/></button>
           </div>
 
           <button
@@ -113,61 +101,9 @@ export function NavigationBar() {
         </>
       )}
 
-      <button onClick={() => navigate(location.pathname === "/market-analysis" ? "/" : "/market-analysis")}
-        className="flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 shrink-0"
-        aria-current={location.pathname === "/market-analysis" ? "page" : undefined}>
-        <BarChart3 className="w-3.5 h-3.5" /> Panorama AvantPro
-      </button>
-      {/* Separador + Nav toggle */}
-      <div className="w-px h-6 bg-gray-700 mx-1" />
-      <button
-        onClick={() => navigate(isOnPipeline ? "/" : "/pipeline")}
-        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
-          isOnPipeline
-            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
-        }`}
-        title={isOnPipeline ? "Voltar ao Browser" : "Esteira de Produtos"}
-      >
-        {isOnPipeline ? <Monitor className="w-3.5 h-3.5" /> : <Kanban className="w-3.5 h-3.5" />}
-        {isOnPipeline ? "Browser" : "Esteira"}
-      </button>
-      <button
-        onClick={() => navigate(isOnSupplierAnalysis ? "/" : "/supplier-analysis")}
-        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
-          isOnSupplierAnalysis
-            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            : "bg-purple-600/20 text-purple-400 hover:bg-purple-600/30"
-        }`}
-        title={isOnSupplierAnalysis ? "Voltar ao Browser" : "Análise de Fornecedor"}
-      >
-        {isOnSupplierAnalysis ? <Monitor className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
-        {isOnSupplierAnalysis ? "Browser" : "Fornecedor"}
-      </button>
-      <button
-        onClick={() => navigate(isOnCategories ? "/" : "/categories")}
-        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
-          isOnCategories
-            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            : "bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30"
-        }`}
-        title={isOnCategories ? "Voltar ao Browser" : "Categorias"}
-      >
-        {isOnCategories ? <Monitor className="w-3.5 h-3.5" /> : <Tag className="w-3.5 h-3.5" />}
-        {isOnCategories ? "Browser" : "Categorias"}
-      </button>
-      <button
-        onClick={() => navigate(isOnCalculator ? "/" : "/calculator")}
-        className={`flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
-          isOnCalculator
-            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            : "bg-orange-600/20 text-orange-400 hover:bg-orange-600/30"
-        }`}
-        title={isOnCalculator ? "Voltar ao Browser" : "Calculadora de Importação"}
-      >
-        {isOnCalculator ? <Monitor className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
-        {isOnCalculator ? "Browser" : "Calculadora"}
-      </button>
+      {!browserActive && <span className="toolbar-hint"><Globe size={14}/> Sua próxima descoberta começa com uma página</span>}
     </div>
+    {error && <p role="alert" className="rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-xs text-red-300">{error}</p>}
+    </>
   );
 }

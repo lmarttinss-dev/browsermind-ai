@@ -1,3 +1,4 @@
+import type {ProductBrief} from '../../../shared/product-brief.js'
 import type { FullMarketDocument } from "../full-market-report.js"
 import mongoose, { Schema, Document } from "mongoose"
 import { calculatorStateSchema, type CalculatorState } from "./calculator-state.js"
@@ -61,6 +62,9 @@ export type PipelineProduct = Document & {
   competitionLevel: CompetitionLevel
   potentialMargin: string
   recentDemand: string
+  analysisEvidence?: unknown
+  productBrief?: ProductBrief
+  analysisDocument?: FullMarketDocument
   analysisReport: string
   analyzedAt: Date
   order: number
@@ -126,6 +130,9 @@ const productSchema = new Schema<PipelineProduct>(
     competitionLevel: { type: String, enum: COMPETITION_LEVELS, default: "Média" },
     potentialMargin: { type: String, default: "" },
     recentDemand: { type: String, default: "" },
+    productBrief: {type:Schema.Types.Mixed},
+    analysisDocument: {type: Schema.Types.Mixed, select:false},
+    analysisEvidence: {type: Schema.Types.Mixed, select:false},
     analysisReport: { type: String, default: "" },
     analyzedAt: { type: Date, default: Date.now },
     order: { type: Number, default: 0 },

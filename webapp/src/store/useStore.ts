@@ -204,7 +204,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true, error: null, response: "", marketDocument: null, marketHtml: "", marketSavedProductId: null, pendingActions: [] });
 
     try {
-      const res = await api.analyze({ prompt, model: selectedModel, templateId, productId, qnaContent: qnaContent || undefined });
+      const res = await api.analyze({ prompt, model: selectedModel, templateId, productId, pageContent: (templateId === "importacao-simplificada") ? qnaContent : undefined, qnaContent: qnaContent || undefined });
 
       if (res.success) {
         const entry: HistoryEntry = {

@@ -1,9 +1,12 @@
+import { useState } from "react"
+import { usePipelineStore } from "@/store/usePipelineStore"
+import { STAGES, STAGE_INFO } from "./stages"
 import { Link } from "react-router-dom"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Package, TrendingUp, Star, ExternalLink, Boxes, Flame, Calculator } from "lucide-react"
+import { GripVertical, ArrowUpRight, Loader2, Package, TrendingUp, Star, ExternalLink, Boxes, Flame, Calculator } from "lucide-react"
 import { useCategoryStore } from "@/store/useCategoryStore"
-import type { PipelineProduct } from "@/lib/api"
+import type { PipelineProduct, PipelineStage } from "@/lib/api"
 
 export const ProductCard = ({ product, onClick }: { product: PipelineProduct; onClick: () => void }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -11,6 +14,8 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
     data: { product },
   })
 
+  const [moving, setMoving] = useState(false)
+  const moveProduct = usePipelineStore(s => s.moveProduct)
   const categories = useCategoryStore(s => s.categories)
   const category = categories.find(c => c._id === product.categoryId)
 
@@ -39,26 +44,25 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      onClick={onClick}
-      className="bg-gray-800 rounded-lg border border-gray-700 p-3 cursor-grab active:cursor-grabbing hover:border-gray-600 transition-colors"
+
+      className="product-card bg-gray-800 rounded-lg border border-gray-700 p-3  hover:border-gray-600 transition-colors"
     >
+      <div className="product-card-tools"><span>OPORTUNIDADE</span><button {...attributes} {...listeners} aria-label={`Arrastar ${product.title}`} title="Arrastar produto" style={{touchAction:"none"}} className="product-drag-handle"><GripVertical size={17}/></button></div>
       {/* Imagem */}
       {product.imageUrl ? (
         <img
           src={product.imageUrl}
           alt={product.title}
-          className="w-full h-28 object-cover rounded-md mb-2 bg-gray-700"
+          className="product-cover w-full rounded-md mb-2 bg-gray-700"
         />
       ) : (
-        <div className="w-full h-28 rounded-md mb-2 bg-gray-700 flex items-center justify-center">
+        <div className="product-cover product-cover-placeholder w-full rounded-md mb-2 bg-gray-700 flex items-center justify-center">
           <Package className="w-8 h-8 text-gray-500" />
         </div>
       )}
 
       {/* Título */}
-      <h4 className="text-sm font-medium text-gray-100 line-clamp-2 mb-2">{product.title}</h4>
+      <button onClick={onClick} className="product-title-button"><h4>{product.title}</h4><ArrowUpRight size={15}/></button>
 
       {/* Preço */}
       {product.price > 0 && (
@@ -109,6 +113,15 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
         </Link>
       )}
 
+      <div className="product-stage-control">
+        <label htmlFor={`stage-${product._id}`}>{moving ? <><Loader2 size={12} className="animate-spin"/> Salvando…</> : "Mover para"}</label>
+        <select id={`stage-${product._id}`} aria-label={`Etapa de ${product.title}`} value={product.stage} disabled={moving} onChange={async e => {
+          const stage = e.target.value as PipelineStage;
+          setMoving(true);
+          try { await moveProduct(product._id, stage, usePipelineStore.getState().products[stage].length); }
+          finally { setMoving(false); }
+        }}>{STAGES.map(stage => <option key={stage} value={stage}>{STAGE_INFO[stage].label}</option>)}</select>
+      </div>
       {/* Categoria + Link */}
       <div className="flex items-center justify-between text-[10px] text-gray-500">
         <span className="truncate flex items-center gap-1 min-w-0">
@@ -120,6 +133,7 @@ export const ProductCard = ({ product, onClick }: { product: PipelineProduct; on
         </span>
         {product.url && (
           <a
+            aria-label={`Abrir anúncio de ${product.title}`}
             href={product.url}
             target="_blank"
             rel="noopener noreferrer"
