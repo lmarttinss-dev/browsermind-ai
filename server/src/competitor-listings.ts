@@ -2,6 +2,7 @@ export type CompetitorListing = {
   positions: number[]
   itemId: string | null
   catalogId: string | null
+  userProductId?: string | null
   title: string
   imageUrl?: string | null
   seller: string | null
@@ -9,6 +10,8 @@ export type CompetitorListing = {
   advertising: boolean
   adClickId?: string | null
   metrics: string
+  avantproFields?: { label: string; value: string | null; status: "ready" | "unavailable" | "loading" }[]
+  avantproBadges?: string[]
   avantproShipping?: { amount: number | null; text: string; source: "AvantPro" }
   observed?: {
     price: number | null
@@ -51,23 +54,35 @@ export function extractCompetitorListings(): CompetitorListing[] {
       || (!/\/(?:p|up)\//i.test(url.pathname) ? url.pathname.match(/\bMLB-?\d+\b/i)?.[0] : null)
     ) : null
     const id = rawItemId ? rawItemId.replace("-", "").toUpperCase() : null
-    const catalogId = url?.pathname.match(/\/(?:p|up)\/(MLBU?\d+)/i)?.[1] || null
+    const catalogId = url?.pathname.match(/\/p\/(MLB\d+)/i)?.[1] || null
+    const userProductId = url?.pathname.match(/\/up\/(MLBU\d+)/i)?.[1] || null
     const advertising = !!url && (/^click\d*\./i.test(url.hostname) || hash.get("is_advertising") === "true")
     const metricParts: string[] = []
     // tsx/esbuild wraps named local functions with __name, which is unavailable
     // when Playwright serializes this function into the browser. Traverse iteratively.
     let freightText = ""
+    const avantproFields: NonNullable<CompetitorListing["avantproFields"]> = []
+    const avantproBadges = new Set<string>()
     const metricRoots: (Element | ShadowRoot)[] = [card]
     while (metricRoots.length) {
       const root = metricRoots.pop()!
       root.querySelectorAll(".avantpro-product-info-row").forEach(row => {
-        // The tooltip is nested inside the label; only its direct text names the field.
-        const label = Array.from(row.querySelector(".avantpro-product-info-row-label")?.childNodes || []).filter(node => node.nodeType === 3).map(node => node.textContent || "").join("").trim()
-        if (label !== "Frete") return
+        const labelElement = row.querySelector(".avantpro-product-info-row-label")?.cloneNode(true) as Element | undefined
+        labelElement?.querySelectorAll('svg, [class*=tooltip]').forEach(element => element.remove())
+        const label = (labelElement?.textContent || "").replace(/\s+/g, " ").trim()
+        if (!label) return
         const value = row.querySelector(".avantpro-product-info-row-value")
-        if (value?.querySelector('[role="status"], .avantpro-product-info-field-spinner')) return
-        const text = (value?.textContent || "").trim()
-        if (text && !freightText) freightText = text
+        const text = (value?.textContent || "").replace(/\s+/g, " ").trim()
+        const loading = !value || !text || !!value.querySelector('[role="status"], .avantpro-product-info-field-spinner, [aria-busy="true"], .animate-spin') || /^(?:carregando|aguarde|\.\.\.)/i.test(text)
+        const unavailable = !loading && /^(?:—|-|não informado|não disponível|indisponível)$/i.test(text)
+        const field = { label, value: loading || unavailable ? null : text, status: loading ? "loading" as const : unavailable ? "unavailable" as const : "ready" as const }
+        if (!avantproFields.some(previous => previous.label === field.label && previous.value === field.value && previous.status === field.status)) avantproFields.push(field)
+        if (label === "Frete" && !loading && text && (!freightText || /R\$/.test(text))) freightText = text
+
+      })
+      root.querySelectorAll('[class*=avantpro][aria-label], [class*=avantpro] [aria-label]').forEach(element => {
+        const label = element.getAttribute("aria-label")?.trim()
+        if (label) avantproBadges.add(label)
       })
       root.querySelectorAll(".avantpro-product-container, .avantpro-product-info-container, [data-avantpro]").forEach(element => {
         const value = ((element as HTMLElement).innerText || element.textContent || "").trim()
@@ -75,10 +90,10 @@ export function extractCompetitorListings(): CompetitorListing[] {
       })
       root.querySelectorAll("*").forEach(element => { if (element.shadowRoot) metricRoots.push(element.shadowRoot) })
     }
-    const metrics = metricParts.join("\n").slice(0, 12000)
+    const metrics = metricParts.join("\n")
     const lines = metrics.split(/\n/).map(line => line.trim()).filter(Boolean)
     const sellerIndex = lines.findIndex(line => /^(?:Nome do vendedor|Atual ganhador|Vendedor)$/i.test(line))
-    const seller = sellerIndex >= 0 ? lines[sellerIndex + 1] || null : null
+    const seller = avantproFields.find(field => /^(?:Nome do vendedor|Atual ganhador|Vendedor)$/i.test(field.label) && field.status === "ready")?.value || (sellerIndex >= 0 ? lines[sellerIndex + 1] || null : null)
     const title = (titleElement?.textContent || anchor?.textContent || anchor?.querySelector("img")?.getAttribute("alt") || "").trim()
     if (!title && !url && !metrics) return
 
@@ -106,7 +121,9 @@ export function extractCompetitorListings(): CompetitorListing[] {
     const shipping = card.querySelector(".poly-component__shipping-v2, .poly-component__shipping, .ui-search-item__shipping")
     const shippingText = (shipping?.textContent || "").trim()
     const full = !!shipping?.querySelector('svg[aria-label*="FULL"], use[href*="full"], use[href*="FULL"]') || /\bfull\b/i.test(shippingText)
-    const logistics = full ? "Full" : /\bflex\b/i.test(shippingText) ? "Flex" : /envio normal|envio padrão/i.test(shippingText) ? "Normal" : null
+    const avantproFull = [...avantproBadges].some(label => /^Está no Full$/i.test(label))
+    const avantproFlex = [...avantproBadges].some(label => /^Está no Flex$/i.test(label))
+    const logistics = avantproFull ? "Full" : avantproFlex ? "Flex" : full ? "Full" : /\bflex\b/i.test(shippingText) ? "Flex" : /envio normal|envio padrão/i.test(shippingText) ? "Normal" : null
     const picture = card.querySelector<HTMLImageElement>("img.poly-component__picture, img.ui-search-result-image__element, .poly-card__portada img, .ui-search-result-image img")
       || card.querySelector<HTMLImageElement>("img")
     let imageUrl: string | null = null
@@ -119,10 +136,11 @@ export function extractCompetitorListings(): CompetitorListing[] {
       } catch { /* Missing or invalid cover: leave it unknown. */ }
     }
     const listing: CompetitorListing = {
-      positions: [index + 1], itemId: id, catalogId, title, imageUrl,
+      positions: [index + 1], itemId: id, catalogId, userProductId, title, imageUrl,
       observed: { price: price !== null && Number.isFinite(price) && price > 0 ? price : null,
         logistics, freeShipping: /frete gr[áa]tis/i.test(shippingText) ? true : /frete R\$|frete pago/i.test(shippingText) ? false : null,
         delivery: shippingText || null, sponsored: advertising || Array.from(card.querySelectorAll("*")).some(element => /^patrocinado$/i.test((element.textContent || "").trim())) },
+      avantproFields, avantproBadges: [...avantproBadges],
       avantproShipping: { source: "AvantPro", text: freightText,
         amount: /R\$\s*[\d.]+,\d{2}/.test(freightText)
           ? Number(freightText.match(/R\$\s*([\d.]+,\d{2})/)![1].replace(/\./g, "").replace(",", ".")) : null },
@@ -141,6 +159,13 @@ export function extractCompetitorListings(): CompetitorListing[] {
         imageUrl: preferred.imageUrl || previous.imageUrl || imageUrl,
         seller: preferred.seller || previous.seller || seller,
         metrics: preferred.metrics || previous.metrics || metrics,
+        avantproFields: [...(preferred.avantproFields || []), ...(previous.avantproFields || []), ...(listing.avantproFields || [])].reduce<NonNullable<CompetitorListing["avantproFields"]>>((fields, field) => {
+          const existing = fields.findIndex(value => value.label === field.label)
+          if (existing < 0) fields.push(field)
+          else if (fields[existing].status !== "ready" && field.status === "ready") fields[existing] = field
+          return fields
+        }, []),
+        avantproBadges: [...new Set([...(previous.avantproBadges || []), ...(listing.avantproBadges || [])])],
         avantproShipping: [preferred.avantproShipping, previous.avantproShipping, listing.avantproShipping].find(value => value?.amount != null) || preferred.avantproShipping,
         observed: { ...preferred.observed!, sponsored: !!previous.observed?.sponsored || !!listing.observed?.sponsored },
       })
@@ -152,7 +177,7 @@ export function extractCompetitorListings(): CompetitorListing[] {
 /** Put identities and URLs first, before bulk text can hit the model's context limit. */
 export function formatCompetitorListings(listings: CompetitorListing[]): string {
   if (!listings.length) return ""
-  const identities = listings.map(({ metrics: _metrics, ...listing }) => listing)
+  const identities = listings.map(({ metrics: _metrics, avantproFields: _fields, avantproBadges: _badges, ...listing }) => listing)
   let remaining = 40000
   const metrics = listings.flatMap(listing => {
     if (!listing.metrics || remaining <= 0) return []

@@ -155,3 +155,68 @@ continuam acessíveis e exportáveis sem reanálise ou alteração do conteúdo 
 
 Rotas: GET /api/pipeline/:id/market-report/html, GET /api/pipeline/:id/market-report/pdf
 e POST /api/pipeline/market-report/export-pdf para a prévia ainda não salva.
+
+### Captura obrigatória e logística
+
+A análise completa aguarda todos os cards da listagem pública e os contadores do AvantPro,
+carrega os cards fora da área visível e exige campos e conteúdo estáveis antes de chamar o modelo.
+Campos ainda carregando ou cards sem dados bloqueiam a geração; ausências explicitamente
+informadas pela extensão são preservadas como ausências, sem conversão para zero.
+Os campos estruturados, selos e texto completo das fichas AvantPro seguem para o modelo
+selecionado no webapp. O documento registra a conclusão e a cobertura da captura.
+
+O Perfil Logístico usa prioritariamente os contadores FULL, Flex, Correios, Coleta,
+Places e Outros do AvantPro. Seu denominador é a soma desses contadores, distinta do
+número de anúncios deduplicados. Contadores agregados não são atribuídos a vendedores individuais.
+
+### Salvamento da análise vinculada
+
+O produto selecionado segue no pedido de geração. Após validar o relatório completo,
+o servidor grava marketDocument e marketReport antes de confirmar savedProductId.
+O salvamento não depende mais de um efeito React ao terminar o carregamento. Falhas de
+persistência preservam a análise na tela e exibem uma mensagem e opção de salvar novamente.
+A captura aciona os botões "Carregar dados Avantpro" dos cards e usa rolagem imediata
+para não falhar enquanto a extensão altera o tamanho dos anúncios.
+
+### Formato da resposta e recuperação
+
+A análise estruturada solicita o modo JSON nativo do DeepSeek, sem alterar as demais
+análises em texto livre. Uma resposta que não passa no contrato recebe uma tentativa
+adicional de correção usando a mesma captura completa. JSON truncado não é concatenado
+com outro objeto de continuação. As 17 seções, limites de tamanho e notas continuam
+obrigatórios; nenhum campo ausente é inventado para fazer a validação passar.
+Se a correção também falhar, o documento salvo permanece intacto.
+
+Para relatórios JSON, o DeepSeek mantém o modelo selecionado, usa reasoning_effort=low
+e max_tokens=32768. O orçamento maior permite concluir o objeto sem depender de
+continuações de texto; é um teto, não uma meta de consumo. A narrativa tem alvos curtos
+por seção porque tabelas e gráficos já são preparados pelo sistema. As demais chamadas
+em texto livre preservam a configuração anterior.
+
+### Consumo de tokens
+
+O transporte ao modelo usa colunas únicas por oferta, um dicionário dos rótulos dos
+campos e um dicionário das linhas do texto bruto. Todos os anúncios, valores, status,
+metadados adicionais e selos são mantidos. O texto bruto pode ser reconstruído sem
+perdas pelos índices; não há corte da amostra nem de campos desconhecidos.
+Os detalhes de frete que repetiam ID, título e vendedor passam a compartilhar a linha
+da oferta. O template HTML continua recebendo as evidências originais.
+
+Cada relatório estruturado faz uma chamada normal e, apenas se a resposta não passar
+no contrato, no máximo uma correção. Não há repetição automática de POST após falha
+de rede nesse fluxo, pois a primeira requisição pode já ter sido processada e cobrada.
+marketUsage informa chamadas, tokens de entrada/saída/cache/raciocínio retornados pelo
+provedor e tamanho das evidências antes/depois da compactação. O tamanho em caracteres
+não deve ser apresentado como uma medição exata da redução de tokens.
+
+### Catálogo
+
+Os contadores Em Catálogo e Fora Catálogo do AvantPro têm prioridade na seção de
+conta e catálogo. A base dos percentuais é a soma desses contadores, e não o número
+de ofertas deduplicadas. Na ausência dos contadores, a classificação por oferta usa
+os campos dos módulos AvantPro; ausência de sinal permanece Não informado.
+Links /up/MLBU representam identidade de produto do vendedor, preservada separadamente
+como userProductId, e não confirmam participação em catálogo. catalogId não classifica
+sozinho uma oferta. Contadores ausentes ou conflitantes não viram zero nem geram um
+gráfico percentual parcial. Relatórios anteriores podem ter a seção reparada com os
+contadores armazenados na própria captura, sem enviar nova requisição ao modelo.

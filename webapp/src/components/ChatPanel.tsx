@@ -28,7 +28,7 @@ export function ChatPanel() {
     prompt, setPrompt,
     qnaContent, setQnaContent,
     selectedModel, setSelectedModel,
-    response, marketDocument, marketHtml, isLoading, error,
+    response, marketDocument, marketHtml, marketSavedProductId, isLoading, error,
     pendingActions, analyzePage, executeActions,
     history, restoreEntry, clearHistory,
     setShowSettings,
@@ -44,7 +44,6 @@ export function ChatPanel() {
   const [productDropdownOpen, setProductDropdownOpen] = useState(false)
   const [productSearch, setProductSearch] = useState("")
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const prevLoadingRef = useRef(isLoading)
 
   // Carrega produtos da esteira quando o template de mercado é selecionado
   useEffect(() => {
@@ -56,25 +55,24 @@ export function ChatPanel() {
     }
   }, [activeTemplate, pipelineProducts.length])
 
-  // Salva relatório no produto após análise concluir
+  // The server saves against the product captured when the analysis request starts.
   useEffect(() => {
-    const wasLoading = prevLoadingRef.current
-    prevLoadingRef.current = isLoading
-
-    if (wasLoading && !isLoading && response && activeTemplate === MARKET_TEMPLATE_ID && selectedProductId) {
-      setIsSavingReport(true)
-      const normalizedReport = normalizeMarketReportHeader(response)
-      api.updateMarketReport(selectedProductId, normalizedReport, marketDocument || undefined)
-        .then(() => {
-          const product = pipelineProducts.find(p => p._id === selectedProductId)
-          setSaveSuccess(`Relatório salvo em "${product?.title}"`)
-        })
-        .catch((err) => {
-          console.error("Erro ao salvar relatório de mercado:", err)
-        })
-        .finally(() => setIsSavingReport(false))
+    if (marketSavedProductId) {
+      const product = pipelineProducts.find(p => p._id === marketSavedProductId)
+      setSaveSuccess(`Relatório salvo em "${product?.title || 'produto selecionado'}"`)
     }
-  }, [isLoading, response, marketDocument, activeTemplate, selectedProductId, pipelineProducts])
+  }, [marketSavedProductId, pipelineProducts])
+
+  const retrySaveReport = async () => {
+    if (!selectedProductId || !response) return
+    setIsSavingReport(true)
+    try {
+      await api.updateMarketReport(selectedProductId, normalizeMarketReportHeader(response), marketDocument || undefined)
+      useStore.setState({ marketSavedProductId: selectedProductId, error: null })
+    } catch (err) {
+      useStore.setState({ error: err instanceof Error ? err.message : "Não foi possível salvar o relatório." })
+    } finally { setIsSavingReport(false) }
+  }
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
@@ -120,7 +118,7 @@ export function ChatPanel() {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       setSaveSuccess(null)
-      analyzePage(activeTemplate || undefined);
+      analyzePage(activeTemplate || undefined, selectedProductId || undefined);
     }
   };
 
@@ -365,7 +363,7 @@ export function ChatPanel() {
 
         <div className="flex gap-2">
           <button
-            onClick={() => { setSaveSuccess(null); analyzePage(activeTemplate || undefined) }}
+            onClick={() => { setSaveSuccess(null); analyzePage(activeTemplate || undefined, selectedProductId || undefined) }}
             disabled={isLoading || !prompt.trim()}
             className="flex-1 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
           >
@@ -410,8 +408,14 @@ export function ChatPanel() {
         {isLoading && !response && (
           <div className="flex flex-col items-center justify-center gap-3 p-8 text-gray-400">
             <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-            <p className="text-sm">Analisando página...</p>
+            <p className="text-sm">{activeTemplate === MARKET_TEMPLATE_ID ? "Aguardando os dados do AvantPro e preparando a análise..." : "Analisando página..."}</p>
           </div>
+        )}
+
+        {response && activeTemplate === MARKET_TEMPLATE_ID && selectedProductId && !marketSavedProductId && !isLoading && (
+          <button type="button" onClick={retrySaveReport} disabled={isSavingReport} className="mx-3 mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white disabled:opacity-50">
+            {isSavingReport ? "Salvando..." : "Salvar análise no produto selecionado"}
+          </button>
         )}
 
         {response && (marketHtml && marketDocument ? <div className="p-3"><HtmlMarketReport html={marketHtml} document={marketDocument} /></div> : (

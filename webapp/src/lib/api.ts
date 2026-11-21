@@ -39,8 +39,8 @@ export const api = {
   // AI Proxy
   setKeys: (keys: Record<string, string>) => request<{ success: boolean; configured: string[] }>("/api/keys", { method: "POST", body: JSON.stringify({ keys }) }),
   getKeys: () => request<{ configured: string[] }>("/api/keys"),
-  analyze: (params: { prompt: string; model: string; pageContent?: string; screenshot?: string; templateId?: string; qnaContent?: string }) =>
-    request<{ success: boolean; response: string; marketDocument?: StructuredMarketDocument; marketHtml?: string; actions?: BrowserAction[]; pipelineProductId?: string }>("/api/analyze", { method: "POST", body: JSON.stringify(params) }),
+  analyze: (params: { prompt: string; model: string; pageContent?: string; screenshot?: string; templateId?: string; qnaContent?: string; productId?: string }) =>
+    request<{ success: boolean; response: string; marketDocument?: StructuredMarketDocument; marketHtml?: string; savedProductId?: string | null; marketSaveError?: string | null; actions?: BrowserAction[]; pipelineProductId?: string }>("/api/analyze", { method: "POST", body: JSON.stringify(params) }),
 
   exportMarketReportPdf: async (analysis: MarketAnalysis): Promise<Blob> => {
     const response = await fetch("/api/market-analysis/export-pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ analysis }) })
