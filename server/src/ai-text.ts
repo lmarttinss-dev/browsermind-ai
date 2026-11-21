@@ -1,9 +1,11 @@
 import axios from "axios";
 import { postDeepSeek } from "./deepseek-client.js";
 
+export type TextGenerationUsage = { inputTokens:number; outputTokens:number; reasoningTokens:number; cachedInputTokens:number }
+
 // Shared provider dispatch; keys remain server-side, including keys changed in Settings.
 export async function generateText(model: string, userMessage: string, options: {
-  keys: Record<string, string>; system: string; screenshot?: string; marketAnalysis?: boolean; temperature?: number;
+  keys: Record<string, string>; system: string; screenshot?: string; marketAnalysis?: boolean; temperature?: number; jsonOutput?: boolean; onUsage?: (usage:TextGenerationUsage)=>void;
 }): Promise<string> {
     const screenshot = options.screenshot;
     let aiResponse: string;
@@ -85,9 +87,9 @@ export async function generateText(model: string, userMessage: string, options: 
       if (!key) throw new Error("Chave DeepSeek não configurada. Configure em Settings.");
       const deepseekModel = model === "deepseek-pro" ? "deepseek-v4-pro" : "deepseek-v4-flash";
 
-      // DeepSeek tem teto de saída menor que os demais modelos. Quando a resposta
-      // atinge o limite (finish_reason=length), faz chamadas de continuação para
-      // que o relatório não seja cortado no meio.
+      // Structured reports need room for both reasoning and the complete JSON.
+      // Keep Pro, but avoid its implicit high reasoning effort for this contract.
+      // Only free-text responses can use continuation; JSON is validated/retried whole.
       const messages: Array<{ role: string; content: string }> = [
         { role: "system", content: options.system },
         { role: "user", content: userMessage },
@@ -98,24 +100,27 @@ export async function generateText(model: string, userMessage: string, options: 
         const r = await postDeepSeek({
           model: deepseekModel,
           messages,
-          max_tokens: 16384,
+          max_tokens: options.jsonOutput ? 32768 : 16384,
           temperature: options.temperature ?? 0.7,
-        }, key);
+          ...(options.jsonOutput ? { response_format: { type: "json_object" }, reasoning_effort: "low" } : {}),
+        }, key, { maxAttempts: options.jsonOutput ? 1 : 3 });
+        const usage=r.data.usage
+        if(usage)options.onUsage?.({inputTokens:usage.prompt_tokens||0,outputTokens:usage.completion_tokens||0,reasoningTokens:usage.completion_tokens_details?.reasoning_tokens||0,cachedInputTokens:usage.prompt_cache_hit_tokens||0})
         const chunk = r.data.choices?.[0]?.message?.content || "";
         lastFinishReason = r.data.choices?.[0]?.finish_reason || "";
         aiResponse += chunk;
-        if (lastFinishReason !== "length") break;
+        if (lastFinishReason !== "length" || options.jsonOutput) break;
         messages.push({ role: "assistant", content: chunk });
         messages.push({ role: "user", content: "Continue exatamente de onde você parou. Não repita o conteúdo já gerado." });
       }
       if (lastFinishReason === "length") {
-        console.log("⚠️ DeepSeek: relatório ainda truncado após 4 chamadas (finish_reason=length)")
+        console.log("⚠️ DeepSeek: resposta atingiu o limite de saída (finish_reason=length)")
       }
 
     } else {
       throw new Error(`Modelo não suportado: ${model}`);
     }
 
-    if (!aiResponse) throw new Error("Resposta vazia da IA");
+    if (!aiResponse && !options.jsonOutput) throw new Error("Resposta vazia da IA");
     return aiResponse;
 }

@@ -21,6 +21,35 @@ describe('relatório HTML estruturado de mercado',()=>{
   expect(()=>parseFullMarketInterpretation(JSON.stringify({...interpretation,scores:{...interpretation.scores,margem:12}}))).toThrow()
   expect(()=>buildFullMarketEvidence({title:'vazio',url:'',listings:[]})).toThrow()
  })
+ it('aceita um JSON completo com texto de apresentação sem inferir dados ausentes',()=>{
+  expect(parseFullMarketInterpretation('Segue a análise:\n'+JSON.stringify(interpretation)+'\nFim.')).toEqual(interpretation)
+  expect(()=>parseFullMarketInterpretation('Segue: {"category":"teste"}')).toThrow()
+ })
+ it('corrige automaticamente uma resposta inválida usando a mesma captura',async()=>{
+  const requests:string[]=[]
+  const doc=await generateFullMarketReport(reportEvidence,async prompt=>{requests.push(prompt);return requests.length===1?'JSON truncado {':JSON.stringify(interpretation)})
+  expect(requests).toHaveLength(2)
+  const retry=JSON.parse(requests[1])
+  expect(retry.request.evidence).toEqual(JSON.parse(requests[0]).evidence)
+  expect(retry.formatCorrection.previousResponse).toBe('JSON truncado {')
+  expect(doc.sections).toHaveLength(17)
+ })
+ it('limita a correção de formato e continua rejeitando seções incompletas',async()=>{
+  let calls=0
+  await expect(generateFullMarketReport(reportEvidence,async()=>{calls++;return '{}'})).rejects.toThrow('correção automática')
+  expect(calls).toBe(2)
+ })
+ it('não repete uma chamada que falhou no provedor',async()=>{
+  let calls=0
+  await expect(generateFullMarketReport(reportEvidence,async()=>{calls++;throw new Error('Provedor indisponível')})).rejects.toThrow('Provedor indisponível')
+  expect(calls).toBe(1)
+ })
+ it('aceita o envelope de contrato sem gastar outra chamada e mantém a validação completa',async()=>{
+  let calls=0
+  const doc=await generateFullMarketReport(reportEvidence,async()=>{calls++;return JSON.stringify({contract:interpretation})})
+  expect(calls).toBe(1);expect(doc.sections).toHaveLength(17)
+  expect(()=>parseFullMarketInterpretation(JSON.stringify({contract:{category:'Incompleto'}}))).toThrow()
+ })
  it('valida o documento antes de salvar ou exportar',()=>{
   expect(validateFullMarketDocument(fullDocument)).toBe(fullDocument)
   expect(()=>validateFullMarketDocument({...fullDocument,sections:[]})).toThrow()
@@ -51,6 +80,26 @@ describe('relatório HTML estruturado de mercado',()=>{
   expect(html).toContain('Distribuição dos valores de frete')
   expect(html).toContain('15 (35,7%)')
   expect(html).toContain('<svg')
+ })
+ it('cria sumário com destinos únicos para as seções novas e anteriores',()=>{
+  const html=fullMarketReportHtml(fullDocument)
+  expect(html).toContain('id="report-summary"')
+  for(const section of fullDocument.sections){expect(html).toContain('href="#'+section.id+'"');expect(html).toContain('id="'+section.id+'"')}
+  expect(html).toContain('Voltar ao sumário')
+  const previous=legacyMarketReportHtml('## 📊 Métricas da Categoria (AvantPro)\nDados\n### 🚚 Análise de Frete da Categoria\nFretes\n## Conclusão Executiva\nConclusão\n## Conclusão Executiva\nComplemento','Salvo')
+  for(const id of ['metrics','shipping','conclusion','conclusion-2']){expect(previous).toContain('href="#'+id+'"');expect(previous).toContain('id="'+id+'"')}
+  expect(previous).toContain('<h2>Sumário</h2>')
+ })
+ it('completa a precificação de relatórios interrompidos apenas com referências disponíveis',()=>{
+  const report='## Métricas da Categoria (AvantPro)\n\n| Métrica | Valor |\n|---|---|\n| Menor Preço | **R$ 17,49** |\n| Maior Preço | **R$ 99,39** |\n\n## Tarefa 1 - Análise da Demanda\nRelatório interrompido'
+  const html=legacyMarketReportHtml(report,'Produto',30.69)
+  expect(html).toContain('id="pricing"');expect(html).toContain('id="suggestedPricing"')
+  expect(html).toContain('href="#pricing"');expect(html).toContain('R$ 17,49');expect(html).toContain('R$ 99,39');expect(html).toContain('R$ 30,69')
+  expect(html).toContain('Não informado na captura salva')
+  expect(html).not.toContain('R$ 58,44')
+  const complete=legacyMarketReportHtml(report+'\n## Estratégia de Precificação\nTexto preservado\n## Sugestão de Precificação para Venda\nSugestão preservada','Produto')
+  expect(complete.match(/id="pricing"/g)).toHaveLength(1)
+  expect(complete).toContain('Texto preservado');expect(complete).not.toContain('Referências de preço disponíveis')
  })
  it('usa o JSON validado da IA sem permitir que ela escolha o layout',async()=>{
   const doc=await generateFullMarketReport(reportEvidence,async(prompt,system)=>{

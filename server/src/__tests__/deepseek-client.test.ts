@@ -38,6 +38,11 @@ describe("DeepSeek network retry", () => {
     expect(onRetry).toHaveBeenCalledTimes(2)
   })
 
+  it("permite desativar repetição para evitar requisição faturada duplicada",async()=>{
+    const operation=vi.fn().mockRejectedValue(Object.assign(new Error("Conexão perdida"),{code:"ECONNRESET"}))
+    await expect(withTransientNetworkRetry(operation,{maxAttempts:1})).rejects.toThrow('Conexão perdida')
+    expect(operation).toHaveBeenCalledTimes(1)
+  })
   it("não repete erros não transitórios", async () => {
     const error = Object.assign(new Error("Unauthorized"), { code: "ERR_BAD_REQUEST" })
     const operation = vi.fn().mockRejectedValue(error)

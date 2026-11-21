@@ -10,13 +10,13 @@ export function extractAvantproCategoryFields(): { label: string; value: string 
       labelElement.querySelectorAll('svg, [class*=tooltip]').forEach(child => child.remove())
       const label = (labelElement.textContent || '').replace(/\s+/g, ' ').trim()
       const card = element.closest('.avantpro-filter-card') || element.parentElement
-      const valueElement = card?.querySelector('.avantpro-filter-card-value')
+      const valueElement = card?.querySelector('.avantpro-filter-card-value, .avantpro-produto-pro-badge-count')
       if (!valueElement || valueElement.querySelector('[role=status]')) return
       const value = (valueElement.textContent || '').replace(/\s+/g, ' ').trim()
       const key = label + '|' + value
-      if (label && value && !seen.has(key)) { seen.add(key); fields.push({ label: label.slice(0,200), value: value.slice(0,500) }) }
+      if (label && value && !seen.has(key)) { seen.add(key); fields.push({ label, value }) }
     })
     root.querySelectorAll('*').forEach(element => { if (element.shadowRoot) roots.push(element.shadowRoot) })
   }
-  return fields.slice(0,100)
+  return fields
 }

@@ -29,6 +29,7 @@ interface AppState {
   response: string;
   marketDocument: StructuredMarketDocument | null;
   marketHtml: string;
+  marketSavedProductId: string | null;
   isLoading: boolean;
   error: string | null;
   showSettings: boolean;
@@ -71,7 +72,7 @@ interface AppState {
   closeBrowser: () => Promise<void>;
   navigateTo: (url: string) => Promise<void>;
   takeScreenshot: () => Promise<void>;
-  analyzePage: (templateId?: string) => Promise<void>;
+  analyzePage: (templateId?: string, productId?: string) => Promise<void>;
   executeActions: (actions?: BrowserAction[]) => Promise<void>;
   saveApiKeys: (keys: Record<string, string>) => Promise<void>;
   loadConfiguredKeys: () => Promise<void>;
@@ -90,6 +91,7 @@ export const useStore = create<AppState>((set, get) => ({
   response: "",
   marketDocument: null,
   marketHtml: "",
+  marketSavedProductId: null,
   isLoading: false,
   error: null,
   showSettings: false,
@@ -116,7 +118,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   setPrompt: (prompt) => set({ prompt }),
   setQnaContent: (qnaContent) => set({ qnaContent }),
-  setSelectedModel: (selectedModel) => set({ selectedModel }),
+  setSelectedModel: (selectedModel) => set({ selectedModel, initialConfigLoaded: true }),
   setShowSettings: (showSettings) => set({ showSettings }),
   setAutoRefreshScreenshot: (autoRefreshScreenshot) => set({ autoRefreshScreenshot }),
   setExtensionPaths: (extensionPaths) => set({ extensionPaths }),
@@ -131,13 +133,12 @@ export const useStore = create<AppState>((set, get) => ({
         browserActive: status.active,
         browserUrl: status.url,
         browserTitle: status.title,
-        error: null,
       });
       // Carrega modelo padrão do server (apenas na primeira conexão)
       if (!get().initialConfigLoaded) {
         try {
           const config = await api.getConfig();
-          if (config.defaultModel) {
+          if (config.defaultModel && !get().initialConfigLoaded) {
             set({ selectedModel: config.defaultModel as ModelId, initialConfigLoaded: true });
           }
         } catch { /* ignora se endpoint não disponível */ }
@@ -193,17 +194,17 @@ export const useStore = create<AppState>((set, get) => ({
     } catch { /* ignore */ }
   },
 
-  analyzePage: async (templateId?: string) => {
+  analyzePage: async (templateId?: string, productId?: string) => {
     const { prompt, qnaContent, selectedModel } = get();
     if (!prompt.trim()) {
       set({ error: "Digite um prompt" });
       return;
     }
 
-    set({ isLoading: true, error: null, response: "", marketDocument: null, marketHtml: "", pendingActions: [] });
+    set({ isLoading: true, error: null, response: "", marketDocument: null, marketHtml: "", marketSavedProductId: null, pendingActions: [] });
 
     try {
-      const res = await api.analyze({ prompt, model: selectedModel, templateId, qnaContent: qnaContent || undefined });
+      const res = await api.analyze({ prompt, model: selectedModel, templateId, productId, qnaContent: qnaContent || undefined });
 
       if (res.success) {
         const entry: HistoryEntry = {
@@ -219,6 +220,7 @@ export const useStore = create<AppState>((set, get) => ({
         set((s) => ({
           response: res.response,
           marketDocument: res.marketDocument || null, marketHtml: res.marketHtml || "",
+          marketSavedProductId: res.savedProductId || null, error: res.marketSaveError || null,
           pendingActions: res.actions || [],
           history: [entry, ...s.history].slice(0, 50),
         }));
@@ -296,7 +298,7 @@ export const useStore = create<AppState>((set, get) => ({
   clearActionLogs: () => set({ actionLogs: [] }),
 
   restoreEntry: (entry) => {
-    set({ prompt: entry.prompt, response: entry.response, selectedModel: entry.model, marketDocument: entry.marketDocument || null, marketHtml: entry.marketHtml || "" });
+    set({ prompt: entry.prompt, response: entry.response, selectedModel: entry.model, marketDocument: entry.marketDocument || null, marketHtml: entry.marketHtml || "", marketSavedProductId: null });
   },
 
   setAvantproEmail: (avantproEmail) => set({ avantproEmail }),

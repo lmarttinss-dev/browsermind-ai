@@ -1,3 +1,5 @@
+import {compactMarketEvidence} from "./market-model-evidence.js";
+import { persistGeneratedMarketReport } from "./market-report-persistence.js";
 import { buildFullMarketEvidence, generateFullMarketReport, fullMarketDocumentText } from "./full-market-report.js";
 import { fullMarketReportHtml } from "./full-market-report-html.js";
 import { formatAvantproShipping } from "./avantpro-shipping.js";
@@ -310,13 +312,14 @@ Diretrizes:
 
 app.post("/api/analyze", async (req, res) => {
   try {
-    const { prompt, model, pageContent, screenshot, templateId, qnaContent } = req.body as {
+    const { prompt, model, pageContent, screenshot, templateId, qnaContent, productId } = req.body as {
       prompt: string;
       model: string;
       pageContent?: string;
       screenshot?: string;
       templateId?: string;
       qnaContent?: string;
+      productId?: string;
     };
 
     if (!prompt) {
@@ -328,10 +331,30 @@ app.post("/api/analyze", async (req, res) => {
     // de tokens de saída maior para evitar que o relatório seja cortado no meio
     const marketAnalysis = templateId === "analise-oferta-demanda-concorrencia"
 
+    if (marketAnalysis) {
+      if (productId !== undefined) {
+        if (typeof productId !== "string" || !/^[a-f0-9]{24}$/i.test(productId)) { res.status(400).json({success:false,error:"Selecione um produto válido para salvar a análise."}); return; }
+        if (!await Product.exists({_id:productId})) { res.status(404).json({success:false,error:"O produto selecionado não foi encontrado."}); return; }
+      }
+      const capture = await playwrightManager.captureAvantproMarket();
+      const evidence = buildFullMarketEvidence({ ...capture, listings: capture.competitorListings });
+      const marketUsage = { calls:0, formatCorrections:[] as string[], inputCharactersBefore:JSON.stringify(evidence).length, inputCharactersAfter:JSON.stringify(compactMarketEvidence(evidence)).length, inputTokens:0, outputTokens:0, reasoningTokens:0, cachedInputTokens:0 };
+      const marketDocument = await generateFullMarketReport(evidence, (message, system) => {
+        marketUsage.calls++;
+        return generateText(model, message, { keys:apiKeys,system,marketAnalysis:true,temperature:0.2,jsonOutput:true,onUsage:usage=>{
+          marketUsage.inputTokens+=usage.inputTokens; marketUsage.outputTokens+=usage.outputTokens;
+          marketUsage.reasoningTokens+=usage.reasoningTokens; marketUsage.cachedInputTokens+=usage.cachedInputTokens;
+        }});
+      }, [prompt.slice(0,4000),qnaContent||""].join("\n\n"), reason=>marketUsage.formatCorrections.push(reason));
+      const marketHtml = fullMarketReportHtml(marketDocument);
+      const persistence = await persistGeneratedMarketReport(productId, marketDocument);
+      res.json({ success: true, response: fullMarketDocumentText(marketDocument), marketDocument, marketHtml, marketUsage, actions: null, ...persistence });
+      return;
+    }
+
     // Auto-extract from Playwright if no content provided
     let content = pageContent || "";
     let competitorListings: CompetitorListing[] = [];
-    let marketCapture: { title: string; url: string; avantproMetrics: string; categoryFields?: { label: string; value: string }[] } | null = null;
     if (!content) {
       try {
         const status = await playwrightManager.getStatus();
@@ -344,7 +367,7 @@ app.post("/api/analyze", async (req, res) => {
           }
 
           const extracted = await playwrightManager.extractPageContent();
-          if (marketAnalysis) { competitorListings = extracted.competitorListings; marketCapture = extracted; }
+
           const competitorSection = marketAnalysis ? formatCompetitorListings(competitorListings) : "";
           const shippingSection = formatAvantproShipping(extracted.shippingSummary);
           // Métricas do AvantPro extraídas de forma estruturada do DOM da extensão.
@@ -371,14 +394,6 @@ app.post("/api/analyze", async (req, res) => {
           ].filter(Boolean).join("\n");
         }
       } catch (error) { if (marketAnalysis) throw error; }
-    }
-
-    if (marketAnalysis) {
-      if (!marketCapture) throw new Error("Inicie o Browser e capture uma listagem com dados AvantPro antes de gerar a análise.");
-      const evidence = buildFullMarketEvidence({ ...marketCapture, listings: competitorListings });
-      const marketDocument = await generateFullMarketReport(evidence, (message, system) => generateText(model, message, { keys: apiKeys, system, marketAnalysis: true, temperature: 0.2 }), [prompt.slice(0, 4000), qnaContent || ""].join("\n\n"));
-      res.json({ success: true, response: fullMarketDocumentText(marketDocument), marketDocument, marketHtml: fullMarketReportHtml(marketDocument), actions: null });
-      return;
     }
 
     // Injeta Q&A do usuário DENTRO do content como se fosse parte da página

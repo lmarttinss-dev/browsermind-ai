@@ -61,12 +61,13 @@ export async function withTransientNetworkRetry<T>(
   throw new Error("Número inválido de tentativas para a API DeepSeek")
 }
 
-export function postDeepSeek(payload: Record<string, unknown>, apiKey: string) {
+export function postDeepSeek(payload: Record<string, unknown>, apiKey: string, options: { maxAttempts?: number } = {}) {
   return withTransientNetworkRetry(
     () => axios.post(DEEPSEEK_API_URL, payload, {
       headers: { Authorization: `Bearer ${apiKey}` },
     }),
     {
+      maxAttempts: options.maxAttempts,
       onRetry: (error, attempt, delayMs) => {
         const code = errorCode(error) || "erro de rede"
         console.warn(

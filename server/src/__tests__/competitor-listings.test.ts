@@ -39,7 +39,7 @@ describe("Competitor listing links from the DOM", () => {
     const rows = extracted.competitorListings
     expect(rows).toHaveLength(3)
     expect(rows[0]).toMatchObject({
-      itemId: "MLB111", catalogId: "MLBU999", seller: "LOJA_A",
+      itemId: "MLB111", catalogId: null, userProductId: "MLBU999", seller: "LOJA_A",
       title: "Adaptador orgânico", positions: [1, 2], advertising: false,
     })
     const url = new URL(rows[0].url!)
@@ -47,7 +47,7 @@ describe("Competitor listing links from the DOM", () => {
     expect(url.searchParams.get("pdp_filters")).toBe("item_id:MLB111")
     expect(new URLSearchParams(url.hash.slice(1)).get("wid")).toBe("MLB111")
     expect(rows[0].metrics).toContain("500")
-    expect(rows[1]).toMatchObject({ itemId: "MLB222", catalogId: "MLBU999", seller: "LOJA_B" })
+    expect(rows[1]).toMatchObject({ itemId: "MLB222", catalogId: null, userProductId: "MLBU999", seller: "LOJA_B" })
     expect(rows[1].url).toContain("MLB222")
     expect(rows[2]).toMatchObject({ title: "Sem link", url: null, itemId: null, seller: "LOJA_C" })
   })

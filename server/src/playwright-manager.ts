@@ -1,3 +1,4 @@
+import { captureCompleteAvantproPage } from "./avantpro-capture.js";
 import { extractAvantproCategoryFields } from "./avantpro-category.js";
 import { summarizeAvantproShipping } from "./avantpro-shipping.js";
 import { extractCompetitorListings, type CompetitorListing } from "./competitor-listings.js";
@@ -435,6 +436,11 @@ export class PlaywrightManager {
 
     console.log("⚠️ AvantPro: timeout aguardando dados carregarem")
     return false
+  }
+
+  async captureAvantproMarket(options?: { timeout?: number }) {
+    const page = await this.getPage();
+    return captureCompleteAvantproPage(page, () => this.extractPageContent(), options);
   }
 
   async extractPageContent(): Promise<{
