@@ -1,9 +1,12 @@
+import { extractIndividualListing } from './individual-listing.js';
 import { captureCompleteAvantproPage } from "./avantpro-capture.js";
 import { extractAvantproCategoryFields } from "./avantpro-category.js";
 import { summarizeAvantproShipping } from "./avantpro-shipping.js";
 import { extractCompetitorListings, type CompetitorListing } from "./competitor-listings.js";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
 import fs from "fs";
+import os from "node:os";
+import { createHash } from "node:crypto";
 import path from "path";
 
 export interface BrowserAction {
@@ -85,10 +88,21 @@ export class PlaywrightManager {
       .filter(p => p && p.trim() !== "" && p !== ".")
       .map(p => this.resolveExtensionPath(p))
       .filter((p): p is string => p !== null)
+      .map(extension => {
+        if (!extension.startsWith('/mnt/')) return extension;
+        const key=createHash('sha256').update(extension).digest('hex').slice(0,16);
+        const target=path.resolve('.runtime/extensions',key);
+        if(!fs.existsSync(path.join(target,'manifest.json'))){
+          fs.mkdirSync(path.dirname(target),{recursive:true});
+          fs.cpSync(extension,target,{recursive:true});
+        }
+        return target;
+      })
 
     const baseArgs = [
       "--disable-blink-features=AutomationControlled",
       "--no-sandbox",
+      "--disable-gpu",
     ];
 
     if (validExtensionPaths.length > 0) {
@@ -100,7 +114,8 @@ export class PlaywrightManager {
         ...validExtensionPaths.map((p) => `--load-extension=${p}`),
       ];
 
-      const profileDir = userDataDir || `${process.env.HOME || '/tmp'}/.browsermind-profile`;
+      const configuredProfile = userDataDir || '~/.browsermind-profile';
+      const profileDir = path.resolve(configuredProfile.replace(/^~(?=\/|$)/, os.homedir()));
       if (!fs.existsSync(profileDir)) {
         fs.mkdirSync(profileDir, { recursive: true });
       }
@@ -436,6 +451,35 @@ export class PlaywrightManager {
 
     console.log("⚠️ AvantPro: timeout aguardando dados carregarem")
     return false
+  }
+
+  async captureAvantproListing(options?: {timeout?:number}) {
+    const page=await this.getPage();
+    const initialUrl=page.url();
+    const publicListing=(value:string)=>{
+      const url=new URL(value);
+      return url.protocol==='https:' && /^(?:www\.|produto\.)?mercadolivre\.com\.br$/i.test(url.hostname)
+        && (/\/(?:p|up)\/MLBU?\d+/i.test(url.pathname)||/^\/[^/]*MLB-?\d+/i.test(url.pathname));
+    };
+    if(!publicListing(initialUrl))throw new Error('Abra uma página pública de anúncio. Páginas da conta não são aceitas.');
+    const ready=await this.waitForAvantproData({timeout:options?.timeout??20000});
+    if(ready==='not_authenticated')throw new Error('Autentique o AvantPro antes de analisar.');
+    const deadline=Date.now()+(options?.timeout??20000);
+    let signature='',stableAt=Date.now();
+    while(Date.now()<deadline){
+      if(page.url()!==initialUrl)throw new Error('A página mudou durante a captura. Tente novamente.');
+      const listing=await page.evaluate(extractIndividualListing);
+      const pending=await page.locator('[class*=avantpro] [role=status], [class*=avantpro] [aria-busy=true], .avantpro-product-info-field-spinner').count();
+      const next=JSON.stringify(listing);
+      if(next!==signature){signature=next;stableAt=Date.now();}
+      if(listing.metrics?.trim()&&!pending&&Date.now()-stableAt>=900){
+        const extracted=await this.extractPageContent();
+        if(page.url()!==initialUrl)throw new Error('A página mudou durante a captura.');
+        return {...extracted,competitorListings:[listing],avantproCapture:{status:'complete' as const,capturedAt:new Date().toISOString(),rawCards:1,cardsWithData:1,explicitUnavailableCards:[],fields:listing.avantproFields?.length||0,categoryFields:extracted.categoryFields.length}};
+      }
+      await page.waitForTimeout(300);
+    }
+    throw new Error('Os dados AvantPro do anúncio não terminaram de carregar. O relatório anterior foi preservado.');
   }
 
   async captureAvantproMarket(options?: { timeout?: number }) {

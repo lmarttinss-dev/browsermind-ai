@@ -68,7 +68,7 @@ export const CategoriesPage = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+      <div className="module-heading flex items-center justify-between px-4 py-3 border-b border-gray-700">
         <div>
           <h1 className="text-lg font-semibold text-gray-100">Categorias</h1>
           <p className="text-xs text-gray-500">Agrupe e organize produtos por nicho de mercado</p>

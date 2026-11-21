@@ -1,3 +1,6 @@
+import {ProductBriefView} from '@/components/ProductBriefView'
+import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
+import { useStore } from "@/store/useStore"
 import { HtmlMarketReport } from "@/components/HtmlMarketReport"
 import { useEffect, useState, useMemo } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
@@ -41,6 +44,9 @@ export const ProductDetailPage = () => {
   const [isCopying, setIsCopying] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [copySearch, setCopySearch] = useState("")
+  const [listingData, setListingData] = useState("")
+  const [generatingListing, setGeneratingListing] = useState(false)
+  const [listingError, setListingError] = useState("")
   const [urlCopied, setUrlCopied] = useState(false)
 
   useEffect(() => {
@@ -207,9 +213,9 @@ export const ProductDetailPage = () => {
   const suppliersCount = product.suppliers?.length || 0
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="product-detail-page flex-1 flex flex-col overflow-y-auto">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-700">
+      <div className="detail-toolbar flex flex-wrap items-center gap-3 px-5 py-3 border-b border-gray-700">
         <button
           onClick={() => navigate("/pipeline")}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
@@ -217,6 +223,7 @@ export const ProductDetailPage = () => {
           <ArrowLeft className="w-3.5 h-3.5" />
           Esteira
         </button>
+        <span className="product-detail-breadcrumb">WORKSPACE <span>/</span> FICHA DO PRODUTO</span>
         <div className="flex-1" />
         {product.url && (
           <button
@@ -243,13 +250,13 @@ export const ProductDetailPage = () => {
         )}
         <button
           onClick={handleOpenCalculator}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-amber-700/50 hover:bg-amber-700 text-amber-300 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
           <Calculator className="w-3.5 h-3.5" />
           Calcular Viabilidade
         </button>        <button
           onClick={handleOpenCopyModal}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-purple-700/50 hover:bg-purple-700 text-purple-300 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
         >
           <Copy className="w-3.5 h-3.5" />
           Copiar análise
@@ -263,33 +270,24 @@ export const ProductDetailPage = () => {
       </div>
 
       {/* Header do produto */}
-      <div className="flex gap-5 p-5 border-b border-gray-700">
+      <div className="product-detail-hero flex gap-5 p-5 border-b border-gray-700">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
             alt={product.title}
-            className="w-32 h-32 object-cover rounded-xl bg-gray-700 flex-shrink-0"
+            className="product-detail-image"
           />
         ) : (
-          <div className="w-32 h-32 rounded-xl bg-gray-700 flex-shrink-0 flex items-center justify-center">
+          <div className="product-detail-image product-detail-placeholder flex items-center justify-center">
             <Layers className="w-10 h-10 text-gray-500" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${stageInfo.color}`}>
               {stageInfo.label}
             </span>
-            {product.recentDemand && (
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
-                product.recentDemand.includes("Forte") ? "text-emerald-400 bg-emerald-900/30 border-emerald-800"
-                : product.recentDemand.includes("Ativa") ? "text-blue-400 bg-blue-900/30 border-blue-800"
-                : product.recentDemand.includes("Fraca") ? "text-yellow-400 bg-yellow-900/30 border-yellow-800"
-                : "text-gray-400 bg-gray-900/30 border-gray-700"
-              }`}>
-                {product.recentDemand}
-              </span>
-            )}
+
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
           <div className="flex flex-wrap items-start gap-3 text-sm text-gray-400">
@@ -303,9 +301,9 @@ export const ProductDetailPage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-700">
+      <div className="detail-tabs flex overflow-x-auto shrink-0 border-b border-gray-700">
         <button
-          onClick={() => setActiveTab("produto")}
+          aria-pressed={activeTab === "produto"} onClick={() => setActiveTab("produto")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "produto"
               ? "border-blue-500 text-blue-400"
@@ -316,7 +314,7 @@ export const ProductDetailPage = () => {
           Produto
         </button>
         <button
-          onClick={() => setActiveTab("fornecedores")}
+          aria-pressed={activeTab === "fornecedores"} onClick={() => setActiveTab("fornecedores")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "fornecedores"
               ? "border-blue-500 text-blue-400"
@@ -332,7 +330,7 @@ export const ProductDetailPage = () => {
           )}
         </button>
         <button
-          onClick={() => setActiveTab("mercado")}
+          aria-pressed={activeTab === "mercado"} onClick={() => setActiveTab("mercado")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "mercado"
               ? "border-blue-500 text-blue-400"
@@ -340,7 +338,7 @@ export const ProductDetailPage = () => {
           }`}
         >
           <TrendingUp className="w-4 h-4" />
-          Mercado
+          Análise de mercado
           {product.marketReport && (
             <span className="text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded-full">
               ✓
@@ -351,71 +349,30 @@ export const ProductDetailPage = () => {
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="product-detail-content">
         {activeTab === "produto" && (
           <>
-            {/* Métricas */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5 border-b border-gray-700">
-              <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Preço</span>
-                <span className="text-xl font-bold text-emerald-400">
-                  {price > 0
-                    ? `R$ ${price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-                    : "—"}
-                </span>
-              </div>
-              <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1">
-                  <Star className="w-3 h-3" /> Score
-                </span>
-                <span className={`text-xl font-bold ${score >= 7 ? "text-emerald-400" : score >= 4 ? "text-yellow-400" : "text-red-400"}`}>
-                  {score > 0 ? `${score}/10` : "—"}
-                </span>
-              </div>
-              <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" /> Vendas/mês
-                </span>
-                <span className="text-xl font-bold text-purple-400">
-                  {monthlySales > 0 ? monthlySales.toLocaleString("pt-BR") : "—"}
-                </span>
-              </div>
-              <div className="flex flex-col items-center p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1">
-                  <BarChart3 className="w-3 h-3" /> Competição
-                </span>
-                <span className={`text-sm font-medium px-2.5 py-1 rounded border ${competitionColor}`}>
-                  {product.competitionLevel}
-                </span>
-              </div>
-            </div>
+            {product.productBrief ? <ProductBriefView brief={product.productBrief}/> : <section className="brief-summary"><span className="eyebrow">FICHA DO PRODUTO</span><h2>Vamos conhecer este produto</h2><p>Gere uma síntese com características, perguntas e opiniões dos compradores. A análise comercial completa fica em Análise de mercado.</p></section>}
+            {price>0&&<p className="brief-reference-price">Preço do anúncio · {price.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p>}
+            <details className="listing-evidence-form" open={!product.productBrief}>
+              <summary>{product.productBrief ? "Atualizar ficha do produto" : "Preparar ficha do produto"}</summary>
+              <div><p>Abra o anúncio público deste produto no navegador. Acrescente perguntas e opiniões para enriquecer a síntese.</p></div>
+              <label htmlFor="listing-evidence">Perguntas, respostas e opiniões (opcional)</label>
+              <textarea id="listing-evidence" value={listingData} onChange={e=>setListingData(e.target.value)} placeholder="Cole perguntas, respostas e opiniões reais dos compradores..." disabled={generatingListing}/>
+              {listingError && <p role="alert">{listingError}</p>}
+              <button className="bg-blue-600 rounded-lg px-4 py-2 text-sm" disabled={generatingListing} onClick={async()=>{
+                setGeneratingListing(true);setListingError("");
+                try{
+                  const template=PROMPT_TEMPLATES.find(t=>t.id==="analise-anuncio-independente")!;
+                  await api.analyze({templateId:template.id,prompt:template.content,model:useStore.getState().selectedModel,productId:product._id,qnaContent:listingData || undefined});
+                  const result=await api.getPipelineProduct(product._id);setProduct(result.product);setListingData("");
+                }catch(err){setListingError(err instanceof Error?err.message:"Não foi possível gerar a análise.")}
+                finally{setGeneratingListing(false);}
+              }}>{generatingListing?"Preparando ficha…":product.productBrief?"Atualizar ficha":"Gerar ficha do produto"}</button>
+            </details>
+            {/* Histórico de análises anteriores */}
+            {product.analysisReport && <details className="brief-legacy"><summary>Consultar análise anterior</summary><p>Conteúdo preservado do formato anterior. Novas fichas apresentam apenas informações do produto.</p><HtmlMarketReport productId={product._id} reportKind="listing" src={'/api/pipeline/'+product._id+'/analysis-report/html?v='+encodeURIComponent(product.updatedAt || product.analyzedAt)}/></details>}
 
-            {/* Relatório */}
-            <div className="p-5">
-              {product.analysisReport ? (
-                <>
-                  <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Relatório de Análise
-                  </h3>
-                  <div className="prose prose-invert max-w-none">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeSectionIds]}
-                      components={markdownComponents}
-                    >
-                      {injectReportSummary(product.analysisReport.replace(/## 📋 Resumo para Esteira[\s\S]*?(?=\n---|\n## )/, "").replace(/^\s*---\s*\n/, ""))}
-                    </ReactMarkdown>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-16">
-                  <BarChart3 className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">Nenhum relatório de análise disponível.</p>
-                  <p className="text-gray-600 text-xs mt-1">Execute uma análise de viabilidade para gerar o relatório.</p>
-                </div>
-              )}
-            </div>
           </>
         )}
 
@@ -435,7 +392,7 @@ export const ProductDetailPage = () => {
                 <HtmlMarketReport productId={product._id} src={'/api/pipeline/' + product._id + '/market-report/html?v=' + encodeURIComponent(product.updatedAt)} />
               </>
             ) : (
-              <div className="text-center py-16">
+              <div className="product-detail-empty text-center py-16">
                 <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">Nenhum relatório de mercado disponível.</p>
                 <p className="text-gray-600 text-xs mt-1">

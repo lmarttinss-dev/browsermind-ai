@@ -1,6 +1,7 @@
+import { AppShell, HomePage } from "@/components/AppShell";
 import { MarketAnalysisPage } from "@/pages/MarketAnalysisPage";
 import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { NavigationBar } from "@/components/NavigationBar";
 import { BrowserViewport } from "@/components/BrowserViewport";
@@ -17,11 +18,13 @@ import ImportCalculatorPage from "@/pages/ImportCalculatorPage";
 
 function MainView() {
   return (
-    <>
+    <div className="browser-studio">
+      <div className="studio-heading"><div><h1>Assistente de navegação</h1><p>Explore páginas e transforme contexto em respostas.</p></div><span>WORKSPACE / BROWSER</span></div>
+      <NavigationBar />
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="browser-workspace flex-1 flex overflow-hidden">
         {/* Left: Browser viewport + action console */}
-        <div className="flex-1 flex flex-col">
+        <div className="browser-preview min-w-0 flex-1 flex flex-col">
           <BrowserViewport />
           <ActionConsole />
         </div>
@@ -30,16 +33,13 @@ function MainView() {
         <ChatPanel />
       </div>
 
-      {/* Settings modal */}
-      <SettingsModal />
-    </>
+
+    </div>
   );
 }
 
 export default function App() {
-  const { checkStatus, serverOnline } = useStore();
-  const location = useLocation();
-  const hideServerStatus = location.pathname === "/calculator";
+  const { checkStatus } = useStore();
 
   // Poll server status
   useEffect(() => {
@@ -49,12 +49,10 @@ export default function App() {
   }, [checkStatus]);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
-      {/* Top bar */}
-      <NavigationBar />
-
+    <AppShell>
       <Routes>
-        <Route path="/" element={<MainView />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/browser" element={<MainView />} />
         <Route path="/pipeline" element={<PipelinePage />} />
         <Route path="/pipeline/:id" element={<ProductDetailPage />} />
         <Route path="/pipeline/:id/supplier/:supplierIndex" element={<SupplierDetailPage />} />
@@ -65,17 +63,7 @@ export default function App() {
         <Route path="/calculator" element={<ImportCalculatorPage />} />
       </Routes>
 
-      {/* Server status indicator */}
-      {!hideServerStatus && <div className="absolute bottom-2 left-2">
-        <div className={`flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-full ${
-          serverOnline
-            ? "bg-emerald-900/50 text-emerald-400"
-            : "bg-red-900/50 text-red-400"
-        }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${serverOnline ? "bg-emerald-400" : "bg-red-400"} animate-pulse`} />
-          {serverOnline ? "Server Online" : "Server Offline"}
-        </div>
-      </div>}
-    </div>
+      <SettingsModal />
+    </AppShell>
   );
 }

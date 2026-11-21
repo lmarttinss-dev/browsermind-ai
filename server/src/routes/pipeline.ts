@@ -1,5 +1,5 @@
 import { validateFullMarketDocument, fullMarketDocumentText } from "../full-market-report.js"
-import { savedMarketReportHtml, fullMarketReportHtml, createFullMarketReportPdf } from "../full-market-report-html.js"
+import { savedListingReportHtml, savedMarketReportHtml, fullMarketReportHtml, createFullMarketReportPdf } from "../full-market-report-html.js"
 import { Router } from "express"
 import { Category } from "../models/category.js"
 import { Product, PIPELINE_STAGES } from "../models/product.js"
@@ -36,6 +36,22 @@ router.get("/:id/market-report/pdf", async (req, res) => {
     res.type("application/pdf").setHeader("Content-Disposition", 'attachment; filename="analise-de-mercado.pdf"')
     res.send(pdf)
   } catch { res.status(500).json({ error: "Não foi possível exportar o relatório em PDF." }) }
+})
+
+
+router.get("/:id/analysis-report/:format", async (req,res) => {
+ if(!["html","pdf"].includes(req.params.format))return res.sendStatus(404)
+ try {
+  const product=await Product.findById(req.params.id).select("+analysisDocument")
+  if(!product)return res.status(404).send("Produto não encontrado.")
+  if(!product.analysisReport)return res.status(404).send("Relatório não encontrado.")
+  const html=product.analysisDocument ? fullMarketReportHtml(product.analysisDocument) : savedListingReportHtml(product)
+  res.setHeader("Cache-Control","no-store")
+  if(req.params.format==="html")return res.type("html").send(html)
+  const pdf=await createFullMarketReportPdf(html)
+  res.type("application/pdf").setHeader("Content-Disposition",'attachment; filename="analise-do-anuncio.pdf"')
+  res.send(pdf)
+ }catch{res.status(500).send("Não foi possível carregar o relatório do anúncio.")}
 })
 
 // Listar todos os produtos agrupados por stage (sem relatório para performance)

@@ -114,7 +114,7 @@ export const SupplierAnalysisPage = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-gray-700/50 bg-gray-800/30 px-5 py-3">
+      <div className="module-heading border-b border-gray-700/50 bg-gray-800/30 px-5 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/pipeline")}
@@ -130,7 +130,7 @@ export const SupplierAnalysisPage = () => {
       </div>
 
       {/* Input Section */}
-      <div className="border-b border-gray-700/50 bg-gray-800/20 px-5 py-4">
+      <div className="supplier-form border-b border-gray-700/50 bg-gray-800/20 px-5 py-4">
         <div className="flex gap-3">
           <div className="flex-1 flex gap-2">
             <input

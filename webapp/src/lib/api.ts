@@ -1,3 +1,4 @@
+import type {ProductBrief} from '../../../shared/product-brief'
 export type StructuredMarketDocument = { version: 1; [key: string]: unknown };
 import type { AccountProfile, MarketSnapshot, MarketAnalysis } from "./market-analysis";
 import type { CalculatorState } from "./calculator";
@@ -246,6 +247,7 @@ export type KitItem = {
 }
 
 export type PipelineProduct = {
+  productBrief?: ProductBrief
   _id: string;
   title: string;
   url: string;

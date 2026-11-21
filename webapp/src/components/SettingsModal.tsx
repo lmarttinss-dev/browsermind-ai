@@ -63,31 +63,31 @@ export function SettingsModal() {
   const uniqueProviders = Array.from(new Set(Object.values(MODEL_KEY_MAP)));
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowSettings(false)}>
-      <div className="bg-white rounded-xl shadow-2xl w-[480px] max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 settings-overlay bg-black/60 z-[70] p-4 flex items-center justify-center" onClick={() => setShowSettings(false)}>
+      <div role="dialog" aria-modal="true" aria-labelledby="settings-title" className="settings-dialog bg-gray-800 rounded-xl shadow-2xl w-full max-w-[520px] max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <div className="flex items-center gap-2">
             <Key className="w-5 h-5 text-primary-600" />
-            <h2 className="font-semibold text-gray-800">Configurações de API</h2>
+            <h2 id="settings-title" className="font-semibold text-gray-100">Configurações de API</h2>
           </div>
-          <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-gray-100 rounded-md transition-colors">
+          <button aria-label="Fechar configurações" onClick={() => setShowSettings(false)} className="p-1 hover:bg-gray-900 rounded-md transition-colors">
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             As chaves são armazenadas apenas na memória do servidor. Configure pelo menos uma chave para usar a análise de IA.
           </p>
 
           {/* Current status */}
           {configuredKeys.length > 0 && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-emerald-700 mb-1">Chaves configuradas:</p>
+            <div className="bg-emerald-950/50 border border-emerald-800 rounded-lg p-3">
+              <p className="text-xs font-medium text-emerald-300 mb-1">Chaves configuradas:</p>
               <div className="flex flex-wrap gap-1.5">
                 {configuredKeys.map((k) => (
-                  <span key={k} className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full">
+                  <span key={k} className="inline-flex items-center gap-1 bg-emerald-900/40 text-emerald-200 text-xs px-2 py-0.5 rounded-full">
                     <CheckCircle className="w-3 h-3" /> {KEY_LABELS[k] || k}
                   </span>
                 ))}
@@ -101,7 +101,7 @@ export function SettingsModal() {
               const isConfigured = configuredKeys.includes(provider);
               return (
                 <div key={provider}>
-                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-200 mb-1">
                     {KEY_LABELS[provider]}
                     {isConfigured && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
                   </label>
@@ -110,7 +110,7 @@ export function SettingsModal() {
                     value={keys[provider]}
                     onChange={(e) => setKeys({ ...keys, [provider]: e.target.value })}
                     placeholder={isConfigured ? "••••••• (já configurada)" : "Cole sua API key aqui..."}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   <p className="text-[10px] text-gray-400 mt-0.5">
                     Modelos: {MODELS.filter(m => MODEL_KEY_MAP[m.id] === provider).map(m => m.name).join(", ")}
@@ -121,26 +121,26 @@ export function SettingsModal() {
           </div>
 
           {/* Chrome Extensions */}
-          <div className="border-t border-gray-100 pt-4">
+          <div className="border-t border-gray-700 pt-4">
             <div className="flex items-center gap-2 mb-2">
               <Puzzle className="w-4 h-4 text-primary-600" />
-              <h3 className="text-sm font-semibold text-gray-700">Extensões do Chrome</h3>
+              <h3 className="text-sm font-semibold text-gray-200">Extensões do Chrome</h3>
             </div>
             <p className="text-xs text-gray-400 mb-3">
               Adicione caminhos de extensões para carregar no browser Playwright. Requer modo headed.
               <br />
-              <span className="text-gray-500">Ex: /mnt/c/Users/.../Extensions/&lt;id&gt;/&lt;version&gt;</span>
+              <span className="text-gray-400">Ex: /mnt/c/Users/.../Extensions/&lt;id&gt;/&lt;version&gt;</span>
             </p>
 
             {extensionPaths.length > 0 && (
               <div className="space-y-1.5 mb-2">
                 {extensionPaths.map((p, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+                  <div key={i} className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5">
                     <Puzzle className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                    <span className="flex-1 text-xs text-gray-600 font-mono truncate">{p}</span>
+                    <span className="flex-1 text-xs text-gray-300 font-mono truncate">{p}</span>
                     <button
                       onClick={() => setExtensionPaths(extensionPaths.filter((_, idx) => idx !== i))}
-                      className="p-0.5 text-red-400 hover:text-red-600"
+                      className="p-0.5 text-red-400 hover:text-red-400"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -161,7 +161,7 @@ export function SettingsModal() {
                   }
                 }}
                 placeholder="Caminho da extensão descompactada..."
-                className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
               />
               <button
                 onClick={() => {
@@ -171,20 +171,20 @@ export function SettingsModal() {
                   }
                 }}
                 disabled={!newExtPath.trim()}
-                className="flex items-center gap-1 bg-primary-100 hover:bg-primary-200 disabled:bg-gray-100 disabled:text-gray-400 text-primary-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-1 bg-primary-100 hover:bg-primary-200 disabled:bg-gray-900 disabled:text-gray-400 text-primary-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
             {extensionPaths.length > 0 && (
-              <p className="text-[10px] text-amber-600 mt-1.5">
+              <p className="text-[10px] text-amber-400 mt-1.5">
                 ⚠ Extensões forçam modo headed. Feche e reinicie o browser para aplicar.
               </p>
             )}
 
             {/* User Data Dir */}
             <div className="mt-3">
-              <label className="text-xs font-medium text-gray-600 mb-1 block">
+              <label className="text-xs font-medium text-gray-300 mb-1 block">
                 Perfil do Chrome (opcional)
               </label>
               <input
@@ -192,7 +192,7 @@ export function SettingsModal() {
                 value={userDataDir}
                 onChange={(e) => setUserDataDir(e.target.value)}
                 placeholder="/tmp/browsermind-profile"
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
               />
               <p className="text-[10px] text-gray-400 mt-0.5">
                 Para manter login das extensões, aponte para um perfil persistente. Deixe vazio para usar o padrão.
@@ -201,12 +201,12 @@ export function SettingsModal() {
           </div>
 
           {/* AvantPro Authentication */}
-          <div className="border-t border-gray-100 pt-4">
+          <div className="border-t border-gray-700 pt-4">
             <div className="flex items-center gap-2 mb-2">
-              <ShieldCheck className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-sm font-semibold text-gray-700">AvantPro ML</h3>
+              <ShieldCheck className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-semibold text-gray-200">AvantPro ML</h3>
               {avantproAuthenticated && (
-                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-emerald-900/40 text-emerald-300 px-1.5 py-0.5 rounded-full font-medium">
                   {avantproPlan || "Autenticado"}
                 </span>
               )}
@@ -216,11 +216,11 @@ export function SettingsModal() {
             </p>
 
             {avantproAuthenticated ? (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2">
+              <div className="bg-emerald-950/50 border border-emerald-800 rounded-lg p-3 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-emerald-800">{avantproEmail}</p>
-                  <p className="text-[10px] text-emerald-600">Plano: {avantproPlan}</p>
+                  <p className="text-sm font-medium text-emerald-200">{avantproEmail}</p>
+                  <p className="text-[10px] text-emerald-400">Plano: {avantproPlan}</p>
                 </div>
               </div>
             ) : (
@@ -236,11 +236,11 @@ export function SettingsModal() {
               </div>
             )}
             <button onClick={checkAvantproStatus} disabled={!browserActive || avantproLoading}
-              className="mt-2 text-sm text-indigo-600 disabled:text-gray-400">
+              className="mt-2 text-sm text-indigo-400 disabled:text-gray-400">
               Verificar login
             </button>
             {!browserActive && !avantproAuthenticated && (
-              <p className="text-[10px] text-amber-600 mt-1.5">
+              <p className="text-[10px] text-amber-400 mt-1.5">
                 ⚠ Inicie o browser com a extensão AvantPro carregada primeiro.
               </p>
             )}
@@ -257,7 +257,7 @@ export function SettingsModal() {
               Salvar Chaves
             </button>
             {saved && (
-              <span className="text-sm text-emerald-600 flex items-center gap-1">
+              <span className="text-sm text-emerald-400 flex items-center gap-1">
                 <CheckCircle className="w-4 h-4" /> Salvo!
               </span>
             )}

@@ -4,13 +4,15 @@ import {
   DragOverlay,
   closestCorners,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
   type DragOverEvent,
 } from "@dnd-kit/core"
-import { arrayMove } from "@dnd-kit/sortable"
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import { STAGES, STAGE_INFO } from "./stages"
 import { useNavigate } from "react-router-dom"
 import { ChevronDown, Check, Filter, Search, Trash2, Loader2, X } from "lucide-react"
 import { KanbanColumn } from "./KanbanColumn"
@@ -19,13 +21,15 @@ import { usePipelineStore } from "@/store/usePipelineStore"
 import { useCategoryStore } from "@/store/useCategoryStore"
 import { api, type Category, type PipelineProduct, type PipelineStage } from "@/lib/api"
 
-const STAGES: PipelineStage[] = ["triagem", "analise", "aprovado", "importando", "concluido"]
+
 
 export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: PipelineStage) => void }) => {
-  const { products, moveProduct } = usePipelineStore()
+  const { products, moveProduct, isLoading } = usePipelineStore()
   const { categories, selectedCategoryId, setFilter, fetchCategories } = useCategoryStore()
   const navigate = useNavigate()
   const [activeProduct, setActiveProduct] = useState<PipelineProduct | null>(null)
+  const [productSearch, setProductSearch] = useState("")
+  const [stageFilter, setStageFilter] = useState<PipelineStage | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState("")
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null)
@@ -78,7 +82,8 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
   }, [])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
   const findProductStage = (id: string): PipelineStage | null => {
@@ -148,10 +153,12 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveProduct(null)}
     >
       <div className="h-full flex flex-col">
         {/* Filtro por categoria */}
-        <div className="flex items-center gap-2 px-4 pt-3" ref={filterRef}>
+        <div className="pipeline-filters flex items-center gap-2 px-4 pt-3" ref={filterRef}>
+          <label className="pipeline-search"><Search size={16}/><input aria-label="Pesquisar produtos" placeholder="Encontre um produto..." value={productSearch} onChange={e => setProductSearch(e.target.value)}/>{productSearch && <button aria-label="Limpar busca de produtos" onClick={() => setProductSearch("")}><X size={14}/></button>}</label>
           <Filter className="w-3.5 h-3.5 text-gray-500 shrink-0" />
           <div className="relative" onKeyDown={event => {
             if (event.key === "Escape") {
@@ -262,15 +269,19 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
           <p role="alert" className="mx-4 mt-2 rounded-lg border border-red-800 bg-red-900/20 px-3 py-2 text-xs text-red-400">{deleteError}</p>
         )}
 
-        <div className="flex gap-4 overflow-x-auto p-4 h-full">
-          {STAGES.map(stage => {
-            const stageProducts = selectedCategoryId
-              ? products[stage].filter(p => p.categoryId === selectedCategoryId)
-              : products[stage]
+        <div className="pipeline-stage-tabs" aria-label="Filtrar etapa">
+          <button aria-pressed={!stageFilter} onClick={() => setStageFilter(null)}>Todas as etapas</button>
+          {STAGES.map(stage => <button key={stage} aria-pressed={stageFilter === stage} onClick={() => setStageFilter(stage)}><i style={{background:STAGE_INFO[stage].color}}/>{STAGE_INFO[stage].label}<span>{products[stage].filter(p => (!selectedCategoryId || p.categoryId === selectedCategoryId) && normalizeSearch(p.title).includes(normalizeSearch(productSearch))).length}</span></button>)}
+        </div>
+        <div className="pipeline-board-hint"><span>{isLoading ? "Atualizando produtos…" : "Abra um card para ver detalhes · Use o seletor para mudar a etapa"}</span><span>Arraste pela alça ⠿</span></div>
+        <div className="pipeline-columns flex gap-4 overflow-x-auto p-4 h-full" aria-busy={isLoading}>
+          {STAGES.filter(stage => !stageFilter || stageFilter === stage).map(stage => {
+            const stageProducts = products[stage].filter(p => (!selectedCategoryId || p.categoryId === selectedCategoryId) && normalizeSearch(p.title).includes(normalizeSearch(productSearch)))
             return (
               <KanbanColumn
                 key={stage}
                 stage={stage}
+                filtered={!!productSearch || !!selectedCategoryId}
                 products={stageProducts}
                 onCardClick={(product) => navigate(`/pipeline/${product._id}`)}
                 onCompareClick={(stage === "triagem" || stage === "analise") ? () => onCompareClick?.(stage) : undefined}
