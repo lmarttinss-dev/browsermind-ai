@@ -1,18 +1,19 @@
+import { BackLink } from "@/components/BackLink"
 import {ProductBriefView} from '@/components/ProductBriefView'
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 import { useStore } from "@/store/useStore"
 import { HtmlMarketReport } from "@/components/HtmlMarketReport"
 import { useEffect, useState, useMemo } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Trash2, Calendar, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
+import { ExternalLink, Trash2, Calendar, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { rehypeSectionIds, scrollToAnchor, injectReportSummary } from "@/lib/markdown"
-import { api, type PipelineProduct, type PipelineStage, type Supplier } from "@/lib/api"
+import { api, type PipelineProduct, type PipelineStage } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
 import { ProductCategoryEditor } from "@/components/pipeline/ProductCategoryEditor"
-import { SuppliersSection } from "@/components/pipeline/SuppliersSection"
+import { SuppliersPage } from "@/pages/SuppliersPage"
 
 const STAGE_LABELS: Record<PipelineStage, { label: string; color: string }> = {
   triagem: { label: "Triagem", color: "bg-gray-600 text-gray-200" },
@@ -91,10 +92,7 @@ export const ProductDetailPage = () => {
     }
   }
 
-  const handleSuppliersUpdate = (suppliers: Supplier[], supplierReport: string) => {
-    if (!product) return
-    setProduct({ ...product, suppliers, supplierReport })
-  }
+
 
   const handleOpenCopyModal = async () => {
     if (!product?.analysisReport) {
@@ -191,13 +189,7 @@ export const ProductDetailPage = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <p className="text-gray-400 text-sm">{error || "Produto não encontrado"}</p>
-        <button
-          onClick={() => navigate("/pipeline")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Voltar à esteira
-        </button>
+        <BackLink to={"/pipeline"}>Voltar à esteira</BackLink>
       </div>
     )
   }
@@ -210,19 +202,12 @@ export const ProductDetailPage = () => {
   const score = product.score > 0 ? product.score : metrics.score
   const monthlySales = product.monthlySales > 0 ? product.monthlySales : metrics.monthlySales
 
-  const suppliersCount = product.suppliers?.length || 0
 
   return (
     <div className="product-detail-page flex-1 flex flex-col overflow-y-auto">
       {/* Top bar */}
       <div className="detail-toolbar flex flex-wrap items-center gap-3 px-5 py-3 border-b border-gray-700">
-        <button
-          onClick={() => navigate("/pipeline")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Esteira
-        </button>
+        <BackLink to={"/pipeline"}>Esteira</BackLink>
         <span className="product-detail-breadcrumb">WORKSPACE <span>/</span> FICHA DO PRODUTO</span>
         <div className="flex-1" />
         {product.url && (
@@ -323,11 +308,7 @@ export const ProductDetailPage = () => {
         >
           <Package className="w-4 h-4" />
           Fornecedores
-          {suppliersCount > 0 && (
-            <span className="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-full">
-              {suppliersCount}
-            </span>
-          )}
+
         </button>
         <button
           aria-pressed={activeTab === "mercado"} onClick={() => setActiveTab("mercado")}
@@ -377,12 +358,7 @@ export const ProductDetailPage = () => {
         )}
 
         {activeTab === "fornecedores" && (
-          <SuppliersSection
-            productId={product._id}
-            suppliers={product.suppliers || []}
-            supplierReport={product.supplierReport || ""}
-            onUpdate={handleSuppliersUpdate}
-          />
+          <SuppliersPage productId={product._id} />
         )}
 
         {activeTab === "mercado" && (

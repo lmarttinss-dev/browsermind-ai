@@ -88,6 +88,7 @@ export function parseSuppliersFromReport(report: string): Omit<Supplier, "captur
         .trim()
 
       suppliers.push({
+        supplierType: section.match(/(?:Classificação|Tipo de fornecedor)[^:]*:\*?\*?\s*(FACTORY|TRADING|Fábrica)/i)?.[1]?.replace(/fábrica/i, "FACTORY").toUpperCase() || "",
         name: cleanName,
         url: rawUrl,
         unitPrice: sanitizePrice(priceMatch?.[1] || ""),

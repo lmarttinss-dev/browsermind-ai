@@ -1,6 +1,7 @@
+import { BackLink } from "@/components/BackLink"
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Brain } from "lucide-react"
+import { ExternalLink, ShieldCheck, Clock, Star, Trash2, Plus, Loader2, AlertTriangle, MessageSquare, CheckCircle2, XCircle, Mail, CircleDot, DollarSign, Package, ChevronRight, Brain } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -244,9 +245,7 @@ export const SupplierDetailPage = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <p className="text-gray-400 text-sm">{error}</p>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg">
-          <ArrowLeft className="w-3.5 h-3.5" /> Voltar
-        </button>
+        <BackLink to="/suppliers">Fornecedores</BackLink>
       </div>
     )
   }
@@ -255,9 +254,7 @@ export const SupplierDetailPage = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <p className="text-gray-400 text-sm">Fornecedor não encontrado</p>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg">
-          <ArrowLeft className="w-3.5 h-3.5" /> Voltar
-        </button>
+        <BackLink to="/suppliers">Fornecedores</BackLink>
       </div>
     )
   }
@@ -270,12 +267,7 @@ export const SupplierDetailPage = () => {
       {/* Header */}
       <div className="border-b border-gray-700/50 bg-gray-800/30 px-5 py-3">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/pipeline/${product._id}`)}
-            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          <BackLink to="/suppliers">Fornecedores</BackLink>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-semibold text-gray-100 truncate">{supplier.name}</h1>

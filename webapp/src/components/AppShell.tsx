@@ -8,7 +8,7 @@ const destinations = [
   { to: "/market-analysis", label: "Panorama de mercado", icon: BarChart3, group: "Pesquisa" },
   { to: "/pipeline", label: "Esteira de produtos", icon: Kanban, group: "Pesquisa" },
   { to: "/categories", label: "Categorias", icon: Tags, group: "Pesquisa" },
-  { to: "/supplier-analysis", label: "Fornecedores", icon: Building2, group: "Ferramentas" },
+  { to: "/suppliers", label: "Fornecedores", icon: Building2, group: "Ferramentas" },
   { to: "/calculator", label: "Calculadora de importação", icon: Calculator, group: "Ferramentas" },
   { to: "/browser", label: "Assistente de navegação", icon: Globe, group: "Ferramentas" },
 ];
@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 const tools = [
   { to: "/pipeline", icon: Kanban, title: "Esteira de produtos", text: "Organize oportunidades e acompanhe cada etapa da sua pesquisa.", color: "violet", tag: "ORGANIZAR" },
-  { to: "/supplier-analysis", icon: Building2, title: "Encontre o fornecedor certo", text: "Avalie fornecedores e reúna informações para sua próxima compra.", color: "amber", tag: "VALIDAR" },
+  { to: "/suppliers", icon: Building2, title: "Gerencie seus fornecedores", text: "Cadastre contatos e condições comerciais e vincule à sua esteira.", color: "amber", tag: "VALIDAR" },
   { to: "/calculator", icon: Calculator, title: "Faça a conta antes de importar", text: "Simule custos de importação e planeje sua operação.", color: "mint", tag: "PLANEJAR" },
 ];
 export function HomePage() {

@@ -1,5 +1,6 @@
 import { validateFullMarketDocument, fullMarketDocumentText } from "../full-market-report.js"
 import { savedListingReportHtml, savedMarketReportHtml, fullMarketReportHtml, createFullMarketReportPdf } from "../full-market-report-html.js"
+import { SupplierRecord } from "../models/supplier.js"
 import { Router } from "express"
 import { Category } from "../models/category.js"
 import { Product, PIPELINE_STAGES } from "../models/product.js"
@@ -159,6 +160,10 @@ router.patch("/:id/category", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id)
+    if (product) {
+      await SupplierRecord.updateMany({ productId: product._id }, { $set: { productId: null } })
+      await SupplierRecord.updateMany({ "links.productId": product._id }, { $pull: { links: { productId: product._id } } })
+    }
     if (!product) return res.status(404).json({ error: "Produto não encontrado" })
     res.json({ success: true })
   } catch (error) {

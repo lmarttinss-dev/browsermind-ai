@@ -1,6 +1,7 @@
+import { BackLink } from "@/components/BackLink"
 import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { ArrowLeft, Search, Loader2, ExternalLink, Clock, Link2, Check } from "lucide-react"
+import { Search, Loader2, ExternalLink, Clock, Link2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MermaidRenderer } from "@/components/MermaidRenderer"
@@ -15,7 +16,7 @@ type AnalysisResult = {
   analyzedAt: string
 }
 
-export const SupplierAnalysisPage = () => {
+export const SupplierAnalysisPage = ({ productId, onLinked }: { productId?: string; onLinked?: () => void } = {}) => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [url, setUrl] = useState(searchParams.get("url") || "")
@@ -25,7 +26,7 @@ export const SupplierAnalysisPage = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [history, setHistory] = useState<AnalysisResult[]>([])
   const [products, setProducts] = useState<PipelineProduct[]>([])
-  const [selectedProductId, setSelectedProductId] = useState("")
+  const [selectedProductId, setSelectedProductId] = useState(productId || "")
   const [isLinking, setIsLinking] = useState(false)
   const [linkSuccess, setLinkSuccess] = useState<string | null>(null)
 
@@ -116,12 +117,7 @@ export const SupplierAnalysisPage = () => {
       {/* Header */}
       <div className="module-heading border-b border-gray-700/50 bg-gray-800/30 px-5 py-3">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/pipeline")}
-            className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          {!productId && <BackLink to="/suppliers">Fornecedores</BackLink>}
           <div>
             <h1 className="text-sm font-semibold text-gray-100">Análise de Fornecedor</h1>
             <p className="text-xs text-gray-400">Cole a URL de um fornecedor do Alibaba para análise completa</p>
@@ -131,6 +127,7 @@ export const SupplierAnalysisPage = () => {
 
       {/* Input Section */}
       <div className="supplier-form border-b border-gray-700/50 bg-gray-800/20 px-5 py-4">
+        {productId && <button type="button" disabled={isAnalyzing} className="text-xs text-blue-300 mb-3" onClick={async () => { try { const current = await api.status(); if (!current.url) throw new Error("Abra a página do fornecedor no browser."); const parsed = new URL(current.url); if (/(^|\.)mercadolivre\.com\.br$/i.test(parsed.hostname)) throw new Error("Abra uma página de fornecedor, como Alibaba."); setUrl(current.url) } catch(err) { setError((err as Error).message) } }}>Usar URL aberta no browser</button>}
         <div className="flex gap-3">
           <div className="flex-1 flex gap-2">
             <input
@@ -222,7 +219,7 @@ export const SupplierAnalysisPage = () => {
                     value={selectedProductId}
                     onChange={(e) => { setSelectedProductId(e.target.value); setLinkSuccess(null) }}
                     className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-blue-500"
-                    disabled={isLinking}
+                    disabled={isLinking || !!productId}
                   >
                     <option value="">Selecionar produto...</option>
                     {products.map((p) => (
@@ -237,7 +234,7 @@ export const SupplierAnalysisPage = () => {
                       setIsLinking(true)
                       setLinkSuccess(null)
                       try {
-                        await api.linkSupplierToProduct(selectedProductId, result.report, result.supplierUrl.replace(/`/g, ""), result.unitPrice, result.moq, result.tradeAssurance)
+                        await api.saveAnalyzedSupplier(selectedProductId, result.report, result.supplierUrl.replace(/`/g, "")); onLinked?.()
                         const product = products.find(p => p._id === selectedProductId)
                         setLinkSuccess(`Vinculado a "${product?.title}"`);
                       } catch (err) {

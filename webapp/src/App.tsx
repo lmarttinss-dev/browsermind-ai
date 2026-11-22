@@ -10,6 +10,7 @@ import { ActionConsole } from "@/components/ActionConsole";
 import { SettingsModal } from "@/components/SettingsModal";
 import { PipelinePage } from "@/pages/PipelinePage";
 import { ProductDetailPage } from "@/pages/ProductDetailPage";
+import { SuppliersPage, SupplierFormPage, SupplierRecordPage } from "@/pages/SuppliersPage";
 import { SupplierAnalysisPage } from "@/pages/SupplierAnalysisPage";
 import { SupplierDetailPage } from "@/pages/SupplierDetailPage";
 import { CategoriesPage } from "@/pages/CategoriesPage";
@@ -56,6 +57,11 @@ export default function App() {
         <Route path="/pipeline" element={<PipelinePage />} />
         <Route path="/pipeline/:id" element={<ProductDetailPage />} />
         <Route path="/pipeline/:id/supplier/:supplierIndex" element={<SupplierDetailPage />} />
+        <Route path="/suppliers" element={<SuppliersPage />} />
+        <Route path="/suppliers/new" element={<SupplierFormPage />} />
+        <Route path="/suppliers/:id" element={<SupplierRecordPage />} />
+        <Route path="/suppliers/:id/edit" element={<SupplierFormPage />} />
+        <Route path="/suppliers/:id/delete" element={<SupplierRecordPage deleting />} />
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/categories/:id" element={<CategoryDashboardPage />} />
