@@ -11,7 +11,6 @@ export function ProductCategoryEditor({ product, onUpdate }: {
   const [error, setError] = useState("")
   const [name, setName] = useState("")
   const [currentName, setCurrentName] = useState(product.category.replace(/\*+/g, ""))
-  const [color, setColor] = useState("#60a5fa")
 
   const open = async () => {
     setError("")
@@ -23,7 +22,6 @@ export function ProductCategoryEditor({ product, onUpdate }: {
       const { category } = await api.getCategory(product.categoryId)
       setName(category.name)
       setCurrentName(category.name)
-      setColor(category.color)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar categoria")
     } finally { setBusy(false) }
@@ -43,7 +41,6 @@ export function ProductCategoryEditor({ product, onUpdate }: {
         const { product: updated } = await api.assignCategoryToProduct(product._id, existing._id)
         onUpdate(updated)
         setCurrentName(updated.category)
-        setColor(existing.color)
       } else if (product.categoryId) {
         const { category } = await api.updateCategory(product.categoryId, { name: trimmed })
         onUpdate({ ...product, category: category.name })
@@ -62,7 +59,7 @@ export function ProductCategoryEditor({ product, onUpdate }: {
   if (!editing) return (
     <button type="button" onClick={() => void open()} title="Editar categoria"
       className="group inline-flex max-w-full items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/5 px-3 py-1.5 text-xs text-blue-200 transition-colors hover:border-blue-400/50 hover:bg-blue-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
-      <Tag className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+      <Tag className="h-3.5 w-3.5 shrink-0" />
       <span className="truncate">{currentName || "Sem categoria"}</span>
       <Pencil className="h-3 w-3 shrink-0 text-blue-300/60 transition-colors group-hover:text-blue-200" />
     </button>

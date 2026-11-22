@@ -129,3 +129,64 @@ describe("Category routes - atualizacao", () => {
     expect((await Product.findById(other._id))?.category).toBe("Origem")
   })
 })
+
+describe("Category routes - CRUD completo", () => {
+  it("cria, lista, consulta e remove sem excluir produtos", async () => {
+    const created = await request(app).post("/categories").send({ name: "  Decoração  ", description: " Casa ", color: "#abcdef", mlCategoryUrl: "https://example.com/categoria" })
+    expect(created.status).toBe(201)
+    expect(created.body.category.name).toBe("Decoração")
+    expect(created.body.category.slug).toBe("decoracao")
+    expect(created.body.category.description).toBe("Casa")
+    const id = created.body.category._id
+    const product = await Product.create({ title: "Produto", url: "https://example.com", categoryId: id, category: "Decoração" })
+    const other = await Category.create({ name: "Outra" })
+    const otherProduct = await Product.create({ title: "Outro", url: "https://example.com/2", categoryId: other._id, category: other.name })
+    const list = await request(app).get("/categories")
+    expect(list.body.categories.find((item: { _id: string }) => item._id === id).productCount).toBe(1)
+    const detail = await request(app).get("/categories/" + id)
+    expect(detail.status).toBe(200)
+    expect(detail.body.products).toHaveLength(1)
+    expect(detail.body.metrics.totalProducts).toBe(1)
+    expect((await request(app).delete("/categories/" + id)).status).toBe(200)
+    const preserved = await Product.findById(product._id)
+    expect(preserved).not.toBeNull()
+    expect(preserved?.categoryId).toBeNull()
+    expect(preserved?.category).toBe("")
+    expect((await Product.findById(otherProduct._id))?.categoryId?.toString()).toBe(String(other._id))
+    expect((await request(app).get("/categories/" + id)).status).toBe(404)
+  })
+
+  it("rejeita nomes equivalentes na criação", async () => {
+    await request(app).post("/categories").send({ name: "Decoração" })
+    expect((await request(app).post("/categories").send({ name: "DECORACAO" })).status).toBe(409)
+  })
+
+  it("valida campos antes de criar ou alterar", async () => {
+    const category = await Category.create({ name: "Original" })
+    for (const input of [{ name: "!!!" }, { name: " " }, { name: "a".repeat(201) }, { description: {} }, { description: "x".repeat(2001) }, { color: "red" }, { mlCategoryUrl: "javascript:alert(1)" }, { mlCategoryUrl: 123 }, { mlCategoryUrl: "invalid" }]) {
+      expect((await request(app).post("/categories").send({ name: "Teste", ...input })).status).toBe(400)
+      expect((await request(app).patch("/categories/" + category._id).send(input)).status).toBe(400)
+    }
+    expect((await Category.findById(category._id))?.name).toBe("Original")
+    expect(await Category.countDocuments()).toBe(1)
+  })
+
+  it("retorna 400 para IDs inválidos e 404 para categorias inexistentes", async () => {
+    for (const id of ["bad", String(new mongoose.Types.ObjectId())]) {
+      const status = id === "bad" ? 400 : 404
+      expect((await request(app).get("/categories/" + id)).status).toBe(status)
+      expect((await request(app).patch("/categories/" + id).send({ description: "Teste" })).status).toBe(status)
+      expect((await request(app).delete("/categories/" + id)).status).toBe(status)
+    }
+  })
+
+  it("permite limpar campos opcionais sem alterar o nome", async () => {
+    const category = await Category.create({ name: "Original", description: "Texto", mlCategoryUrl: "https://example.com" })
+    const updated = await request(app).patch("/categories/" + category._id).send({ description: "", mlCategoryUrl: "", color: "#123456" })
+    expect(updated.status).toBe(200)
+    expect(updated.body.category.name).toBe("Original")
+    expect(updated.body.category.description).toBe("")
+    expect(updated.body.category.mlCategoryUrl).toBe("")
+    expect(updated.body.category.color).toBe("#123456")
+  })
+})

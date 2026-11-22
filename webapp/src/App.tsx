@@ -13,7 +13,7 @@ import { ProductDetailPage } from "@/pages/ProductDetailPage";
 import { SuppliersPage, SupplierFormPage, SupplierRecordPage } from "@/pages/SuppliersPage";
 import { SupplierAnalysisPage } from "@/pages/SupplierAnalysisPage";
 import { SupplierDetailPage } from "@/pages/SupplierDetailPage";
-import { CategoriesPage } from "@/pages/CategoriesPage";
+import { CategoriesPage, CategoryFormPage } from "@/pages/CategoriesPage";
 import { CategoryDashboardPage } from "@/pages/CategoryDashboardPage";
 import ImportCalculatorPage from "@/pages/ImportCalculatorPage";
 
@@ -64,6 +64,8 @@ export default function App() {
         <Route path="/suppliers/:id/delete" element={<SupplierRecordPage deleting />} />
         <Route path="/supplier-analysis" element={<SupplierAnalysisPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/categories/new" element={<CategoryFormPage />} />
+        <Route path="/categories/:id/edit" element={<CategoryFormPage />} />
         <Route path="/categories/:id" element={<CategoryDashboardPage />} />
         <Route path="/market-analysis" element={<MarketAnalysisPage />} />
         <Route path="/calculator" element={<ImportCalculatorPage />} />
