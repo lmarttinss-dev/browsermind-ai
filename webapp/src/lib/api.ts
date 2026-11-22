@@ -17,7 +17,35 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export type ManualSupplierInput = {
+  purchaseOrigin: "unknown" | "domestic" | "import";
+  priceAmount: number | null; currency: "" | "BRL" | "USD" | "EUR" | "CNY";
+  legalName: string; taxId: string; state: string; city: string;
+  invoice: "unknown" | "yes" | "no"; domesticFreight: string;
+  originCountry: string; contactChannel: string; incoterm: string; transportMode: string;
+  sample: "unknown" | "yes" | "no";
+  name: string; contact: string; email: string; phone: string; country: string; url: string;
+  status: "prospect" | "negotiating" | "approved" | "inactive";
+  unitPrice: string; moq: string; deliveryTime: string; paymentTerms: string; notes: string;
+  productId: string | null;
+}
+export type ManualSupplier = { individuallyAnalyzed?: boolean; report?: string; supplierType?: string; rating?: number; tradeAssurance?: boolean; yearsInBusiness?: number; responseRate?: string; capabilities?: string; certifications?: string } & Omit<ManualSupplierInput, "productId"> & {
+  links?: { productId: { _id: string; title: string; stage: string } | null; unitPrice?: string; priceAmount?: number; currency?: string; moq?: string; deliveryTime?: string; paymentTerms?: string }[];
+  _id: string; productId: { _id: string; title: string; stage: string } | null; updatedAt: string;
+}
 export const api = {
+  saveSupplierTerms: (id: string, productId: string, data: Record<string, unknown>) => request("/api/suppliers/" + id + "/products/" + productId, { method: "PATCH", body: JSON.stringify(data) }),
+  linkSupplierProduct: (id: string, productId: string) => request("/api/suppliers/" + id + "/products/" + productId, { method: "POST", body: "{}" }),
+  unlinkSupplierProduct: (id: string, productId: string) => request("/api/suppliers/" + id + "/products/" + productId, { method: "DELETE" }),
+  updateSupplierAnalysis: (id: string, report: string) => request("/api/suppliers/" + id + "/analysis", { method: "POST", body: JSON.stringify({ report }) }),
+  saveSupplierList: (productId: string | undefined, report: string) => request<{ count: number }>("/api/suppliers/from-list-analysis", { method: "POST", body: JSON.stringify({ productId, report }) }),
+  saveAnalyzedSupplier: (productId: string, report: string, url: string) => request("/api/suppliers/from-analysis", { method: "POST", body: JSON.stringify({ productId, report, url }) }),
+  getManualSupplier: (id: string) => request<{ supplier: ManualSupplier }>("/api/suppliers/" + encodeURIComponent(id)),
+  getManualSuppliers: () => request<{ suppliers: ManualSupplier[] }>("/api/suppliers"),
+  createManualSupplier: (data: ManualSupplierInput) => request<{ supplier: ManualSupplier }>("/api/suppliers", { method: "POST", body: JSON.stringify(data) }),
+  updateManualSupplier: (id: string, data: ManualSupplierInput) => request<{ supplier: ManualSupplier }>("/api/suppliers/" + id, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteManualSupplier: (id: string) => request("/api/suppliers/" + id, { method: "DELETE" }),
+
   // Health
   health: () => request<{ status: string }>("/health"),
 

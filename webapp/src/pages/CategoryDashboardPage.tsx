@@ -1,6 +1,7 @@
+import { BackLink } from "@/components/BackLink"
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Loader2, Star, TrendingUp, BarChart3, Percent, Package, Layers } from "lucide-react"
+import { Loader2, Star, TrendingUp, BarChart3, Percent, Package, Layers } from "lucide-react"
 import { api, type Category, type PipelineProduct, type CategoryDashboard } from "@/lib/api"
 
 const STAGE_LABELS: Record<string, string> = {
@@ -52,13 +53,7 @@ export const CategoryDashboardPage = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <p className="text-gray-400 text-sm">{error || "Categoria não encontrada"}</p>
-        <button
-          onClick={() => navigate("/categories")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Voltar às categorias
-        </button>
+        <BackLink to={"/categories"}>Voltar às categorias</BackLink>
       </div>
     )
   }
@@ -69,13 +64,7 @@ export const CategoryDashboardPage = () => {
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-700">
-        <button
-          onClick={() => navigate("/categories")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Categorias
-        </button>
+        <BackLink to={"/categories"}>Categorias</BackLink>
         <div className="flex items-center gap-2 min-w-0">
           <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: category.color }} />
           <h1 className="text-lg font-semibold text-gray-100 truncate">{category.name}</h1>

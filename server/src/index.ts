@@ -24,6 +24,7 @@ import { postDeepSeek } from "./deepseek-client.js";
 import { playwrightManager, type BrowserAction } from "./playwright-manager.js";
 import { connectDatabase } from "./db.js";
 import { router as pipelineRouter } from "./routes/pipeline.js";
+import suppliersRouter from "./routes/suppliers.js";
 import { router as categoriesRouter } from "./routes/categories.js";
 import { Product, NEGOTIATION_STATUSES, type Supplier, type NegotiationStatus } from "./models/product.js";
 import { Category, normalizeCategorySlug } from "./models/category.js";
@@ -92,6 +93,7 @@ app.use("/api/pipeline", pipelineRouter);
 
 // Category routes
 app.use("/api/categories", categoriesRouter);
+app.use("/api/suppliers", suppliersRouter);
 
 app.use("/api/market-analysis", createMarketAnalysisRouter(async () => {
   const status = await playwrightManager.getStatus();

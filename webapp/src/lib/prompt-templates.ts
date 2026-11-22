@@ -394,6 +394,7 @@ Use como título do relatório as características principais do produto pesquis
 - **Taxa de resposta:**
 - **Preço indicado:**
 - **MOQ (pedido mínimo):**
+- **Classificação:** FACTORY / TRADING / Não identificado (somente quando houver evidência)
 - **Capacidades:** OEM / ODM / Customização
 - **Certificações:**
 - **Por que foi escolhido:**
@@ -409,6 +410,7 @@ Use como título do relatório as características principais do produto pesquis
 - **Taxa de resposta:**
 - **Preço indicado:**
 - **MOQ (pedido mínimo):**
+- **Classificação:** FACTORY / TRADING / Não identificado (somente quando houver evidência)
 - **Capacidades:** OEM / ODM / Customização
 - **Certificações:**
 - **Por que foi escolhido:**
@@ -424,6 +426,7 @@ Use como título do relatório as características principais do produto pesquis
 - **Taxa de resposta:**
 - **Preço indicado:**
 - **MOQ (pedido mínimo):**
+- **Classificação:** FACTORY / TRADING / Não identificado (somente quando houver evidência)
 - **Capacidades:** OEM / ODM / Customização
 - **Certificações:**
 - **Por que foi escolhido:**
@@ -439,6 +442,7 @@ Use como título do relatório as características principais do produto pesquis
 - **Taxa de resposta:**
 - **Preço indicado:**
 - **MOQ (pedido mínimo):**
+- **Classificação:** FACTORY / TRADING / Não identificado (somente quando houver evidência)
 - **Capacidades:** OEM / ODM / Customização
 - **Certificações:**
 - **Por que foi escolhido:**
@@ -454,6 +458,7 @@ Use como título do relatório as características principais do produto pesquis
 - **Taxa de resposta:**
 - **Preço indicado:**
 - **MOQ (pedido mínimo):**
+- **Classificação:** FACTORY / TRADING / Não identificado (somente quando houver evidência)
 - **Capacidades:** OEM / ODM / Customização
 - **Certificações:**
 - **Por que foi escolhido:**
