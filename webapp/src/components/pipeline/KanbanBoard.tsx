@@ -227,7 +227,6 @@ export const KanbanBoard = ({ onCompareClick }: { onCompareClick?: (stage: Pipel
                           onClick={() => { setFilter(c._id); setFilterOpen(false) }}
                           className={`min-w-0 flex-1 flex items-center gap-2 px-3 py-2 text-xs text-left ${isActive ? "text-blue-300" : "text-gray-300"}`}
                         >
-                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
                           <span className="flex-1 whitespace-normal break-words leading-snug">{c.name}</span>
                           {isActive && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                         </button>

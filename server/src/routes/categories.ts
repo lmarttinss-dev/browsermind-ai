@@ -1,9 +1,45 @@
 import { Router } from "express"
+import mongoose from "mongoose"
 import { Category, normalizeCategorySlug } from "../models/category.js"
 import { Product, PIPELINE_STAGES, COMPETITION_LEVELS } from "../models/product.js"
 
 export const router = Router()
 export default router
+
+router.param("id", (_req, res, next, id) => {
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    res.status(400).json({ error: "Categoria inválida." })
+    return
+  }
+  next()
+})
+
+function validate(body: unknown, creating: boolean): Record<string, string> {
+  if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Dados da categoria inválidos.")
+  const input = body as Record<string, unknown>
+  const data: Record<string, string> = {}
+  for (const [key, limit] of [["name", 200], ["description", 2000], ["color", 7], ["mlCategoryUrl", 2000]] as const) {
+    if (input[key] === undefined) continue
+    if (typeof input[key] !== "string" || input[key].length > limit) throw new Error("Campo inválido: " + key)
+    data[key] = input[key].trim()
+  }
+  if ((creating || data.name !== undefined) && (!data.name || !normalizeCategorySlug(data.name))) throw new Error("Informe um nome com letras ou números (até 200 caracteres).")
+  if (data.color !== undefined && !/^#[0-9a-f]{6}$/i.test(data.color)) throw new Error("Informe uma cor hexadecimal válida.")
+  if (data.mlCategoryUrl) {
+    let url: URL
+    try { url = new URL(data.mlCategoryUrl) } catch { throw new Error("Informe uma URL completa (https://).") }
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Use uma URL HTTP ou HTTPS.")
+  }
+  if (data.name !== undefined) data.slug = normalizeCategorySlug(data.name)
+  return data
+}
+
+function failure(res: import("express").Response, error: unknown) {
+  if ((error as { code?: number }).code === 11000) return res.status(409).json({ error: "Já existe uma categoria com esse nome ou um nome equivalente." })
+  if ((error as Error).name === "ValidationError" || (error as Error).name === "CastError") return res.status(400).json({ error: "Dados da categoria inválidos." })
+  console.error("Category CRUD:", error)
+  return res.status(500).json({ error: "Não foi possível concluir a operação. Tente novamente." })
+}
 
 // Lista categorias com contagem de produtos vinculados
 router.get("/", async (_req, res) => {
@@ -29,24 +65,13 @@ router.get("/", async (_req, res) => {
 
 // Cria categoria
 router.post("/", async (req, res) => {
+  let data: Record<string, string>
+  try { data = validate(req.body, true) }
+  catch (error) { return res.status(400).json({ error: (error as Error).message }) }
   try {
-    const { name, description, color, mlCategoryUrl } = req.body
-
-    if (!name || typeof name !== "string" || !name.trim()) {
-      return res.status(400).json({ error: "Campo 'name' é obrigatório" })
-    }
-
-    const category = await Category.create({
-      name: name.trim(),
-      description: description || "",
-      color: color || "#3b82f6",
-      mlCategoryUrl: mlCategoryUrl || "",
-    })
-
+    const category = await Category.create(data)
     res.status(201).json({ success: true, category })
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao criar categoria" })
-  }
+  } catch (error) { failure(res, error) }
 })
 
 // Detalhe da categoria + produtos vinculados + métricas agregadas
@@ -93,46 +118,26 @@ router.get("/:id", async (req, res) => {
 
     res.json({ success: true, category, products, metrics })
   } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar categoria" })
+    failure(res, error)
   }
 })
 
 // Atualiza categoria e o nome exibido nos produtos vinculados
 router.patch("/:id", async (req, res) => {
   try {
-    const { name, description, color, mlCategoryUrl } = req.body
-    if (name !== undefined && (typeof name !== "string" || !name.trim())) {
-      return res.status(400).json({ error: "Informe um nome válido para a categoria." })
-    }
-
-    const update: Record<string, unknown> = {}
-    if (name !== undefined) {
-      update.name = name.trim()
-      update.slug = normalizeCategorySlug(name.trim())
-      if (!update.slug) {
-        return res.status(400).json({ error: "O nome da categoria deve conter letras ou números." })
-      }
-    }
-    if (description !== undefined) update.description = description
-    if (color !== undefined) update.color = color
-    if (mlCategoryUrl !== undefined) update.mlCategoryUrl = mlCategoryUrl
+    let update: Record<string, string>
+    try { update = validate(req.body, false) }
+    catch (error) { return res.status(400).json({ error: (error as Error).message }) }
 
     const category = await Category.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true })
     if (!category) return res.status(404).json({ error: "Categoria não encontrada" })
 
-    if (name !== undefined) {
+    if (update.name !== undefined) {
       await Product.updateMany({ categoryId: category._id }, { $set: { category: category.name } })
     }
     res.json({ success: true, category })
   } catch (error) {
-    if ((error as { code?: number }).code === 11000) {
-      return res.status(409).json({ error: "Já existe uma categoria com esse nome ou um nome equivalente." })
-    }
-    if ((error as Error).name === "ValidationError" || (error as Error).name === "CastError") {
-      return res.status(400).json({ error: "Dados da categoria inválidos." })
-    }
-    console.error("Erro ao atualizar categoria:", error)
-    res.status(500).json({ error: "Erro ao atualizar categoria" })
+    failure(res, error)
   }
 })
 
@@ -142,10 +147,10 @@ router.delete("/:id", async (req, res) => {
     const category = await Category.findByIdAndDelete(req.params.id)
     if (!category) return res.status(404).json({ error: "Categoria não encontrada" })
 
-    await Product.updateMany({ categoryId: category._id }, { $set: { categoryId: null } })
+    await Product.updateMany({ categoryId: category._id }, { $set: { categoryId: null, category: "" } })
 
     res.json({ success: true })
   } catch (error) {
-    res.status(500).json({ error: "Erro ao remover categoria" })
+    failure(res, error)
   }
 })

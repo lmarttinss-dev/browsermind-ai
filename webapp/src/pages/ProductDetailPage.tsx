@@ -12,7 +12,6 @@ import { MermaidRenderer } from "@/components/MermaidRenderer"
 import { rehypeSectionIds, scrollToAnchor, injectReportSummary } from "@/lib/markdown"
 import { api, type PipelineProduct, type PipelineStage } from "@/lib/api"
 import { parseReportMetrics } from "@/lib/utils"
-import { ProductCategoryEditor } from "@/components/pipeline/ProductCategoryEditor"
 import { SuppliersPage } from "@/pages/SuppliersPage"
 
 const STAGE_LABELS: Record<PipelineStage, { label: string; color: string }> = {
@@ -276,7 +275,7 @@ export const ProductDetailPage = () => {
           </div>
           <h1 className="text-xl font-semibold text-gray-100 mb-2">{product.title.replace(/\*+/g, "")}</h1>
           <div className="flex flex-wrap items-start gap-3 text-sm text-gray-400">
-            <ProductCategoryEditor key={product._id} product={product} onUpdate={setProduct} />
+            <span>{product.category.replace(/\*+/g, "").trim() || "Sem categoria"}</span>
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               {new Date(product.analyzedAt).toLocaleDateString("pt-BR")}
