@@ -75,6 +75,13 @@ describe('individual offer capture', () => {
     await page.goto('https://example.com')
     await expect(page.evaluate(extractIndividualListing)).rejects.toThrow('Mercado Livre')
   })
+  it('rejects account and dashboard pages even if they contain listing-like elements', async () => {
+    for (const url of ['https://www.mercadolivre.com.br/my-account', 'https://www.mercadolivre.com.br/vendas', 'https://vendedores.mercadolivre.com.br/p/MLB123']) {
+      await page.goto(url)
+      await page.setContent(html)
+      await expect(page.evaluate(extractIndividualListing)).rejects.toThrow('anúncio individual público')
+    }
+  })
   it('saves multiple offers, refreshes an existing ID, analyzes only saved selections and removes offers', async () => {
     let row = { positions: [1], itemId: 'MLB123', catalogId: 'MLB999', title: 'Produto A', seller: 'LOJA_A', url: 'https://www.mercadolivre.com.br/p/MLB999?wid=MLB123', advertising: false, metrics: 'Vendas estimadas\n9\nRitmo atual (vendas/mês)\n7\nVendas mensais\n2/Mês' }
     const narrate = async (model: string, analysis: any) => ({ model, text: analysis.selected.map((row: any) => row.itemId).join(','), generatedAt: new Date().toISOString() })

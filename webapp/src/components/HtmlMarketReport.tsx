@@ -4,7 +4,7 @@ import marketTheme from '../../../shared/market-report-theme.css?raw'
 import { Download, Loader2 } from 'lucide-react'
 import { api, type StructuredMarketDocument } from '@/lib/api'
 
-type Props = { html?: string; src?: string; document?: StructuredMarketDocument; productId?: string; reportKind?: "market" | "listing" }
+type Props = { html?: string; src?: string; document?: StructuredMarketDocument; productId?: string; reportKind?: "market" | "listing" | "comparison" }
 export function HtmlMarketReport({ html, src, document, productId, reportKind = "market" }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null)
   const [exporting, setExporting] = useState(false)
@@ -77,14 +77,14 @@ export function HtmlMarketReport({ html, src, document, productId, reportKind = 
   }
   return <section aria-label="Relatório HTML de análise de mercado" className="min-w-0">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-xs text-gray-400">{reportKind === 'listing' ? 'Análise do anúncio' : 'Análise de mercado'} · Relatório completo</p>
-      <button type="button" onClick={download} disabled={exporting || !productId && !document} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+      <p className="text-xs text-gray-400">{reportKind === 'listing' ? 'Análise do anúncio' : reportKind === 'comparison' ? 'Comparação de anúncios' : 'Análise de mercado'} · Relatório completo</p>
+      {reportKind !== "comparison" && <button type="button" onClick={download} disabled={exporting || !productId && !document} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
         {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
         {exporting ? 'Gerando PDF…' : 'Exportar PDF'}
-      </button>
+      </button>}
     </div>
     {error && <p role="alert" className="mb-3 rounded-lg bg-red-950/30 p-3 text-sm text-red-400">{error}</p>}
-    <iframe ref={iframe} title="Análise de mercado" src={src} srcDoc={html} onLoad={onReportLoad}
+    <iframe ref={iframe} title={reportKind === "comparison" ? "Comparação de anúncios" : "Análise de mercado"} src={src} srcDoc={html} onLoad={onReportLoad}
       sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerPolicy="no-referrer"
       className="block min-h-[600px] w-full rounded-xl border border-gray-700 bg-gray-900" />
   </section>

@@ -1,7 +1,8 @@
+import { comparisonDestination } from "@/lib/listing-comparison";
+import { ListingComparisonEntryPage } from "@/pages/ListingComparisonEntryPage";
 import { AppShell, HomePage } from "@/components/AppShell";
-import { MarketAnalysisPage } from "@/pages/MarketAnalysisPage";
 import { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Link, Navigate, Routes, Route, useSearchParams } from "react-router-dom";
 import { useStore } from "@/store/useStore";
 import { NavigationBar } from "@/components/NavigationBar";
 import { BrowserViewport } from "@/components/BrowserViewport";
@@ -18,10 +19,15 @@ import { CategoryDashboardPage } from "@/pages/CategoryDashboardPage";
 import ImportCalculatorPage from "@/pages/ImportCalculatorPage";
 
 function MainView() {
+  const [searchParams] = useSearchParams();
+  const comparisonProductId = searchParams.get("comparisonProductId") || undefined;
   return (
     <div className="browser-studio">
       <div className="studio-heading"><div><h1>Assistente de navegação</h1><p>Explore páginas e transforme contexto em respostas.</p></div><span>WORKSPACE / BROWSER</span></div>
       <NavigationBar />
+      {comparisonProductId && <div className="px-4 py-3 border-b border-gray-700">
+        <Link className="text-sm text-indigo-300 underline" to={comparisonDestination(comparisonProductId)}>Voltar à comparação</Link>
+      </div>}
       {/* Main content */}
       <div className="browser-workspace flex-1 flex overflow-hidden">
         {/* Left: Browser viewport + action console */}
@@ -67,7 +73,8 @@ export default function App() {
         <Route path="/categories/new" element={<CategoryFormPage />} />
         <Route path="/categories/:id/edit" element={<CategoryFormPage />} />
         <Route path="/categories/:id" element={<CategoryDashboardPage />} />
-        <Route path="/market-analysis" element={<MarketAnalysisPage />} />
+        <Route path="/market-analysis" element={<Navigate to="/listing-comparison" replace />} />
+        <Route path="/listing-comparison" element={<ListingComparisonEntryPage />} />
         <Route path="/calculator" element={<ImportCalculatorPage />} />
       </Routes>
 

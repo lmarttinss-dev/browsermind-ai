@@ -71,3 +71,31 @@
 }
 
 @media screen { .competitor-link { text-decoration:underline; text-underline-offset:3px; } }
+
+/* Selected listings use the same table, colors and print layout as the reports. */
+.selected-listings-table { table-layout:fixed; }
+.selected-listings-table .listing-photo-col { width:8%; }
+.selected-listings-table .listing-info-col { width:25%; }
+.selected-listings-table .listing-price-col { width:10%; }
+.selected-listings-table .listing-delivery-col { width:15%; }
+.selected-listings-table .listing-ads-col { width:10%; }
+.selected-listings-table .listing-metrics-col { width:32%; }
+.listing-photo,.listing-no-photo { width:64px; height:64px; max-width:100%; border-radius:8px; object-fit:contain; background:#fff; }
+.listing-no-photo { display:grid; place-items:center; background:#f2f4f9; color:#647086; font-size:10px; }
+.listing-title { display:block; margin-bottom:6px; }
+.listing-seller { text-decoration:underline; text-underline-offset:3px; }
+.listing-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:14px; row-gap:5px; margin:0; line-height:1.35; }
+.listing-metrics>div { display:flex; align-items:baseline; justify-content:space-between; gap:6px; min-width:0; margin:0; }
+.listing-metrics dt { font-size:9px; opacity:.8; }
+.listing-metrics dd { margin:0; font-size:10px; font-weight:600; }
+.listing-metrics-text { white-space:pre-line; }
+@media screen { .selected-listings-table { min-width:880px; } .listing-no-photo { background:#101923; color:#91a7bc; } }
+@media print {
+ .selected-listings-table { font-size:7.5pt; }
+ .selected-listings-table th { font-size:7pt; }
+ .selected-listings-table th,.selected-listings-table td { padding:7px 5px; }
+ .selected-listings-table .meta,.listing-metrics dt { font-size:6.5pt; }
+ .listing-metrics { column-gap:8px; row-gap:3px; }
+ .listing-metrics dd { font-size:7pt; }
+ .listing-photo,.listing-no-photo { width:42px; height:42px; }
+}

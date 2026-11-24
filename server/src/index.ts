@@ -1,3 +1,4 @@
+import { isPublicMercadoLivreListingUrl } from "../../shared/public-listing-url.js";
 import {generateProductBrief,productBriefText} from './product-brief.js';
 import {compactMarketEvidence} from "./market-model-evidence.js";
 import { persistGeneratedMarketReport } from "./market-report-persistence.js";
@@ -99,13 +100,13 @@ app.use("/api/market-analysis", createMarketAnalysisRouter(async () => {
   const status = await playwrightManager.getStatus();
   if (!status.active) throw new Error("Inicie o Browser e abra um anúncio individual do Mercado Livre.");
   const page = await playwrightManager.getPage();
-  const url = new URL(page.url());
-  if (url.protocol !== "https:" || !/(^|\.)mercadolivre\.com\.br$/i.test(url.hostname)) throw new Error("Abra um anúncio individual do Mercado Livre no Browser.");
+  if (!isPublicMercadoLivreListingUrl(page.url())) throw new Error("A captura aceita somente páginas públicas de anúncios. Conta e painel do vendedor não são acessados.");
   await page.waitForSelector("h1.ui-pdp-title", { timeout: 10000 }).catch(() => { throw new Error("Abra um anúncio individual do Mercado Livre; listagens não são aceitas."); });
   await playwrightManager.waitForAvantproData({ timeout: 20000 });
+  if (!isPublicMercadoLivreListingUrl(page.url())) throw new Error("A página mudou. Abra um anúncio público para capturar.");
   const listing = await page.evaluate(extractIndividualListing);
   return { url: listing.url!, title: listing.title, listings: [listing], ready: /Vendas estimadas|Ritmo atual|Vendas mensais|Vendidos/i.test(listing.metrics) };
-}, (model, analysis) => generateMarketNarrative(model, analysis, (modelId, prompt, system) => generateText(modelId, prompt, { keys: apiKeys, system, temperature: 0.2 })), savedListingRepository));
+}, (model, analysis) => generateMarketNarrative(model, analysis, (modelId, prompt, system) => generateText(modelId, prompt, { keys: apiKeys, system, temperature: 0.2, jsonOutput: true })), savedListingRepository));
 
 // Health check
 app.get("/health", (_req, res) => {

@@ -67,7 +67,7 @@ export function analyzeSelection(snapshot: MarketSnapshot, ids: string[], profil
   const result = { analyzedAt: new Date().toISOString(), snapshotId: snapshot.id, sourceUrl: snapshot.url, capturedAt: snapshot.capturedAt,
     title: snapshot.title, selectedIds: ids, selected: rows, total: rows.length, sales30d, salesCoverage: salesRows.length,
     sellers: new Set(rows.flatMap(row => row.seller ? [row.seller] : [])).size, sponsored, adsCoverage, adsUnknown, adsPercentage, logistics, pricing, profile, readiness, verdict, actions, warnings }
-  const report = ["# Panorama dos anúncios selecionados", snapshot.title, `Fonte: ${snapshot.url}`, `Capturado em: ${snapshot.capturedAt}`, `Analisado em: ${result.analyzedAt}`,
+  const report = ["# Comparação dos anúncios selecionados", snapshot.title, `Fonte: ${snapshot.url}`, `Capturado em: ${snapshot.capturedAt}`, `Analisado em: ${result.analyzedAt}`,
     `## Decisão\n${verdict}`, `## Métricas da amostra\n- Anúncios: ${rows.length}\n- Vendedores identificados: ${result.sellers}\n- Vendas estimadas (30 dias): ${sales30d ?? "Sem dados"} (cobertura ${salesRows.length}/${rows.length})\n- Full: ${logistics.Full}/${rows.length}\n- Flex: ${logistics.Flex}/${rows.length}\n- Patrocinados observados: ${sponsored}/${rows.length}\n- Preço mediano: ${pricing.median === null ? "Sem dados" : money(pricing.median)}`,
     "## Matriz de prontidão (informada pelo usuário)", ...readiness.map(row => `- ${row.label}: ${row.status}`),
     "## Plano de ação", ...actions.map((action, i) => `${i + 1}. ${action.title} (${action.period}): ${action.description}`),
