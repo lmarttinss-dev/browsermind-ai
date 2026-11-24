@@ -4,6 +4,8 @@ import type { CompetitorListing } from "./competitor-listings.js"
 export function extractIndividualListing(): CompetitorListing {
   const pageUrl = new URL(location.href)
   if (pageUrl.protocol !== "https:" || !/(^|\.)mercadolivre\.com\.br$/i.test(pageUrl.hostname)) throw new Error("Abra a URL de um anúncio do Mercado Livre no Browser.")
+  if (!["mercadolivre.com.br", "www.mercadolivre.com.br", "produto.mercadolivre.com.br"].includes(pageUrl.hostname)
+    || !(/^\/(?:[^/]+\/)?(?:p|up)\/MLBU?\d+\/?$/i.test(pageUrl.pathname) || /^\/MLB-?\d+(?:-[^/]*)?\/?$/i.test(pageUrl.pathname))) throw new Error("Esta página não é um anúncio individual público.")
   const title = document.querySelector("h1.ui-pdp-title")?.textContent?.trim()
   if (!title) throw new Error("Esta página não é um anúncio individual. Abra o produto e aguarde o carregamento.")
   const hash = new URLSearchParams(pageUrl.hash.slice(1))

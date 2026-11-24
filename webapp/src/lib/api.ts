@@ -76,12 +76,14 @@ export const api = {
     if (!response.ok) { const error = await response.json().catch(() => ({})); throw new Error(error.error || "Não foi possível gerar o PDF.") }
     return response.blob()
   },
-  getSavedMarketListings: () => request<{ success: boolean; snapshot: MarketSnapshot }>("/api/market-analysis/listings"),
-  updateMarketListingAds: (id: string, adsStatus: "yes" | "no" | "unknown") => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}/ads`, { method: "PATCH", body: JSON.stringify({ adsStatus }) }),
-  removeSavedMarketListing: (id: string) => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}`, { method: "DELETE" }),
-  captureMarketListings: () => request<{ success: boolean; snapshot: MarketSnapshot; savedId: string; warning?: string }>("/api/market-analysis/save-current", { method: "POST" }),
-  analyzeMarketSelection: (snapshotId: string, selectedIds: string[], profile: AccountProfile, model: string) =>
-    request<{ success: boolean; analysis: MarketAnalysis }>("/api/market-analysis/analyze", { method: "POST", body: JSON.stringify({ savedListingIds: selectedIds, profile, model }) }),
+  getSavedMarketListings: (productId?: string) => request<{ success: boolean; snapshot: MarketSnapshot }>("/api/market-analysis/listings" + (productId ? `?productId=${encodeURIComponent(productId)}` : "")),
+  updateMarketListingAds: (id: string, adsStatus: "yes" | "no" | "unknown", productId?: string) => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}/ads`, { method: "PATCH", body: JSON.stringify({ adsStatus, productId }) }),
+  removeSavedMarketListing: (id: string, productId?: string) => request<{ success: boolean; snapshot: MarketSnapshot }>(`/api/market-analysis/listings/${encodeURIComponent(id)}` + (productId ? `?productId=${encodeURIComponent(productId)}` : ""), { method: "DELETE" }),
+  captureMarketListings: (productId?: string) => request<{ success: boolean; snapshot: MarketSnapshot; savedId: string; warning?: string }>("/api/market-analysis/save-current", { method: "POST", body: JSON.stringify({ productId }) }),
+  analyzeMarketSelection: (snapshotId: string, selectedIds: string[], profile: AccountProfile, model: string, productId?: string) =>
+    request<{ success: boolean; analysis: MarketAnalysis }>("/api/market-analysis/analyze", { method: "POST", body: JSON.stringify({ savedListingIds: selectedIds, profile, model, productId }) }),
+
+  adoptLegacyMarketListings: (productId: string, listingIds: string[]) => request<{ success: boolean; snapshot: MarketSnapshot; idMap: Record<string, string> }>("/api/market-analysis/adopt-legacy", { method: "POST", body: JSON.stringify({ productId, listingIds }) }),
 
   // AvantPro
   avantproAuth: () =>

@@ -1,10 +1,11 @@
+import { MarketAnalysisPage } from "@/pages/MarketAnalysisPage"
 import { BackLink } from "@/components/BackLink"
 import {ProductBriefView} from '@/components/ProductBriefView'
 import { PROMPT_TEMPLATES } from "@/lib/prompt-templates"
 import { useStore } from "@/store/useStore"
 import { HtmlMarketReport } from "@/components/HtmlMarketReport"
 import { useEffect, useState, useMemo } from "react"
-import { Link, useParams, useNavigate } from "react-router-dom"
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom"
 import { ExternalLink, Trash2, Calendar, Star, TrendingUp, BarChart3, Layers, Package, Calculator, X, Copy, Loader2, Check } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -29,15 +30,16 @@ const COMPETITION_COLORS: Record<string, string> = {
   Saturado: "text-red-400 bg-red-900/30 border-red-800",
 }
 
-type Tab = "produto" | "fornecedores" | "mercado"
+type Tab = "produto" | "fornecedores" | "mercado" | "comparar"
 
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [product, setProduct] = useState<PipelineProduct | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>("produto")
+  const [activeTab, setActiveTab] = useState<Tab>(() => searchParams.get("tab") === "comparar" ? "comparar" : "produto")
   const [showSupplierSelector, setShowSupplierSelector] = useState(false)
   const [showCopyModal, setShowCopyModal] = useState(false)
   const [copyProducts, setCopyProducts] = useState<PipelineProduct[]>([])
@@ -326,6 +328,13 @@ export const ProductDetailPage = () => {
           )}
         </button>
 
+        <button
+          aria-pressed={activeTab === "comparar"} onClick={() => setActiveTab("comparar")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === "comparar" ? "border-blue-500 text-blue-400" : "border-transparent text-gray-400 hover:text-gray-300"}`}
+        >
+          <Layers className="w-4 h-4" />
+          Comparar anúncios
+        </button>
       </div>
 
       {/* Tab content */}
@@ -354,6 +363,10 @@ export const ProductDetailPage = () => {
             {product.analysisReport && <details className="brief-legacy"><summary>Consultar análise anterior</summary><p>Conteúdo preservado do formato anterior. Novas fichas apresentam apenas informações do produto.</p><HtmlMarketReport productId={product._id} reportKind="listing" src={'/api/pipeline/'+product._id+'/analysis-report/html?v='+encodeURIComponent(product.updatedAt || product.analyzedAt)}/></details>}
 
           </>
+        )}
+
+        {activeTab === "comparar" && (
+          <MarketAnalysisPage key={product._id} productId={product._id} productTitle={product.title} />
         )}
 
         {activeTab === "fornecedores" && (
